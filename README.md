@@ -12,3 +12,9 @@ However, there are plans on LTS supporting everything down to a .NET Standard 2.
 
 Shouldn't be that hard (clueless)
 (We have some experience with that already)
+
+## Structure
+Main projects (Eclipse and Eclipse.Editor) are built for the **lowest version of .NET**.
+As of right now, it is **.NET 6.0**.
+Projects for other versions will simply reference code from those projects to generate updated version.
+(This solves problems between .NET Framework and .NET X.X, if encountered)
