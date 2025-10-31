@@ -21,3 +21,4 @@ dotnet build -c Runtime
 5. Regenerate all .meta files for all files by compiling and testing everything via Unity directly.
 6. Review the license used. Maybe change it if Apache 2.0 is too strict.
     - Include licenses of other parties (if involved).
+7. Automatically instantiate and save EngineConfiguration implementations to Assets/Resources/Configurations (unless different folder is defined)
