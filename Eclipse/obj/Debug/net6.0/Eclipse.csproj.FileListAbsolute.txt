@@ -13,3 +13,6 @@ F:\Unity\Support\Eclipse\Eclipse\obj\Debug\net6.0\Eclipse.dll
 F:\Unity\Support\Eclipse\Eclipse\obj\Debug\net6.0\refint\Eclipse.dll
 F:\Unity\Support\Eclipse\Eclipse\obj\Debug\net6.0\Eclipse.pdb
 F:\Unity\Support\Eclipse\Eclipse\obj\Debug\net6.0\ref\Eclipse.dll
+F:\Unity\Support\Eclipse\Eclipse\bin\Debug\net6.0\Eclipse.xml
+F:\Unity\Support\Eclipse\Eclipse\obj\Debug\net6.0\Eclipse.sourcelink.json
+F:\Unity\Support\Eclipse\Eclipse\obj\Debug\net6.0\Eclipse.xml

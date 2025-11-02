@@ -147,22 +147,22 @@ namespace Eclipse.Structs
         {
             if (parameter is null)
             {
-                return new(string.Empty, Modding.Mod.EmptyModName, string.Empty);
+                return new FullName(string.Empty, Modding.Mod.EmptyModName, string.Empty);
             }
 
             parameter = parameter.Trim();
             int index = parameter.IndexOf(ParameterSeparator);
             if (index == -1)
             {
-                return new(parameter, Modding.Mod.EmptyModName, parameter);
+                return new FullName(parameter, Modding.Mod.EmptyModName, parameter);
             }
             else if (index + 1 == parameter.Length)
             {
-                return new(parameter[..index], Modding.Mod.EmptyModName, parameter);
+                return new FullName(parameter[..index], Modding.Mod.EmptyModName, parameter);
             }
             else
             {
-                return new(parameter[..index], parameter[(index + 1)..], parameter);
+                return new FullName(parameter[..index], parameter[(index + 1)..], parameter);
             }
         }
     }

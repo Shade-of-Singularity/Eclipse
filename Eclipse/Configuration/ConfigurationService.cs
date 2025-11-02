@@ -280,12 +280,12 @@ namespace Eclipse.Configuration
         private bool m_ExecutesParameterSaving = false;
 
         // Local Fields:
-        private readonly Dictionary<Type, EngineConfiguration> m_EngineConfigurations = new();
-        private readonly Dictionary<string, Parameter> m_Parameters = new();
-        private readonly Dictionary<string, Category> m_Categories = new();
-        private readonly Dictionary<Type, GameState> m_GameStates = new();
-        private UniTaskCompletionSource m_AwaitSource = new();
-        private readonly object m_AwaitLock = new();
+        private readonly Dictionary<Type, EngineConfiguration> m_EngineConfigurations = new Dictionary<Type, EngineConfiguration>();
+        private readonly Dictionary<string, Parameter> m_Parameters = new Dictionary<string, Parameter>();
+        private readonly Dictionary<string, Category> m_Categories = new Dictionary<string, Category>();
+        private readonly Dictionary<Type, GameState> m_GameStates = new Dictionary<Type, GameState>();
+        private UniTaskCompletionSource m_AwaitSource = new UniTaskCompletionSource();
+        private readonly object m_AwaitLock = new object();
 
 
 
@@ -503,7 +503,7 @@ namespace Eclipse.Configuration
             }
             else
             {
-                T result = new();
+                T result = new T();
                 m_GameStates[typeof(T)] = result;
                 return result;
             }

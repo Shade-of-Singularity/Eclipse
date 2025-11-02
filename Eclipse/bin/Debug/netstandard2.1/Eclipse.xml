@@ -1,0 +1,1550 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Eclipse</name>
+    </assembly>
+    <members>
+        <member name="T:Eclipse.Configuration.Categorization.Category">
+            <summary>
+            UI category in which an Parameter resides.
+            </summary>
+        </member>
+        <member name="T:Eclipse.Configuration.Categorization.Category.CategoryChangeHandler">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="F:Eclipse.Configuration.Categorization.Category.m_Parameters">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.Categorization.Category.#ctor(System.String,Eclipse.Configuration.Parameters.Parameter[])">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.Categorization.Category.Add(Eclipse.Configuration.Parameters.Parameter)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.Categorization.Category.SortByOrder">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.Configuration.ConfigurationService">
+            <summary>
+            Service, responsible for providing ways for configuring the game either from the editor,
+            manually during game development, or using in-game settings.
+            </summary>
+            Note: if service won't be overwritable - we can just directly imbed it into Engine initialization process.
+        </member>
+        <member name="F:Eclipse.Configuration.ConfigurationService.InitializationOrder">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                 Constants
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            <see cref="T:Eclipse.Configuration.ConfigurationService"/> is initialized very first in the entire game,
+            as even <see cref="!:Localization.LocalizationService"/> relies on it.
+            </summary>
+            Note: This is why you cannot localize anything here btw.
+        </member>
+        <member name="E:Eclipse.Configuration.ConfigurationService.OnBeforeApplyChanges">
+            <param name="configuration">Configuration class what have been changed.</param>
+        </member>
+        <member name="E:Eclipse.Configuration.ConfigurationService.OnCategorizationChanged">
+            <summary>
+            Called when any of the <see cref="T:Eclipse.Configuration.Parameters.Parameter"/>s have their name/category changed. (See also: <seealso cref="P:Eclipse.Configuration.Parameters.Parameter.Name"/>)
+            </summary>
+        </member>
+        <member name="P:Eclipse.Configuration.ConfigurationService.ExecutesSerialization">
+            <summary>
+            Whether <see cref="T:Eclipse.Configuration.ConfigurationService"/> saves anything to the disk at the moment.
+            </summary>
+        </member>
+        <member name="P:Eclipse.Configuration.ConfigurationService.ExecutesServiceSerialization">
+            <summary>
+            Whether <see cref="T:Eclipse.Configuration.ConfigurationService"/> is going through every <see cref="T:Eclipse.EngineService"/> and saves its state to the disk.
+            </summary>
+            <remarks>
+            At the moment engine services simply use <see cref="T:Eclipse.Configuration.GameState"/>s for serialization, so this method is added just for the future.
+            </remarks>
+        </member>
+        <member name="P:Eclipse.Configuration.ConfigurationService.ExecutesGameStateSaving">
+            <summary>
+            Whether <see cref="T:Eclipse.Configuration.ConfigurationService"/> is going through every <see cref="T:Eclipse.Configuration.GameState"/> and saves it to the disk.
+            </summary>
+        </member>
+        <member name="P:Eclipse.Configuration.ConfigurationService.ExecutesParameterSaving">
+            <summary>
+            Whether <see cref="T:Eclipse.Configuration.ConfigurationService"/> is going through every <see cref="T:Eclipse.Configuration.Parameters.Parameter"/> and saves its state to the disk.
+            </summary>
+        </member>
+        <member name="P:Eclipse.Configuration.ConfigurationService.IsDirty">
+            <summary>
+            Whether any of the parameters have changed and can be applied.
+            </summary>
+            <remarks>
+            Directly modified by <see cref="T:Eclipse.Configuration.Parameters.Parameter"/>s.
+            </remarks>
+            TODO: Reset <see cref="P:Eclipse.Configuration.ConfigurationService.IsDirty"/> if all the parameters is no longer modifies
+            after direct user inputs or direct <see cref="M:Eclipse.Configuration.Parameters.Parameter.RevertChanges"/> usage.
+        </member>
+        <member name="P:Eclipse.Configuration.ConfigurationService.DoCategorizationCallbackDelays">
+            <summary>
+            Whether to do a frame delay when something tried to invoke <see cref="E:Eclipse.Configuration.ConfigurationService.OnCategorizationChanged"/> callback.
+            </summary>
+        </member>
+        <member name="P:Eclipse.Configuration.ConfigurationService.Storage">
+            <summary>
+            Storage type to use for all parameters.
+            </summary>
+            <remarks>
+            TODO: Make a way to store some of the values in different places, based on a flag (e.g. persistent, dynamic, per-profile, etc.).
+            </remarks>
+        </member>
+        <member name="P:Eclipse.Configuration.ConfigurationService.CoroutineRunner">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                             Private Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="F:Eclipse.Configuration.ConfigurationService.m_CoroutineRunner">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.InitializeParameters">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Implementations
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.SetSettings(System.Type)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Initializes all <see cref="T:Eclipse.Configuration.Parameters.Parameter"/>s in a given class.
+            </summary>
+            <remarks>
+            In reality, just runs a static constructor on it.
+            </remarks>
+            <param name="class">Type of the class which holds <see cref="T:Eclipse.Configuration.Parameters.Parameter"/>s.</param>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.SetSettings(System.RuntimeTypeHandle)">
+            <inheritdoc cref="M:Eclipse.Configuration.ConfigurationService.SetSettings(System.Type)"/>
+            <param name="handle">Handle of the class which holds <see cref="T:Eclipse.Configuration.Parameters.Parameter"/>s.</param>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.Register(Eclipse.Configuration.Parameters.Parameter)">
+            <summary>
+            Registers new parameter.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.Apply">
+            <summary>
+            Applies all dirty properties.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.ApplyForceCallbacks">
+            <summary>
+            Applies all properties and fires related callbacks (e.g. <see cref="E:Eclipse.Configuration.Parameters.AbstractParameter`1.OnValueApplied"/>)
+            regardless of whether parameter actually changed.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.Revert">
+            <summary>
+            Reverts all dirty properties.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.RevertForceCallbacks">
+            <summary>
+            Reverts all properties and fires related callbacks (e.g. <see cref="E:Eclipse.Configuration.Parameters.AbstractParameter`1.OnValueApplied"/>)
+            regardless of whether parameter actually changed.
+            (See also: <seealso cref="M:Eclipse.Configuration.Parameters.Parameter.ApplyChangesForceFireCallbacks"/>)
+            </summary>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.Save``1(``0)">
+            <summary>
+            Saves an <see cref="T:Eclipse.Configuration.GameState"/> to the configuration file.
+            </summary>
+            <remarks>
+            It will be written to the disk immediately, or in a bit later, if <see cref="T:Eclipse.Configuration.ConfigurationService"/> is in
+            </remarks>
+            <typeparam name="T">Type of your data.</typeparam>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.Load``1">
+            <summary>
+            Loads <see cref="T:Eclipse.Configuration.GameState"/> from a configuration file.
+            </summary>
+            <remarks>
+            You can use it to load game data, such as player positions, inventory data, etc.
+            </remarks>
+            <returns>
+            New <typeparamref name="T"/> parameter if no configuration file found.
+            Otherwise - loaded data.
+            </returns>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.Serialize">
+            <summary>
+            Starts serialization
+            </summary>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.Set``1(``0)">
+            <summary>
+            Allows you to overwrite engine configurations at runtime.
+            </summary>
+            <remarks>
+            Do it only if you want to completely overhaul how game works. Otherwise - do NOT touch it.
+            <para>
+            Make sure that <see cref="P:Eclipse.Configuration.EngineConfiguration`1.Instance"/> is NEVER called before you call this one.
+            </para>
+            </remarks>
+            <typeparam name="T"></typeparam>
+            <param name="value"></param>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.GetOrNew``1">
+            TODO: Optimize engine configuration access the name way in which <see cref="!:Engine.Get&lt;T&gt;"/> was optimized, if needed.
+            Note: Done! You can now use <see cref="P:Eclipse.Configuration.EngineConfiguration`1.Instance"/> or <see cref="M:Eclipse.Configuration.EngineConfiguration.Get``1"/> for that!
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.LoadResources">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.LoadInternal">
+            <summary>
+            Forcefully loads-in all data about registered parameters.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.SaveInternal">
+            <summary>
+            Forcefully saves a save file data about all registered parameters.
+            </summary>
+            <remarks>
+            Will not check for <see cref="P:Eclipse.Configuration.ConfigurationService.IsDirty"/>.
+            </remarks>
+        </member>
+        <member name="T:Eclipse.Configuration.ConfigurationService.ConfigurationServiceCoroutineHandler">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Coroutine Handler
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="P:Eclipse.Configuration.ConfigurationService.ConfigurationServiceCoroutineHandler.IsRunning">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="F:Eclipse.Configuration.ConfigurationService.ConfigurationServiceCoroutineHandler.m_IsRunning">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.ConfigurationServiceCoroutineHandler.Awake">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Unity Callbacks
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.ConfigurationServiceCoroutineHandler.StartCoroutine(System.Action)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.ConfigurationServiceCoroutineHandler.Delay(System.Action)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="P:Eclipse.Configuration.ConfigurationSettings.SettingsAutoApply">
+            <summary>
+            Automatically applies all changes made to <see cref="T:Eclipse.Configuration.Parameters.Parameter"/>.
+            Can be useful if there is only simple settings on UI, and you don't want to bother with "Apply/Revert" much.
+            </summary>
+        </member>
+        <member name="P:Eclipse.Configuration.ConfigurationSettings.SettingsAutoSave">
+            <summary>
+            Whether to do auto-save of <see cref="T:Eclipse.Configuration.Parameters.Parameter"/>s during the game.
+            When <c>false</c> - settings will only be saved when exiting the game.
+            </summary>
+        </member>
+        <member name="P:Eclipse.Configuration.ConfigurationSettings.SettingsAutoSaveDelay">
+            <summary>
+            How long to wait (is seconds) after changes to any <see cref="T:Eclipse.Configuration.Parameters.Parameter"/> were applied?
+            Used to guarantee that settings were saved to the disk in case crash occurs or user exits via Terminal.
+            </summary>
+            <remarks>
+            
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Configuration.ConfigurationSettings.m_SettingsAutoApply">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.Configuration.EngineConfiguration`1">
+            <summary>
+            Provides fast, type-safe access to engine-level configurations registered during initialization.
+            <para>
+            Can be used in <see cref="M:Eclipse.EngineService.Initialize"/> method after <see cref="T:Eclipse.Configuration.ConfigurationService"/> was initialized.
+            </para>
+            </summary>
+            <remarks>
+            Will return default <see cref="T:Eclipse.Configuration.EngineConfiguration"/> if it wasn't loaded or found in a safe-file.
+            </remarks>
+            <typeparam name="T">The type of the configuration to retrieve. Must inherit from <see cref="T:Eclipse.Configuration.EngineConfiguration"/>.</typeparam>
+        </member>
+        <member name="P:Eclipse.Configuration.EngineConfiguration`1.Instance">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Cached instance of the requested configuration class.
+            </summary>
+        </member>
+        <member name="F:Eclipse.Configuration.EngineConfiguration`1.m_Instance">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            As much as I hate to make code less optimized, <c>static readonly T Instance</c>
+            was replaced with parameter to allow configuration modifications (not supported yet (TODO: this)).
+            </summary>
+            <remarks>
+            As much as I want to simply use a readonly field with static initializer here,
+            we need a null check to support full runtime engine reloading and reference modification.
+            Note: If we will ever have engine that does not support runtime reloading - use static readonly fields instead.
+            </remarks>
+        </member>
+        <member name="T:Eclipse.Configuration.EngineConfiguration">
+            <summary>
+            Base class for configuration files for internal systems and services, so they can be configured via Unity.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Configuration.EngineConfiguration.Get``1">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Retrieves <see cref="T:Eclipse.Configuration.EngineConfiguration"/> class.
+            </summary>
+            <remarks>
+            Use generic implementation directly instead, if possible.
+            (e.g. <see cref="P:Eclipse.Configuration.EngineConfiguration`1.Instance"/>)
+            </remarks>
+        </member>
+        <member name="T:Eclipse.Configuration.GameState`1">
+            <summary>
+            Class holder for your <see cref="T:Eclipse.Configuration.GameState"/>.
+            </summary>
+            <typeparam name="T">Type of your <see cref="T:Eclipse.Configuration.GameState"/> class.</typeparam>
+        </member>
+        <member name="P:Eclipse.Configuration.GameState`1.Instance">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="F:Eclipse.Configuration.GameState`1.m_Instance">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.Configuration.GameState">
+            <summary>
+            Custom class for your settings, which doesn't use <see cref="T:Eclipse.Configuration.Parameters.Parameter"/>.
+            </summary>
+            <remarks>
+            Works similarly to Naninovel, if you familiar with it.
+            Not used at the moment - implemented in case there will be a good way to use it.
+            <para>
+            Made as a proof of concept.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:Eclipse.Configuration.GameState.Get``1">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Retrieves custom <see cref="T:Eclipse.Configuration.GameState"/> class from current <see cref="T:Eclipse.Configuration.ConfigurationService"/>.
+            </summary>
+            <remarks>
+            Use generic implementation directly instead, if possible.
+            (e.g. <see cref="P:Eclipse.Configuration.GameState`1.Instance"/>)
+            </remarks>
+        </member>
+        <member name="M:Eclipse.Configuration.GameState.Serialize">
+            <summary>
+            Serializes this game state.
+            </summary>
+            <returns>Serialized data about GameState.</returns>
+        </member>
+        <member name="M:Eclipse.Configuration.GameState.Deserialize(System.String)">
+            <summary>
+            Deserializes given data back into a GameState.
+            </summary>
+            <param name="raw">Raw data to deserialize.</param>
+        </member>
+        <member name="T:Eclipse.Configuration.Parameters.AbstractParameter`1">
+            <summary>
+            Parameter for the settings of the game.
+            </summary>
+            <typeparam name="TValue"></typeparam>
+        </member>
+        <member name="T:Eclipse.Configuration.Parameters.AbstractParameter`1.ValueChangeHandler">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                 Delegates
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="E:Eclipse.Configuration.Parameters.AbstractParameter`1.OnValueChanged">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                   Events
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Called when value have changed and was applied.
+            </summary>
+        </member>
+        <member name="E:Eclipse.Configuration.Parameters.AbstractParameter`1.OnValueApplied">
+            <summary>
+            Called when value was applied. Should be used by more expensive systems.
+            </summary>
+        </member>
+        <member name="E:Eclipse.Configuration.Parameters.AbstractParameter`1.OnModifiedChanged">
+            <summary>
+            Called when <see cref="P:Eclipse.Configuration.Parameters.AbstractParameter`1.IsModified"/> has changed.
+            </summary>
+        </member>
+        <member name="E:Eclipse.Configuration.Parameters.AbstractParameter`1.FireWithValueChanged">
+            <summary><inheritdoc cref="E:Eclipse.Configuration.Parameters.AbstractParameter`1.OnValueChanged"/></summary>
+            <remarks>
+            Both attaches the event handler to <see cref="E:Eclipse.Configuration.Parameters.AbstractParameter`1.OnValueChanged"/>, and instantly fires the event for it.
+            </remarks>
+        </member>
+        <member name="E:Eclipse.Configuration.Parameters.AbstractParameter`1.FireWithValueApplied">
+            <summary><inheritdoc cref="E:Eclipse.Configuration.Parameters.AbstractParameter`1.OnValueApplied"/></summary>
+            <remarks>
+            Both attaches the event handler to <see cref="E:Eclipse.Configuration.Parameters.AbstractParameter`1.OnValueApplied"/>, and instantly fires the event for it.
+            </remarks>
+        </member>
+        <member name="E:Eclipse.Configuration.Parameters.AbstractParameter`1.FireWithModifiedChanged">
+            <summary><inheritdoc cref="E:Eclipse.Configuration.Parameters.AbstractParameter`1.OnModifiedChanged"/></summary>
+            <remarks>
+            Both attaches the event handler to <see cref="E:Eclipse.Configuration.Parameters.AbstractParameter`1.OnValueApplied"/>, and instantly fires the event for it.
+            </remarks>
+        </member>
+        <member name="P:Eclipse.Configuration.Parameters.AbstractParameter`1.IsDirty">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="P:Eclipse.Configuration.Parameters.AbstractParameter`1.DefaultValue">
+            <summary>
+            Default value of the parameter to be used.
+            </summary>
+            <remarks>
+            If <see cref="P:Eclipse.Configuration.Parameters.AbstractParameter`1.Value"/> equals to current <see cref="P:Eclipse.Configuration.Parameters.AbstractParameter`1.DefaultValue"/> when setting it
+            (e.g. when not <see cref="P:Eclipse.Configuration.Parameters.AbstractParameter`1.IsModified"/>) - will set <see cref="P:Eclipse.Configuration.Parameters.AbstractParameter`1.Value"/> to a new <see cref="P:Eclipse.Configuration.Parameters.AbstractParameter`1.DefaultValue"/>.
+            <para>
+            Because of that, it is recommended to not modify this value outside of the initialization, to not interfere with user choices.
+            </para>
+            </remarks>
+        </member>
+        <member name="P:Eclipse.Configuration.Parameters.AbstractParameter`1.Value">
+            <summary>
+            Value, stored in the configuration file.
+            </summary>
+            <remarks>
+            Set value can be reverted with <see cref="M:Eclipse.Configuration.ConfigurationService.Revert"/>, if anything was changed.
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Configuration.Parameters.AbstractParameter`1.m_DefaultValue">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.AbstractParameter`1.#ctor(Eclipse.Structs.FullName)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.AbstractParameter`1.Serialize">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Implementations
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.AbstractParameter`1.Set(`0)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.AbstractParameter`1.Reset">
+            <summary>
+            Resets <see cref="P:Eclipse.Configuration.Parameters.AbstractParameter`1.Value"/> to a <see cref="P:Eclipse.Configuration.Parameters.AbstractParameter`1.DefaultValue"/>.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.BooleanParameter.#ctor(Eclipse.Structs.FullName)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.BooleanParameter.Serialize">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Implementations
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.Configuration.Parameters.EnumParameter`1">
+            <summary>
+            Specialized enum parameter handler.
+            </summary>
+            <remarks>
+            TODO: Provide a way to specify localization keys for each enum value.
+            Maybe with custom attributes for each enum value, and cache the reflection using system similar to <see cref="!:Engine.Get&lt;T&gt;"/>?
+            Hopefully it won't overload code database with all those generics, though I doubt we will have a lot of enums.
+            I need to implement the system in a way which will allow us to change internal structure of the game to fix this issue, if it will be an issue.
+            </remarks>
+            <typeparam name="TEnum"></typeparam>
+        </member>
+        <member name="T:Eclipse.Configuration.Parameters.EnumParameter`1.ValueChangeHandler">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                 Delegates
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="E:Eclipse.Configuration.Parameters.EnumParameter`1.OnValueChanged">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                   Events
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Called when value have changed and was applied.
+            </summary>
+        </member>
+        <member name="E:Eclipse.Configuration.Parameters.EnumParameter`1.OnValueApplied">
+            <summary>
+            Called when value was applied. Should be used by more expensive systems.
+            </summary>
+        </member>
+        <member name="E:Eclipse.Configuration.Parameters.EnumParameter`1.OnModifiedChanged">
+            <summary>
+            Called when <see cref="P:Eclipse.Configuration.Parameters.EnumParameter`1.IsModified"/> has changed.
+            </summary>
+        </member>
+        <member name="E:Eclipse.Configuration.Parameters.EnumParameter`1.FireWithValueChanged">
+            <summary><inheritdoc cref="E:Eclipse.Configuration.Parameters.EnumParameter`1.OnValueChanged"/></summary>
+            <remarks>
+            Both attaches the event handler to <see cref="E:Eclipse.Configuration.Parameters.EnumParameter`1.OnValueChanged"/>, and instantly fires the event for it.
+            </remarks>
+        </member>
+        <member name="E:Eclipse.Configuration.Parameters.EnumParameter`1.FireWithValueApplied">
+            <summary><inheritdoc cref="E:Eclipse.Configuration.Parameters.EnumParameter`1.OnValueApplied"/></summary>
+            <remarks>
+            Both attaches the event handler to <see cref="E:Eclipse.Configuration.Parameters.EnumParameter`1.OnValueApplied"/>, and instantly fires the event for it.
+            </remarks>
+        </member>
+        <member name="E:Eclipse.Configuration.Parameters.EnumParameter`1.FireWithModifiedChanged">
+            <summary><inheritdoc cref="E:Eclipse.Configuration.Parameters.EnumParameter`1.OnModifiedChanged"/></summary>
+            <remarks>
+            Both attaches the event handler to <see cref="E:Eclipse.Configuration.Parameters.EnumParameter`1.OnValueApplied"/>, and instantly fires the event for it.
+            </remarks>
+        </member>
+        <member name="P:Eclipse.Configuration.Parameters.EnumParameter`1.IsDirty">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="P:Eclipse.Configuration.Parameters.EnumParameter`1.DefaultValue">
+            <summary>
+            Default value of the parameter to be used.
+            </summary>
+            <remarks>
+            If <see cref="P:Eclipse.Configuration.Parameters.EnumParameter`1.Value"/> equals to current <see cref="P:Eclipse.Configuration.Parameters.EnumParameter`1.DefaultValue"/> when setting it
+            (e.g. when not <see cref="P:Eclipse.Configuration.Parameters.EnumParameter`1.IsModified"/>) - will set <see cref="P:Eclipse.Configuration.Parameters.EnumParameter`1.Value"/> to a new <see cref="P:Eclipse.Configuration.Parameters.EnumParameter`1.DefaultValue"/>.
+            <para>
+            Because of that, it is recommended to not modify this value outside of the initialization, to not interfere with user choices.
+            </para>
+            </remarks>
+        </member>
+        <member name="P:Eclipse.Configuration.Parameters.EnumParameter`1.Value">
+            <summary>
+            Value, stored in the configuration file.
+            </summary>
+            <remarks>
+            Set value can be reverted with <see cref="M:Eclipse.Configuration.ConfigurationService.Revert"/>, if anything was changed.
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Configuration.Parameters.EnumParameter`1.m_DefaultValue">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.EnumParameter`1.#ctor(Eclipse.Structs.FullName)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.EnumParameter`1.Serialize">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Implementations
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.EnumParameter`1.Set(`0)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.EnumParameter`1.Reset">
+            <summary>
+            Resets <see cref="P:Eclipse.Configuration.Parameters.EnumParameter`1.Value"/> to a <see cref="P:Eclipse.Configuration.Parameters.EnumParameter`1.DefaultValue"/>.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.FloatParameter.#ctor(Eclipse.Structs.FullName)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.FloatParameter.Serialize">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Implementations
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.IntegerParameter.#ctor(Eclipse.Structs.FullName)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.IntegerParameter.Serialize">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Implementations
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.Configuration.Parameters.Parameter.ParameterChangeHandler">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                 Delegates
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="E:Eclipse.Configuration.Parameters.Parameter.OnNameChanged">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                   Events
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Called when <see cref="P:Eclipse.Configuration.Parameters.Parameter.Name"/> has changed in any way.
+            </summary>
+            <remarks>
+            It is not recommended to change <see cref="F:Eclipse.Structs.FullName.Mod"/> outside of the initialization.
+            You can do it, but it will cause UI rebuilds, and might break stuff.
+            </remarks>
+        </member>
+        <member name="E:Eclipse.Configuration.Parameters.Parameter.OnCategoryChanged">
+            <summary>
+            Called when either <see cref="F:Eclipse.Structs.FullCategory.Name"/>
+            or both <see cref="F:Eclipse.Structs.FullCategory.Name"/> AND <see cref="F:Eclipse.Structs.FullCategory.Visible"/> was changed.
+            (see also: <see cref="P:Eclipse.Configuration.Parameters.Parameter.Category"/>)
+            </summary>
+            <remarks>
+            Was made this way so updates to <see cref="F:Eclipse.Structs.FullCategory.Visible"/> won't force UI to rebuild constantly.
+            </remarks>
+        </member>
+        <member name="E:Eclipse.Configuration.Parameters.Parameter.OnVisibilityChanged">
+            <summary>
+            Called when <see cref="F:Eclipse.Structs.FullCategory.Visible"/> has changed.
+            (see also: <see cref="P:Eclipse.Configuration.Parameters.Parameter.Category"/>)
+            </summary>
+        </member>
+        <member name="E:Eclipse.Configuration.Parameters.Parameter.FireWithNameChanged">
+            <inheritdoc cref="E:Eclipse.Configuration.Parameters.Parameter.OnNameChanged"/>
+        </member>
+        <member name="E:Eclipse.Configuration.Parameters.Parameter.FireWithCategoryChanged">
+            <inheritdoc cref="E:Eclipse.Configuration.Parameters.Parameter.OnCategoryChanged"/>
+        </member>
+        <member name="E:Eclipse.Configuration.Parameters.Parameter.FireWithVisibilityChanged">
+            <inheritdoc cref="E:Eclipse.Configuration.Parameters.Parameter.OnVisibilityChanged"/>
+        </member>
+        <member name="P:Eclipse.Configuration.Parameters.Parameter.Name">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Fully qualified name of the parameter.
+            </summary>
+            <remarks>
+            Note: please, refrain from modifying <see cref="F:Eclipse.Structs.FullName.Mod"/> here.
+            This might cause a lot of UI updates, and might break stuff at times.
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Configuration.Parameters.Parameter.m_Name">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.Parameter.#ctor(Eclipse.Structs.FullName)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.Parameter.ApplyChanges">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Implementations
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Applies all changes made to the parameter.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.Parameter.ApplyChangesForceFireCallbacks">
+            <summary>
+            Applies all the changes and forcefully fires callbacks,
+            similar to <see cref="E:Eclipse.Configuration.Parameters.AbstractParameter`1.OnValueApplied"/> even when nothing has changed.
+            </summary>
+            <remarks>
+            <see cref="T:Eclipse.Configuration.ConfigurationService"/> will use <see cref="M:Eclipse.Configuration.Parameters.Parameter.ApplyChangesForceFireCallbacks"/> after <see cref="E:Eclipse.Engine.OnEngineInitialized"/>.
+            </remarks>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.Parameter.RevertChanges">
+            <summary>
+            Reverts all changes made to the parameter.
+            Will fire related callbacks only if parameter changed after applying.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.Parameter.RevertChangesForceFireCallbacks">
+            <summary>
+            Reverts all changes made to the parameter, and forcefully
+            similar to <see cref="E:Eclipse.Configuration.Parameters.AbstractParameter`1.OnValueApplied"/> even when nothing has changed.
+            </summary>
+            <remarks>
+            Nothing at the moment fires this callback in the <see cref="N:Eclipse"/>, but implement it regardless please.
+            </remarks>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.Parameter.Serialize">
+            <summary>
+            Serializes parameter into a string.
+            </summary>
+            <returns>
+            A raw string data describing a stored object.
+            </returns>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.Parameter.Deserialize(System.String)">
+            <summary>
+            Safe method for deserializing property data.
+            </summary>
+            <remarks>
+            You can throw here, but it is "safe" in regards that it will just keep the same DefaultValue if deserialization failed.
+            </remarks>
+            <param name="raw">Data which was previously returned by <see cref="M:Eclipse.Configuration.Parameters.Parameter.Serialize"/> - raw string to deserialize.</param>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.StringParameter.#ctor(Eclipse.Structs.FullName)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.StringParameter.Serialize">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Implementations
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.Configuration.ReconfigurationService">
+            <summary>
+            Reconfiguration service for you to target with <see cref="T:Eclipse.ServicePreloadMethodAttribute"/>s or <see cref="T:Eclipse.ServiceAfterloadMethodAttribute"/>s
+            in order to reconfigure <see cref="T:Eclipse.Configuration.EngineConfiguration`1"/>s.
+            </summary>
+            <remarks>
+            Cannot be inherited as it should not be replaced by any other service.
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Configuration.ReconfigurationService.InitializationOrder">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                 Constants
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="F:Eclipse.Configuration.Storages.ParameterStorage`1.Instance">
+            <summary>
+            Static instance of an <see cref="T:Eclipse.Configuration.Storages.IParameterStorage"/> implementation.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Configuration.Storages.ParameterStorage`1.Load(Eclipse.Configuration.Parameters.Parameter)">
+            <inheritdoc cref="M:Eclipse.Configuration.Storages.IParameterStorage.Load(Eclipse.Configuration.Parameters.Parameter)"/>
+        </member>
+        <member name="M:Eclipse.Configuration.Storages.ParameterStorage`1.Save(Eclipse.Configuration.Parameters.Parameter)">
+            <inheritdoc cref="M:Eclipse.Configuration.Storages.IParameterStorage.Save(Eclipse.Configuration.Parameters.Parameter)"/>
+        </member>
+        <member name="T:Eclipse.Configuration.Storages.IParameterStorage">
+            <summary>
+            Processor interface which controls where data is stored.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Configuration.Storages.IParameterStorage.Load(Eclipse.Configuration.Parameters.Parameter)">
+            <summary>
+            If has any data about it - will call <see cref="M:Eclipse.Configuration.Parameters.Parameter.Deserialize(System.String)"/> using a raw string data about this parameter.
+            </summary>
+            <param name="parameter">Parameter to be updated.</param>
+        </member>
+        <member name="M:Eclipse.Configuration.Storages.IParameterStorage.Save(Eclipse.Configuration.Parameters.Parameter)">
+            <summary>
+            Calls <see cref="M:Eclipse.Configuration.Parameters.Parameter.Serialize"/> method and stores a return value 
+            </summary>
+            <param name="parameter"></param>
+        </member>
+        <member name="M:Eclipse.Configuration.Storages.PlayerPreferenceStorage.Load(Eclipse.Configuration.Parameters.Parameter)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.Configuration.UI.ParameterUI`1">
+            <summary>
+            UI component for an <see cref="T:Eclipse.Configuration.Parameters.Parameter"/>.
+            </summary>
+            <remarks>
+            When implementing, don't forget that <see cref="P:Eclipse.Configuration.UI.ParameterUI`1.Parameter"/>s can be modified in the editor, on <see cref="P:UnityEngine.Application.isPlaying"/> == <c>false</c>.
+            Account for that by not modifying the UI in such cases, but you can modify the parameters themselves.
+            </remarks>
+            <typeparam name="TParameter">Special type of the parameter to try to look for. Specify <see cref="T:Eclipse.Configuration.Parameters.Parameter"/> for any type.</typeparam>
+        </member>
+        <member name="P:Eclipse.Configuration.UI.ParameterUI`1.Parameter">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="F:Eclipse.Configuration.UI.ParameterUI`1.m_Parameter">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.UI.ParameterUI`1.Awake">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Unity Callbacks
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.UI.ParameterUI`1.SetupParameter(`0)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Protected Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="F:Eclipse.Engine.LogName">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                 Constants
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="E:Eclipse.Engine.OnEngineInitialized">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="E:Eclipse.Engine.OnEngineResetting">
+            <summary>
+            Called when every existing instance of <see cref="T:Eclipse.EngineService"/> and similar is fully unloaded.
+            </summary>
+            <remarks>
+            Used to reset static references to the old services and configuration classes, as to prevent memory leaks on mod reloading.
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Engine.m_Services">
+            TODO: References the entire tree of parents of given service to itself, so retrieving,
+            So retrieving, for example, replaced <see cref="!:Localization.LocalizationService"/> will yield you a reference of a replacement.
+        </member>
+        <member name="M:Eclipse.Engine.GetOrThrow``1">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Method is extremely optimized for a repeated usage. Feel free to use it very frequently.
+            <para>
+            However, using generic <see cref="T:Eclipse.EngineService`1"/> is even better.
+            </para>
+            <para>
+            Can be used in <see cref="M:Eclipse.EngineService.Initialize"/> method,
+            but service might not be initialized depending on <see cref="P:Eclipse.ServiceAttribute.InitializationOrder"/>.
+            </para>
+            </summary>
+            <remarks>
+            Will throw if requested <see cref="T:Eclipse.EngineService"/> was not created on initialization.
+            Use '<see cref="M:Eclipse.Engine.TryGet``1(``0@)"/>' or '<see cref="M:Eclipse.Engine.GetOrDefault``1(``0)"/>' if you need to handle missing services more gracefully.
+            </remarks>
+        </member>
+        <member name="M:Eclipse.Engine.SetInitialized">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Finalization
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Engine.Reload">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                             Initialization API
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Reloads entire engine from the ground-up.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Engine.ResetState">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                            Fetching and Loading
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Unloads assemblies and classes from the memory.
+            </summary>
+            <remarks>
+            Will cache resources like textures, atlases, music and etc. in case it will be referenced again.
+            Will use update date and time to decide whether to update a resource or not.
+            </remarks>
+        </member>
+        <member name="M:Eclipse.Engine.Harmony_BeforeLoadingMods">
+            <summary>
+            Can be used by mods to enqueue assemblies directly, if implementing them using provided tools is not for you.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Engine.InitializeEngine">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Initialization
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Engine.EnqueueAssemblies(System.Reflection.Assembly)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.Engine.ServiceSummary">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                  Structs
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.EngineService`1">
+            <summary>
+            Provides fast, type-safe access to engine-level services registered during initialization.
+            <para>
+            Can be used in <see cref="M:Eclipse.EngineService.Initialize"/> method,
+            but service might not be initialized depending on <see cref="P:Eclipse.ServiceAttribute.InitializationOrder"/>.
+            </para>
+            </summary>
+            <remarks>
+            Will throw if requested <see cref="T:Eclipse.EngineService"/> was not created on initialization.
+            Use '<see cref="M:Eclipse.Engine.TryGet``1(``0@)"/>' or '<see cref="M:Eclipse.Engine.GetOrDefault``1(``0)"/>' if you need to handle missing services more gracefully.
+            </remarks>
+            <typeparam name="T">The type of the service to retrieve. Must inherit from <see cref="T:Eclipse.EngineService"/>.</typeparam>
+        </member>
+        <member name="P:Eclipse.EngineService`1.Instance">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Cached instance of the requested service. Throws if the service was not registered.
+            </summary>
+            <remarks>
+            Use '<see cref="M:Eclipse.Engine.TryGet``1(``0@)"/>' or '<see cref="M:Eclipse.Engine.GetOrDefault``1(``0)"/>' if you need to handle missing services more gracefully.
+            </remarks>
+            Note: Do NOT replace with <see cref="M:Eclipse.Engine.GetOrDefault``1(``0)"/>!
+            This is a readonly field! It won't update after first <see cref="M:Eclipse.Engine.GetOrDefault``1(``0)"/> usage!
+        </member>
+        <member name="F:Eclipse.EngineService`1.m_Instance">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Internal instance holder field.
+            </summary>
+            <remarks>
+            It would have been far more optimized to use direct field reference instead without null check...
+            But we need null checks to provide reliable Engine reloading at runtime.
+            </remarks>
+        </member>
+        <member name="T:Eclipse.EngineService">
+            <summary>
+            An StackControl service to be initialized.
+            </summary>
+            <remarks>
+            Add an <see cref="T:Eclipse.ServiceAttribute"/> to your final service implementation.
+            </remarks>
+        </member>
+        <member name="P:Eclipse.EngineService.Initialized">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.EngineService.Eclipse#IEngineServiceDirectControlHandler#EngineInvokeInitialization">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Implementations
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.EngineService.Initialize">
+            <summary>
+            Initializes Engine service.
+            <para>
+            Unlike any <see cref="T:Eclipse.EngineService"/> .ctor (constructor), this method is thread-safe.
+            (as long as <see cref="P:Eclipse.ServiceAttribute.ThreadExecutionOrder"/> is <see cref="F:Eclipse.ServiceAttribute.ThreadExecutionMode.MainThread"/>)
+            </para>
+            </summary>
+            <remarks>
+            Won't be even instantiated if you don't have <see cref="T:Eclipse.ServiceAttribute"/> on your class.
+            Use <see cref="P:Eclipse.ServiceAttribute.InitializationOrder"/> to specify initialization order.
+            </remarks>
+        </member>
+        <member name="M:Eclipse.EngineService.Unload">
+            <summary>
+            Called when <see cref="T:Eclipse.Engine"/> unloads all the code and resources from the memory.
+            You are meant to save/serialize the state of your service when this event occurs.
+            </summary>
+        </member>
+        <member name="T:Eclipse.Modding.Mod">
+            <summary>
+            Class describes all the mod data it can have.
+            AssetBundles, assemblies, and other resources are described here with wrappers around dictionaries and resource addresses.
+            </summary>
+            <remarks>
+            You are free to develop mods for the game, but they won't be used in public events before approval.
+            Approval requires you to expose mod code to the public, and make the last update 2-3 days before the event (in most cases).
+            Our team will go through the code and verify its contents.
+            <para>
+            If mod was already verified and you have a hotfix - we can make a quick verification, but you need to contact out team for that.
+            This section applies only to those, who's mods were selected for usage in any of the upcoming events.
+            </para>
+            Keep in mind that ALL the mods that use BepInEx and Harmony will be disqualified outside of the special cases.
+            If your mod is large enough, we will consider verifying it, but otherwise - they won't be accepted.
+            And it doesn't matter that we have a support for BepInEx and Harmony in code - it was made for ease in modding, not for our public events.
+            Refer to the modding guide to grasp all the tools available for you as a mod-maker by default (that's a lot btw, with native C# support, dw)
+            <para>
+            TL;DR:
+            <para>- Try to use native modding tools for creating verifiable code instead of BepInEx and Harmony.</para>
+            <para>- Contact us to request new features.</para>
+            <para>- BepInEx and Harmony mods wont be accepted (for events) outside of special circumstances.</para>
+            (This message is from Dark)
+            </para>
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Modding.Mod.EmptyModName">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="P:Eclipse.Modding.Mod.IsEnabled">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Modding.Mod.GetOrThrow``1">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Implementations
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.Serialization.Base64">
+            <summary>
+            Provides ways to compact any numbers into readable chars - compact Base256.
+            </summary>
+            <remarks>
+            A logical continuation of <see cref="!:Hex"/>, which is Base16.
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Serialization.Base64.toBase">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.SByte(System.SByte)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               byte Methods
+            .                     Note: Order is inverted (from 2 to 1) to make output more readable.
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.Short(System.Int16)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               ushort Methods
+            .                     Note: Order is inverted (from 4 to 1) to make output more readable.
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.Int(System.Int32)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               uint Formatting
+            .                     Note: Order is inverted (from 8 to 1) to make output more readable.
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.ToUInt(System.String)">
+            <inheritdoc cref="M:Eclipse.Serialization.Base64.ToUInt(System.String,System.Int32)"/>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.ToUInt(System.String,System.Int32)">
+            <summary>
+            Decodes a hex string into a <see cref="T:System.UInt32"/>.
+            </summary>
+            <param name="at">Index from which to start.</param>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.Long(System.Int64)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              ulong Formatting
+            .                     Note: Order is inverted (from 11 to 1) to make output more readable.
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.ServiceAfterloadMethodAttribute">
+            <summary>
+            Attribute to flag methods that should be executed after an service was initialized.
+            </summary>
+        </member>
+        <member name="P:Eclipse.ServiceAfterloadMethodAttribute.InvokeOrder">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Order in which afterload methods should be invoked.
+            </summary>
+            <remarks>
+            <see cref="P:Eclipse.ServiceAfterloadMethodAttribute.InvokeOrder"/> still applies even when <see cref="P:Eclipse.ServiceAfterloadMethodAttribute.Service"/> runs on a background thread
+            - it will run within synchronization context of <see cref="P:Eclipse.ServiceAfterloadMethodAttribute.Service"/>.
+            </remarks>
+        </member>
+        <member name="P:Eclipse.ServiceAfterloadMethodAttribute.ThreadSafe">
+            <summary>
+            Whether method can be executed in a background thread.
+            </summary>
+            <remarks>
+            Flag is ignored if target <see cref="P:Eclipse.ServiceAfterloadMethodAttribute.Service"/> has <see cref="F:Eclipse.ServiceAttribute.ThreadExecutionMode.MainThread"/> flag set on it.
+            In which case method will be executed on a main thread instead.
+            <para>
+            Regardless of being executed in a background or on a main thread,
+            will still only run after <see cref="P:Eclipse.ServiceAfterloadMethodAttribute.Service"/>'s <see cref="M:Eclipse.EngineService.Initialize"/> method.
+            </para>
+            </remarks>
+        </member>
+        <member name="P:Eclipse.ServiceAfterloadMethodAttribute.Service">
+            <summary>
+            Reference service to use. Method with this attribute will be executed after this service is initialized.
+            </summary>
+        </member>
+        <member name="M:Eclipse.ServiceAfterloadMethodAttribute.#ctor(System.Type)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.ServiceAttribute">
+            <summary>
+            Describes when and how service should be initialized.
+            </summary>
+            <remarks>
+            Should only be applied to classes that derive from <see cref="T:Eclipse.EngineService"/>.
+            Attribute is ignored otherwise.
+            </remarks>
+        </member>
+        <member name="T:Eclipse.ServiceAttribute.ThreadExecutionMode">
+            <summary>
+            Initialization execution mode of the service.
+            </summary>
+            <remarks>
+            Anything else than <see cref="F:Eclipse.ServiceAttribute.ThreadExecutionMode.MainThread"/> will result in service being initialized on a background thread (not thread-safe).
+            </remarks>
+        </member>
+        <member name="P:Eclipse.ServiceAttribute.InitializationOrder">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Initialization order of the service with this attribute.
+            </summary>
+            <remarks>
+            Ignored whe <see cref="P:Eclipse.ServiceAttribute.ThreadExecutionOrder"/> is not <see cref="F:Eclipse.ServiceAttribute.ThreadExecutionMode.MainThread"/> (as it will essentially produce race conditions).
+            </remarks>
+        </member>
+        <member name="P:Eclipse.ServiceAttribute.ThreadExecutionOrder">
+            <summary>
+            If thread-safe - <see cref="T:Eclipse.EngineService"/> will be initialized in a background thread.
+            </summary>
+            <remarks>
+            Thread-safe code is one that does not access any other service, for example.
+            Important! This will NOT force <see cref="T:Eclipse.ServicePreloadMethodAttribute"/> and <see cref="T:Eclipse.ServiceAfterloadMethodAttribute"/> to run in background.
+            Those will still execute on a main thread, before and after service multi-threaded initialization.
+            <para>
+            Only select any other than <see cref="F:Eclipse.ServiceAttribute.ThreadExecutionMode.MainThread"/> if you know what you are doing.
+            </para>
+            </remarks>
+        </member>
+        <member name="P:Eclipse.ServiceAttribute.Replace">
+            <summary>
+            Target service type to replace it during initialization.
+            </summary>
+        </member>
+        <member name="M:Eclipse.ServiceAttribute.#ctor">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.ServicePreloadMethodAttribute">
+            <summary>
+            Attribute to flag methods that should be executed after an service was initialized.
+            </summary>
+        </member>
+        <member name="P:Eclipse.ServicePreloadMethodAttribute.InvokeOrder">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Order in which preload methods should be invoked.
+            </summary>
+            <remarks>
+            <see cref="P:Eclipse.ServicePreloadMethodAttribute.InvokeOrder"/> still applies even when <see cref="P:Eclipse.ServicePreloadMethodAttribute.Service"/> runs on a background thread
+            - it will run within synchronization context of <see cref="P:Eclipse.ServicePreloadMethodAttribute.Service"/>.
+            </remarks>
+        </member>
+        <!-- Badly formed XML comment ignored for member "P:Eclipse.ServicePreloadMethodAttribute.ThreadSafe" -->
+        <member name="P:Eclipse.ServicePreloadMethodAttribute.Service">
+            <summary>
+            Reference service to use. Method with this attribute will be executed after this service is initialized.
+            </summary>
+        </member>
+        <member name="M:Eclipse.ServicePreloadMethodAttribute.#ctor(System.Type)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.Structs.FullCategory">
+            <summary>
+            Category of an <see cref="T:Eclipse.Configuration.Parameters.Parameter"/> or any other thing.
+            It is used to provide automatic categorization and some utils for external settings editing,
+            but does not affect serialization (since values of <see cref="!:Parameter"/> is serialize based only on <see cref="T:Eclipse.Structs.FullName"/>)
+            (see also: <see cref="!:Parameter.Category"/>)
+            </summary>
+            <remarks>
+            Categorization is also used to automatically generate settings UI for mods.
+            Parameters that were implemented on the UI manually, anywhere, will not be automatically generated.
+            <para>
+            Note: <see cref="F:Eclipse.Structs.FullCategory.Visible"/> flag does not affect whether paratemeter will be visible 
+            </para>
+            And if you plan on manually exposing the parameter later-on with a menu.
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Structs.FullCategory.DefaultCategory">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                 Constants
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="F:Eclipse.Structs.FullCategory.SplitOrderRange">
+            <summary>
+            Range which covers a specific block on the Settings UI before a split-line is created.
+            For example - default region covers [-500_000 : 500_000], the one or the right: [500_001 : 1000_000], and left: [-1000_000 : -500_001]
+            </summary>
+        </member>
+        <member name="F:Eclipse.Structs.FullCategory.Name">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Public Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Category name, usually, without mod name (e.g. with <see cref="F:Eclipse.Modding.Mod.EmptyModName"/>).
+            </summary>
+        </member>
+        <member name="F:Eclipse.Structs.FullCategory.Visible">
+            <summary>
+            Whether this <c>parameter</c> is visible or not.
+            </summary>
+            <remarks>
+            Does not affect category visibility - it is automatically set to be "Visible" when any parameter in it is visible.
+            Use <see cref="M:Eclipse.Configuration.ConfigurationService.TryGetCategory(Eclipse.Structs.FullCategory,Eclipse.Configuration.Categorization.Category@)"/> with <see cref="!:Categorization.Category.Visible"/> to hide it.
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Structs.FullCategory.Order">
+            <summary>
+            Order of this parameter in the category.
+            </summary>
+            <remarks>
+            A split-line between parameters will be created on UI if order will be inside a different <see cref="F:Eclipse.Structs.FullCategory.SplitOrderRange"/>.
+            (see also: <seealso cref="T:Eclipse.Configuration.UI.ParameterUI`1"/>) // TODO: Update the reference to the Settings UI.
+            (see docs for more info)
+            </remarks>
+        </member>
+        <member name="M:Eclipse.Structs.FullCategory.#ctor(System.String,System.Boolean)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Structs.FullCategory.#ctor(System.Int32,System.Boolean,System.String)">
+            <summary>
+            Internal constructor for, well, internal and more optimized usage.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Structs.FullCategory.ToString">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Implementations
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Structs.FullCategory.Set(System.String,System.Int32,System.Boolean)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Structs.FullCategory.op_Equality(Eclipse.Structs.FullCategory,Eclipse.Structs.FullCategory)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Static Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.Structs.FullName">
+            <summary>
+            Fully qualified name of an thing.
+            Allows to specify a mod and a name of a thing.
+            <para>
+            Used in <see cref="!:"/>
+            </para>
+            </summary>
+        </member>
+        <member name="F:Eclipse.Structs.FullName.ParameterSeparator">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                 Constants
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="F:Eclipse.Structs.FullName.Full">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Public Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Full name ("<see cref="F:Eclipse.Structs.FullName.Mod"/><see cref="F:Eclipse.Structs.FullName.ParameterSeparator"/><see cref="F:Eclipse.Structs.FullName.Parameter"/>") of the parameter.
+            </summary>
+        </member>
+        <member name="F:Eclipse.Structs.FullName.Mod">
+            <summary>
+            A mod name which introduced the parameter.
+            </summary>
+        </member>
+        <member name="F:Eclipse.Structs.FullName.Parameter">
+            <summary>
+            A last parameter of the name. See <see cref="F:Eclipse.Structs.FullName.Full"/> to see how full name looks like.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Structs.FullName.#ctor(System.String)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Structs.FullName.ToString">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Implementations
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Structs.FullName.op_Equality(Eclipse.Structs.FullName,Eclipse.Structs.FullName)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Static Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+    </members>
+</doc>

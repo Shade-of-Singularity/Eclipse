@@ -29,7 +29,7 @@
       },
       "Eclipse/1.0.0": {
         "type": "project",
-        "framework": ".NETCoreApp,Version=v6.0",
+        "framework": ".NETStandard,Version=v2.1",
         "dependencies": {
           "UniTask": "2.5.10"
         },

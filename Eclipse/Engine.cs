@@ -96,12 +96,12 @@ namespace Eclipse
         // Static Fields:
         /// TODO: References the entire tree of parents of given service to itself, so retrieving,
         /// So retrieving, for example, replaced <see cref="Localization.LocalizationService"/> will yield you a reference of a replacement.
-        private static readonly Dictionary<Type, EngineService> m_Services = new();
-        private static readonly List<Assembly> m_Assemblies = new();
+        private static readonly Dictionary<Type, EngineService> m_Services = new Dictionary<Type, EngineService>();
+        private static readonly List<Assembly> m_Assemblies = new List<Assembly>();
 
         // Encapsulated Fields:
-        private static readonly HashSet<Action> m_OnEngineInitializedCallbacks = new();
-        private static readonly object m_IsInitializedStateLock = new();
+        private static readonly HashSet<Action> m_OnEngineInitializedCallbacks = new HashSet<Action>();
+        private static readonly object m_IsInitializedStateLock = new object();
         private static volatile bool m_IsInitialized;
 
         // Local Fields:
@@ -401,12 +401,12 @@ namespace Eclipse
                 m_Services.Clear();
 
                 // TODO: Both CPU and memory optimize the initialization.
-                List<ServiceSummary> services = new();
+                List<ServiceSummary> services = new List<ServiceSummary>();
 
                 // Note: 'preload'/'afterload' here refer to method attribute categories,
                 // not the threaded execution mode ('BeforeMain' / 'AfterMain').   - Dark & GPT
-                List<MethodSummary<ServicePreloadMethodAttribute>> preload = new();
-                List<MethodSummary<ServiceAfterloadMethodAttribute>> afterload = new();
+                List<MethodSummary<ServicePreloadMethodAttribute>> preload = new List<MethodSummary<ServicePreloadMethodAttribute>>();
+                List<MethodSummary<ServiceAfterloadMethodAttribute>> afterload = new List<MethodSummary<ServiceAfterloadMethodAttribute>>();
 
                 // TODO: resolve initialization order from a mod dependency order.
                 Assembly[] assemblies = m_Assemblies.ToArray();
@@ -424,7 +424,7 @@ namespace Eclipse
                 // Note: maybe 'LoadServices' can be optimized (specifically duplicate fetching) if we provide dictionary instead?
                 //Dictionary<Type, ServiceSummary> mapping = summaries.ToDictionary(s => s.service);
                 const float ResizeSafetyMargin = 1.75f; // How much more space to reserve in dictionary for associations with the same services.
-                Dictionary<Type, ServiceSummary> mapping = new(Mathf.NextPowerOfTwo((int)(summaries.Length * ResizeSafetyMargin)));
+                Dictionary<Type, ServiceSummary> mapping = new Dictionary<Type, ServiceSummary>(Mathf.NextPowerOfTwo((int)(summaries.Length * ResizeSafetyMargin)));
 
                 // Creates association between all parent classes with ServiceAttribute of replaced services, so for any of them child will be returned.
                 for (int i = 0; i < summaries.Length; i++)
@@ -445,7 +445,7 @@ namespace Eclipse
                         m_Services[target] = service;
                         target = target.BaseType!;
                     }
-                    while (target is not null && target != typeof(EngineService));
+                    while (!(target is null) && target != typeof(EngineService));
                 }
 
                 // No reason to parallelize this one - it will just create unnecessary overhead.
@@ -506,9 +506,9 @@ namespace Eclipse
 
                 // Sorts everything by the execution/initialization order.
                 await UniTask.WhenAll(
-                    UniTask.Run(() => Array.ForEach(summaries, s => s.preload.Sort(static (a, b) => a.attribute.InvokeOrder.CompareTo(b.attribute.InvokeOrder)))),
-                    UniTask.Run(() => Array.ForEach(summaries, s => s.afterload.Sort(static (a, b) => a.attribute.InvokeOrder.CompareTo(b.attribute.InvokeOrder)))),
-                    UniTask.Run(() => services.Sort(static (a, b) => a.attribute.InitializationOrder.CompareTo(b.attribute.InitializationOrder)))
+                    UniTask.Run(() => Array.ForEach(summaries, s => s.preload.Sort((a, b) => a.attribute.InvokeOrder.CompareTo(b.attribute.InvokeOrder)))),
+                    UniTask.Run(() => Array.ForEach(summaries, s => s.afterload.Sort((a, b) => a.attribute.InvokeOrder.CompareTo(b.attribute.InvokeOrder)))),
+                    UniTask.Run(() => services.Sort((a, b) => a.attribute.InitializationOrder.CompareTo(b.attribute.InitializationOrder)))
                 );
 
                 // Updates summaries with sorted data.
@@ -657,11 +657,11 @@ namespace Eclipse
                     var attribute = type.GetCustomAttribute<ServiceAttribute>();
                     if (attribute == null)
                     {
-                        services.Add(new ServiceSummary(new(), type));
+                        services.Add(new ServiceSummary(new ServiceAttribute(), type));
                     }
                     else
                     {
-                        ServiceSummary summary = new(attribute, type);
+                        ServiceSummary summary = new ServiceSummary(attribute, type);
                         if (attribute.Replace != null)
                         {
                             int length = services.Count;
@@ -699,12 +699,12 @@ namespace Eclipse
                     if (!method.IsStatic) continue;
                     foreach (var attribute in method.GetCustomAttributes<ServicePreloadMethodAttribute>(inherit: false))
                     {
-                        preload.Add(new(attribute, method));
+                        preload.Add(new MethodSummary<ServicePreloadMethodAttribute>(attribute, method));
                     }
 
                     foreach (var attribute in method.GetCustomAttributes<ServiceAfterloadMethodAttribute>(inherit: false))
                     {
-                        afterload.Add(new(attribute, method));
+                        afterload.Add(new MethodSummary<ServiceAfterloadMethodAttribute>(attribute, method));
                     }
                 }
             }
@@ -758,8 +758,8 @@ namespace Eclipse
             {
                 this.attribute = attribute;
                 this.service = service;
-                preload = new(0);
-                afterload = new(0);
+                preload = new List<MethodSummary<ServicePreloadMethodAttribute>>(0);
+                afterload = new List<MethodSummary<ServiceAfterloadMethodAttribute>>(0);
             }
         }
 

@@ -197,36 +197,36 @@ namespace Eclipse.Configuration.Parameters
             Type type = Enum.GetUnderlyingType(typeof(TEnum));
             m_SerializationHandler = type switch
             {
-                Type t when t == typeof(byte) => static (v) => Base64.Byte(Convert.ToByte(v)),
-                Type t when t == typeof(sbyte) => static (v) => Base64.SByte(Convert.ToSByte(v)),
+                Type t when t == typeof(byte) => (v) => Base64.Byte(Convert.ToByte(v)),
+                Type t when t == typeof(sbyte) => (v) => Base64.SByte(Convert.ToSByte(v)),
 
-                Type t when t == typeof(short) => static (v) => Base64.Short(Convert.ToInt16(v)),
-                Type t when t == typeof(ushort) => static (v) => Base64.UShort(Convert.ToUInt16(v)),
+                Type t when t == typeof(short) => (v) => Base64.Short(Convert.ToInt16(v)),
+                Type t when t == typeof(ushort) => (v) => Base64.UShort(Convert.ToUInt16(v)),
 
-                Type t when t == typeof(int) => static (v) => Base64.Int(Convert.ToInt32(v)),
-                Type t when t == typeof(uint) => static (v) => Base64.UInt(Convert.ToUInt32(v)),
+                Type t when t == typeof(int) => (v) => Base64.Int(Convert.ToInt32(v)),
+                Type t when t == typeof(uint) => (v) => Base64.UInt(Convert.ToUInt32(v)),
 
-                Type t when t == typeof(long) => static (v) => Base64.Long(Convert.ToInt64(v)),
-                Type t when t == typeof(ulong) => static (v) => Base64.ULong(Convert.ToUInt64(v)),
+                Type t when t == typeof(long) => (v) => Base64.Long(Convert.ToInt64(v)),
+                Type t when t == typeof(ulong) => (v) => Base64.ULong(Convert.ToUInt64(v)),
 
-                _ => static (v) => throw new NotImplementedException($"Cannot serialize provided enum type '{typeof(TEnum).Name}'"),
+                _ => (v) => throw new NotImplementedException($"Cannot serialize provided enum type '{typeof(TEnum).Name}'"),
             };
 
             m_DeserializationHandler = type switch
             {
-                Type t when t == typeof(byte) => static (str) => (TEnum)Enum.ToObject(typeof(TEnum), Base64.ToByte(str)),
-                Type t when t == typeof(sbyte) => static (str) => (TEnum)Enum.ToObject(typeof(TEnum), Base64.ToSByte(str)),
+                Type t when t == typeof(byte) => (str) => (TEnum)Enum.ToObject(typeof(TEnum), Base64.ToByte(str)),
+                Type t when t == typeof(sbyte) => (str) => (TEnum)Enum.ToObject(typeof(TEnum), Base64.ToSByte(str)),
 
-                Type t when t == typeof(short) => static (str) => (TEnum)Enum.ToObject(typeof(TEnum), Base64.ToShort(str)),
-                Type t when t == typeof(ushort) => static (str) => (TEnum)Enum.ToObject(typeof(TEnum), Base64.ToUShort(str)),
+                Type t when t == typeof(short) => (str) => (TEnum)Enum.ToObject(typeof(TEnum), Base64.ToShort(str)),
+                Type t when t == typeof(ushort) => (str) => (TEnum)Enum.ToObject(typeof(TEnum), Base64.ToUShort(str)),
 
-                Type t when t == typeof(int) => static (str) => (TEnum)Enum.ToObject(typeof(TEnum), Base64.ToInt(str)),
-                Type t when t == typeof(uint) => static (str) => (TEnum)Enum.ToObject(typeof(TEnum), Base64.ToUInt(str)),
+                Type t when t == typeof(int) => (str) => (TEnum)Enum.ToObject(typeof(TEnum), Base64.ToInt(str)),
+                Type t when t == typeof(uint) => (str) => (TEnum)Enum.ToObject(typeof(TEnum), Base64.ToUInt(str)),
 
-                Type t when t == typeof(long) => static (str) => (TEnum)Enum.ToObject(typeof(TEnum), Base64.ToLong(str)),
-                Type t when t == typeof(ulong) => static (str) => (TEnum)Enum.ToObject(typeof(TEnum), Base64.ToULong(str)),
+                Type t when t == typeof(long) => (str) => (TEnum)Enum.ToObject(typeof(TEnum), Base64.ToLong(str)),
+                Type t when t == typeof(ulong) => (str) => (TEnum)Enum.ToObject(typeof(TEnum), Base64.ToULong(str)),
 
-                _ => static (str) => throw new NotImplementedException($"Cannot deserialize '{str}' provided enum type '{typeof(TEnum).Name}'"),
+                _ => (str) => throw new NotImplementedException($"Cannot deserialize '{str}' provided enum type '{typeof(TEnum).Name}'"),
             };
         }
 

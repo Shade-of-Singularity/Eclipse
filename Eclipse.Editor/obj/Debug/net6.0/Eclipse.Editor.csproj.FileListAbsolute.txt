@@ -27,3 +27,5 @@ F:\Unity\Support\Eclipse\Eclipse.Editor\obj\Debug\net6.0\Eclipse.Editor.dll
 F:\Unity\Support\Eclipse\Eclipse.Editor\obj\Debug\net6.0\refint\Eclipse.Editor.dll
 F:\Unity\Support\Eclipse\Eclipse.Editor\obj\Debug\net6.0\Eclipse.Editor.pdb
 F:\Unity\Support\Eclipse\Eclipse.Editor\obj\Debug\net6.0\ref\Eclipse.Editor.dll
+F:\Unity\Support\Eclipse\Eclipse.Editor\bin\Debug\net6.0\Eclipse.xml
+F:\Unity\Support\Eclipse\Eclipse.Editor\obj\Debug\net6.0\Eclipse.Editor.sourcelink.json

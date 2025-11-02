@@ -1,0 +1,16 @@
+F:\Unity\Support\Eclipse\Eclipse\obj\Debug\netstandard2.1\Eclipse.csproj.AssemblyReference.cache
+F:\Unity\Support\Eclipse\Eclipse\obj\Debug\netstandard2.1\Eclipse.GeneratedMSBuildEditorConfig.editorconfig
+F:\Unity\Support\Eclipse\Eclipse\obj\Debug\netstandard2.1\Eclipse.AssemblyInfoInputs.cache
+F:\Unity\Support\Eclipse\Eclipse\obj\Debug\netstandard2.1\Eclipse.AssemblyInfo.cs
+F:\Unity\Support\Eclipse\Eclipse\obj\Debug\netstandard2.1\Eclipse.csproj.CoreCompileInputs.cache
+F:\Unity\Support\Eclipse\Eclipse\obj\Debug\netstandard2.1\Eclipse.sourcelink.json
+F:\Unity\Support\Eclipse\Eclipse\bin\Debug\netstandard2.1\Eclipse.deps.json
+F:\Unity\Support\Eclipse\Eclipse\bin\Debug\netstandard2.1\Eclipse.dll
+F:\Unity\Support\Eclipse\Eclipse\bin\Debug\netstandard2.1\Eclipse.pdb
+F:\Unity\Support\Eclipse\Eclipse\bin\Debug\netstandard2.1\Eclipse.xml
+F:\Unity\Support\Eclipse\Eclipse\bin\Debug\netstandard2.1\UnityEngine.dll
+F:\Unity\Support\Eclipse\Eclipse\bin\Debug\netstandard2.1\UnityEngine.xml
+F:\Unity\Support\Eclipse\Eclipse\obj\Debug\netstandard2.1\Eclipse.csproj.Up2Date
+F:\Unity\Support\Eclipse\Eclipse\obj\Debug\netstandard2.1\Eclipse.dll
+F:\Unity\Support\Eclipse\Eclipse\obj\Debug\netstandard2.1\Eclipse.xml
+F:\Unity\Support\Eclipse\Eclipse\obj\Debug\netstandard2.1\Eclipse.pdb

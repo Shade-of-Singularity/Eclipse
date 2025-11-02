@@ -98,7 +98,7 @@ namespace Eclipse.Serialization
 
             value2 >>= 6;
 
-            return new(stackalloc char[2]
+            return new string(stackalloc char[2]
             {
                 toBase[value2], toBase[value1]
             });
@@ -253,7 +253,7 @@ namespace Eclipse.Serialization
             value5 >>= 24;
             value6 >>= 30;
 
-            return new(stackalloc char[6]
+            return new string(stackalloc char[6]
             {
                 toBase[value6], toBase[value5], toBase[value4], toBase[value3], toBase[value2], toBase[value1]
             });
@@ -388,7 +388,7 @@ namespace Eclipse.Serialization
             value10 >>= 54;
             value11 >>= 60;
 
-            return new(stackalloc char[11]
+            return new string (stackalloc char[11]
             {
                 toBase[value11], toBase[value10], toBase[value9], toBase[value8], toBase[value7], toBase[value6],
                 toBase[value5], toBase[value4], toBase[value3], toBase[value2], toBase[value1],

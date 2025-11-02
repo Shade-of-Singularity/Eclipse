@@ -87,7 +87,7 @@ namespace Eclipse.Configuration.Categorization
         // Static Fields:
 
         // Encapsulated Fields:
-        private readonly List<Parameter> m_Parameters = new();
+        private readonly List<Parameter> m_Parameters = new List<Parameter>();
         private bool m_Visible;
         private string m_Name;
 

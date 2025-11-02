@@ -140,12 +140,12 @@ namespace Eclipse.Structs
                 }
                 else
                 {
-                    return new(order, visible, name);
+                    return new FullCategory(order, visible, name);
                 }
             }
             else
             {
-                return new(order, visible, name);
+                return new FullCategory(order, visible, name);
             }
         }
 
@@ -158,7 +158,7 @@ namespace Eclipse.Structs
             }
             else
             {
-                return new(Order, Visible, name);
+                return new FullCategory(Order, Visible, name);
             }
         }
 
@@ -170,7 +170,7 @@ namespace Eclipse.Structs
             }
             else
             {
-                return new(order, Visible, Name);
+                return new FullCategory(order, Visible, Name);
             }
         }
 
@@ -182,7 +182,7 @@ namespace Eclipse.Structs
             }
             else
             {
-                return new(Order, visible, Name);
+                return new FullCategory(Order, visible, Name);
             }
         }
 

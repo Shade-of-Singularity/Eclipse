@@ -23,7 +23,7 @@ namespace Eclipse.Configuration.Storages
         /// <summary>
         /// Static instance of an <see cref="IParameterStorage"/> implementation.
         /// </summary>
-        public static readonly T Instance = new();
+        public static readonly T Instance = new T();
 
         /// <inheritdoc cref="IParameterStorage.Load(Parameter)"/>
         public abstract void Load(Parameter parameter);
