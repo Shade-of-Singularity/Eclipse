@@ -1,10 +1,18 @@
 # Eclipse
-Unity Service-based moddable engine for any game or application.
-Engine is being developed for a specific project. Expect this system to get even more generalized once we start preparing Eclipse for our next projects.
+Is a Service-based moddable Unity Foundation Library for any game or application.
+It should be used as core for your application.
+
+It provides a way for you or modders to modify initialization orders of different systems to made modding easier.
+Or depend on a specific order to initialize its own systems in the right moment.
+Provides optional multi-threaded initialization system for thread-safe functions.
+
+Engine is being developed for a specific project.
+Expect this system to get even more generalized once we start preparing Eclipse for our next projects.
 
 ## Supported builds:
 - Unity v6.0 (LTS)
-Everything else (down to Unity v2021 LTS) will eventually get its own support as well.
+- Unity v2023.X (Not tested, but should work)
+Everything else (down to Unity v2021 LTS) might be supported as well, but if not - will get supported later (hit me up if you need me to speed-up).
 
 ## LTS Support
 Eclipse was initially built for the v6.0 and is being developed as such.
