@@ -15,6 +15,6 @@ Shouldn't be that hard (clueless)
 
 ## Structure
 Main projects (Eclipse and Eclipse.Editor) are built for the **lowest version of .NET**.
-As of right now, it is **.NET 6.0**.
+As of right now, it is **.NET Standard 2.1**.
 Projects for other versions will simply reference code from those projects to generate updated version.
-(This solves problems between .NET Framework and .NET X.X, if encountered)
+(This solves problems between .NET Framework and any other .NET version, if encountered)
