@@ -941,6 +941,22 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
+        <member name="T:Eclipse.EclipseConfiguration">
+            <summary>
+            Special configuration file that will be manually loaded-in from in-game resources.
+            Used to, for example, specify specific assemblies that has to be analyzed when engine starts.
+            </summary>
+            <remarks>
+            (TODO) Main Unity assembly is automatically added to the list.
+            </remarks>
+        </member>
+        <member name="F:Eclipse.EclipseConfiguration.AssemblyNames">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Public Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
         <member name="F:Eclipse.Engine.LogName">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .

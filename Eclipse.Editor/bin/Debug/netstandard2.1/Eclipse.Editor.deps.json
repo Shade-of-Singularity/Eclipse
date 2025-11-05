@@ -1,0 +1,253 @@
+{
+  "runtimeTarget": {
+    "name": ".NETStandard,Version=v2.1/",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETStandard,Version=v2.1": {},
+    ".NETStandard,Version=v2.1/": {
+      "Eclipse.Editor/1.0.0": {
+        "dependencies": {
+          "Eclipse": "1.0.0",
+          "UniTask": "2.5.10",
+          "UnityEditor": "0.0.0.0",
+          "UnityEngine": "0.0.0.0"
+        },
+        "runtime": {
+          "Eclipse.Editor.dll": {}
+        }
+      },
+      "System.Runtime.CompilerServices.Unsafe/4.5.3": {
+        "runtime": {
+          "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll": {
+            "assemblyVersion": "4.0.4.1",
+            "fileVersion": "4.6.28619.1"
+          }
+        }
+      },
+      "System.Threading.Tasks.Extensions/4.5.4": {
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "4.5.3"
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.Threading.Tasks.Extensions.dll": {
+            "assemblyVersion": "4.2.0.1",
+            "fileVersion": "4.6.28619.1"
+          }
+        }
+      },
+      "UniTask/2.5.10": {
+        "dependencies": {
+          "System.Threading.Tasks.Extensions": "4.5.4"
+        },
+        "runtime": {
+          "lib/netstandard2.1/UniTask.dll": {
+            "assemblyVersion": "2.5.10.0",
+            "fileVersion": "2.5.10.0"
+          }
+        }
+      },
+      "Eclipse/1.0.0": {
+        "dependencies": {
+          "UniTask": "2.5.10"
+        },
+        "runtime": {
+          "Eclipse.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "UnityEditor/0.0.0.0": {
+        "runtime": {
+          "UnityEditor.dll": {
+            "assemblyVersion": "0.0.0.0",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "UnityEngine/0.0.0.0": {
+        "runtime": {
+          "UnityEngine.dll": {
+            "assemblyVersion": "0.0.0.0",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "PlayerBuildProgramLibrary.Data/0.0.0.0": {
+        "runtime": {
+          "PlayerBuildProgramLibrary.Data.dll": {
+            "assemblyVersion": "0.0.0.0",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "Unity.Cecil/0.10.0.0": {
+        "runtime": {
+          "Unity.Cecil.dll": {
+            "assemblyVersion": "0.10.0.0",
+            "fileVersion": "0.10.0.0"
+          }
+        }
+      },
+      "Bee.BeeDriver2/1.0.0.0": {
+        "runtime": {
+          "Bee.BeeDriver2.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Bee.BinLog/1.0.0.0": {
+        "runtime": {
+          "Bee.BinLog.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Bee.TinyProfiler2/1.0.0.0": {
+        "runtime": {
+          "Bee.TinyProfiler2.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "System.CodeDom/6.0.0.0": {
+        "runtime": {
+          "System.CodeDom.dll": {
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "6.0.21.52210"
+          }
+        }
+      },
+      "ExCSS.Unity/2.0.6.0": {
+        "runtime": {
+          "ExCSS.Unity.dll": {
+            "assemblyVersion": "2.0.6.0",
+            "fileVersion": "2.0.6.0"
+          }
+        }
+      },
+      "Unity.CompilationPipeline.Common/2022.2.0.1": {
+        "runtime": {
+          "Unity.CompilationPipeline.Common.dll": {
+            "assemblyVersion": "2022.2.0.1",
+            "fileVersion": "2022.2.0.1"
+          }
+        }
+      },
+      "ScriptCompilationBuildProgram.Data/0.0.0.0": {
+        "runtime": {
+          "ScriptCompilationBuildProgram.Data.dll": {
+            "assemblyVersion": "0.0.0.0",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "BeeBuildProgramCommon.Data/0.0.0.0": {
+        "runtime": {
+          "BeeBuildProgramCommon.Data.dll": {
+            "assemblyVersion": "0.0.0.0",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Eclipse.Editor/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "System.Runtime.CompilerServices.Unsafe/4.5.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3TIsJhD1EiiT0w2CcDMN/iSSwnNnsrnbzeVHSKkaEgV85txMprmuO+Yq2AdSbeVGcg28pdNDTPK87tJhX7VFHw==",
+      "path": "system.runtime.compilerservices.unsafe/4.5.3",
+      "hashPath": "system.runtime.compilerservices.unsafe.4.5.3.nupkg.sha512"
+    },
+    "System.Threading.Tasks.Extensions/4.5.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-zteT+G8xuGu6mS+mzDzYXbzS7rd3K6Fjb9RiZlYlJPam2/hU7JCBZBVEcywNuR+oZ1ncTvc/cq0faRr3P01OVg==",
+      "path": "system.threading.tasks.extensions/4.5.4",
+      "hashPath": "system.threading.tasks.extensions.4.5.4.nupkg.sha512"
+    },
+    "UniTask/2.5.10": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Ykx4+upma5Mg9Y4RhiN04vWh7ignHwJkyyWXPYJODl0fE39cHNKie//9pbheRmtJV8fEfnFAeRDlyfMZQ6UjjQ==",
+      "path": "unitask/2.5.10",
+      "hashPath": "unitask.2.5.10.nupkg.sha512"
+    },
+    "Eclipse/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "UnityEditor/0.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "UnityEngine/0.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "PlayerBuildProgramLibrary.Data/0.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Unity.Cecil/0.10.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Bee.BeeDriver2/1.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Bee.BinLog/1.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Bee.TinyProfiler2/1.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "System.CodeDom/6.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ExCSS.Unity/2.0.6.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Unity.CompilationPipeline.Common/2022.2.0.1": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ScriptCompilationBuildProgram.Data/0.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "BeeBuildProgramCommon.Data/0.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

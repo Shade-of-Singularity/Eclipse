@@ -322,6 +322,38 @@ namespace Eclipse
                 // Adds core assembly to the initialization root.
                 EnqueueAssemblies(Assembly.GetAssembly(typeof(Engine)));
 
+                // Loads-in user-defined assemblies.
+                // TODO: Add a way to manually enlist additional assemblies using .asmdef files directly or in another way.
+                var eclipses = Resources.LoadAll<EclipseConfiguration>("");
+                if (eclipses.Length == 0) Debug.LogError($"No {nameof(EclipseConfiguration)} was found in the resources. Player might not load fully.");
+                else
+                {
+                    if (eclipses.Length >= 2)
+                    {
+                        Debug.LogWarning($"Having more than one {nameof(EclipseConfiguration)} is not allowed. The first file will be used.");
+                    }
+
+                    var eclipse = eclipses[0];
+                    foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                    {
+                        var name = assembly.GetName().Name;
+                        foreach (var expectation in eclipse.AssemblyNames)
+                        {
+                            if (string.Equals(name, expectation, StringComparison.Ordinal))
+                            {
+                                EnqueueAssemblies(assembly);
+                                goto NextItem;
+                            }
+                        }
+
+                        NextItem:
+                        continue;
+                    }
+                }
+
+                // (TODO) Analyzes and (TODO) loads-in mod's assemblies.
+                // (Note: With BepInEx, here game will stop initialization, wait for the UI to load-in, and will warn player about the danger of BepInEx modding (?))
+                // Hope people wont get too scared, but modding support was all made for the security purposes.
                 if (Application.isMobilePlatform || Application.isConsolePlatform)
                 {
                     Debug.LogWarning($"{LogNameBraced} Just a note to you - modding is not supported on Mobile platforms and Console platforms yet.");
