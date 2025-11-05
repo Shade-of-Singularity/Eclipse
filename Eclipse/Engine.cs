@@ -15,6 +15,7 @@
 /// ]]>
 
 using Cysharp.Threading.Tasks;
+using Eclipse.Structs;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -24,6 +25,9 @@ using UnityEngine;
 
 namespace Eclipse
 {
+    /// <summary>
+    /// Main class for <see cref="Eclipse"/> Foundation Library
+    /// </summary>
     public static class Engine
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -31,7 +35,14 @@ namespace Eclipse
         /// .                                                 Constants
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Log name of this class for when it logs anything. Used for identifying what exactly warns you about an exception.
+        /// </summary>
         public const string LogName = nameof(Eclipse);
+
+        /// <summary>
+        /// Same as <see cref="LogName"/> but this square braces.
+        /// </summary>
         public const string LogNameBraced = "[" + LogName + "]";
 
 
@@ -45,6 +56,9 @@ namespace Eclipse
         // Delegates:
 
         // Events:
+        /// <summary>
+        /// Event that is fired when <see cref="IsInitialized"/> is set to '<c>true</c>'
+        /// </summary>
         public static event Action OnEngineInitialized
         {
             remove
@@ -75,7 +89,7 @@ namespace Eclipse
         }
 
         /// <summary>
-        /// Called when every existing instance of <see cref="EngineService"/> and similar is fully unloaded.
+        /// Called when every existing instance of <see cref="EngineService"/> and similar is fully unloaded. (e.g. on <see cref="Unload(UnloadSettings)"/>)
         /// </summary>
         /// <remarks>
         /// Used to reset static references to the old services and configuration classes, as to prevent memory leaks on mod reloading.
@@ -83,7 +97,23 @@ namespace Eclipse
         public static event Action? OnEngineResetting;
 
         // Properties:
+        /// <summary>
+        /// Collection of all services.
+        /// </summary>
+        /// <remarks>
+        /// All non-overwritten services are constructed (from .ctor) before <see cref="EngineService.Initialize"/> is run.
+        /// So it is safe to reference this collection from <see cref="EngineService.Initialize"/>.
+        /// (However, in this case, some services might not be initialized yet.)
+        /// </remarks>
         public static IReadOnlyCollection<EngineService> Services => m_Services.Values;
+
+        /// <summary>
+        /// Whether engine initialized: all mods are checked and loaded, assemblies as well, services are initialized and so on.
+        /// </summary>
+        /// <remarks>
+        /// Will be also set to 'true' when initialization failed, to prevent a lot of reloads. (Note: not right now)
+        /// </remarks>
+        public static bool IsInitialized => m_IsInitialized;
 
 
 
@@ -94,8 +124,6 @@ namespace Eclipse
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         // Static Fields:
-        /// TODO: References the entire tree of parents of given service to itself, so retrieving,
-        /// So retrieving, for example, replaced <see cref="Localization.LocalizationService"/> will yield you a reference of a replacement.
         private static readonly Dictionary<Type, EngineService> m_Services = new Dictionary<Type, EngineService>();
         private static readonly List<Assembly> m_Assemblies = new List<Assembly>();
 
@@ -148,6 +176,12 @@ namespace Eclipse
             }
         }
 
+        /// <summary>
+        /// Returns a service, associated with a given type (<typeparamref name="T"/>), or default value (<paramref name="def"/>).
+        /// </summary>
+        /// <typeparam name="T">Type of the service to retrieve.</typeparam>
+        /// <param name="def">Default value to return.</param>
+        /// <returns>Either a requested service, or its version, overwritten by another mod.</returns>
         public static T? GetOrDefault<T>(T? def = default) where T : EngineService
         {
             if (m_Services.TryGetValue(typeof(T), out EngineService? service))
@@ -167,6 +201,12 @@ namespace Eclipse
             }
         }
 
+        /// <summary>
+        /// Tries to retrieve <see cref="EngineService"/> associated with given type (<typeparamref name="T"/>).
+        /// </summary>
+        /// <typeparam name="T">Target type of <see cref="EngineService"/> to retrieve.</typeparam>
+        /// <param name="service">Retrieved <see cref="EngineService"/> or null.</param>
+        /// <returns>'<c>true</c>' if service was found. Otherwise '<c>false</c>'.</returns>
         public static bool TryGet<T>([NotNullWhen(true)] out T? service) where T : EngineService
         {
             if (m_Services.TryGetValue(typeof(T), out EngineService? finding) && finding is T result)
@@ -234,29 +274,27 @@ namespace Eclipse
         /// .                                             Initialization API
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <inheritdoc cref="Reload(UnloadSettings)"/>
+        public static async UniTask Reload() => await Reload(UnloadSettings.ReloadSettings);
+
         /// <summary>
         /// Reloads entire engine from the ground-up.
         /// </summary>
-        public static async UniTask Reload()
+        /// <param name="unloading"><see cref="UnloadSettings"/> to use with <see cref="Unload(UnloadSettings)"/></param>
+        public static async UniTask Reload(UnloadSettings unloading)
         {
-            ResetState();
-            LoadModsAndAssemblies();
-            await InitializeEngine();
+            await Unload(unloading);
+            await Initialize();
         }
 
-#if UNITY_EDITOR
-        [UnityEditor.InitializeOnLoadMethod]
-        private static async UniTask EditorInitialize()
-        {
-            // Called in editor on domain reloading.
-            Debug.LogWarning($"Engine initializes in Editor. Application.isPlaying: {Application.isPlaying}");
-            await Reload();
-        }
-#endif
-
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-        private static async UniTask RuntimeInitialize()
+        /// <summary>
+        /// Initializes the entire engine: <see cref="EngineService"/>s, <see cref="Modding.Mod"/>s, and so on.
+        /// </summary>
+        /// <remarks>
+        /// (TODO) Use <see cref="Reload()"/> instead to make a "shallow reload" - with all the same configurations,
+        /// but without Textures and other assets being fully unloaded from the memory.
+        /// </remarks>
+        public static async UniTask Initialize()
         {
             // TODO: Decide what to do with service unloading when in the Editor.
             //  Maybe provide special UNITY_EDITOR-only methods?
@@ -264,13 +302,38 @@ namespace Eclipse
             //  Although, a lot of it will be gate-kept behind Application.isEditor anyway.
             Application.quitting += ResetState;
 
-#if !UNITY_EDITOR
-            // Called in a compiled game.
-            Debug.LogWarning($"Engine initializes at Runtime. Application.isPlaying: {Application.isPlaying}");
-            await Reload();
-#else
+            if (Application.isEditor)
+            {
+                Debug.LogWarning($"Engine initializes in the Editor. Application.isPlaying: {Application.isPlaying}");
+            }
+            else
+            {
+                Debug.LogWarning($"Engine initializes at Runtime. Application.isPlaying: {Application.isPlaying}");
+            }
+
+            await LoadModsAndAssemblies();
+            await InitializeEngine();
+        }
+
+        /// <inheritdoc cref="Unload(UnloadSettings)"/>
+        public static async UniTask Unload() => await Unload(UnloadSettings.UnloadEverything);
+
+        /// <summary>
+        /// Unloads entire engine, all initialized services and mods from the memory.
+        /// </summary>
+        /// <remarks>
+        /// (TODO) Use <see cref="Reload()"/> instead to make a "shallow reload" - with all the same configurations,
+        /// but without Textures and other assets being fully unloaded from the memory.
+        /// </remarks>
+        /// <param name="settings">Settings to use for unloading.</param>
+        public static async UniTask Unload(UnloadSettings settings)
+        {
+            ResetState();
+            GC.Collect();
+
+            // TODO: Still decide what to do with service unloading in the editor.
+            Application.quitting -= ResetState;
             await UniTask.CompletedTask;
-#endif
         }
 
 
@@ -278,7 +341,61 @@ namespace Eclipse
 
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
-        /// .                                            Fetching and Loading
+        /// .                                       Unity Initialization Callbacks
+        /// .                                TODO: Add Editor-time initialization methods.
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void OnSubsystemRegistration()
+        {
+            if (EclipseConfiguration.Instance.InitializationType == EclipseInitializationType.SubsystemRegistration)
+            {
+                Initialize().Forget();
+            }
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnAfterAssembliesLoaded()
+        {
+            if (EclipseConfiguration.Instance.InitializationType == EclipseInitializationType.AfterAssembliesLoaded)
+            {
+                Initialize().Forget();
+            }
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
+        static void OnBeforeSplashScreen()
+        {
+            if (EclipseConfiguration.Instance.InitializationType == EclipseInitializationType.BeforeSplashScreen)
+            {
+                Initialize().Forget();
+            }
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        static void OnBeforeSceneLoad()
+        {
+            if (EclipseConfiguration.Instance.InitializationType == EclipseInitializationType.BeforeSceneLoad)
+            {
+                Initialize().Forget();
+            }
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        static void OnAfterSceneLoad()
+        {
+            if (EclipseConfiguration.Instance.InitializationType == EclipseInitializationType.AfterSceneLoad)
+            {
+                Initialize().Forget();
+            }
+        }
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                                 Unloading
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
@@ -313,7 +430,15 @@ namespace Eclipse
             m_IsInitialized = false;
         }
 
-        private static void LoadModsAndAssemblies()
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                            Fetching and Loading
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        private static async UniTask LoadModsAndAssemblies()
         {
             Debug.Log($"{LogNameBraced} Executing '{nameof(LoadModsAndAssemblies)}'");
 
@@ -322,33 +447,21 @@ namespace Eclipse
                 // Adds core assembly to the initialization root.
                 EnqueueAssemblies(Assembly.GetAssembly(typeof(Engine)));
 
-                // Loads-in user-defined assemblies.
-                // TODO: Add a way to manually enlist additional assemblies using .asmdef files directly or in another way.
-                var eclipses = Resources.LoadAll<EclipseConfiguration>("");
-                if (eclipses.Length == 0) Debug.LogError($"No {nameof(EclipseConfiguration)} was found in the resources. Player might not load fully.");
-                else
+                // Tries to load editor-defined assemblies.
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
                 {
-                    if (eclipses.Length >= 2)
+                    var name = assembly.GetName().Name;
+                    foreach (var expectation in EclipseConfiguration.Instance.TargetAssemblyNames)
                     {
-                        Debug.LogWarning($"Having more than one {nameof(EclipseConfiguration)} is not allowed. The first file will be used.");
-                    }
-
-                    var eclipse = eclipses[0];
-                    foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-                    {
-                        var name = assembly.GetName().Name;
-                        foreach (var expectation in eclipse.AssemblyNames)
+                        if (string.Equals(name, expectation, StringComparison.Ordinal))
                         {
-                            if (string.Equals(name, expectation, StringComparison.Ordinal))
-                            {
-                                EnqueueAssemblies(assembly);
-                                goto NextItem;
-                            }
+                            EnqueueAssemblies(assembly);
+                            goto NextItem;
                         }
-
-                        NextItem:
-                        continue;
                     }
+
+                    NextItem:
+                    continue;
                 }
 
                 // (TODO) Analyzes and (TODO) loads-in mod's assemblies.
@@ -383,6 +496,7 @@ namespace Eclipse
             }
 
             Harmony_AfterLoadingMods();
+            await UniTask.CompletedTask;
         }
 
         /// <summary>

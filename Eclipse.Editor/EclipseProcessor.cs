@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEditor;
+using UnityEditor.Compilation;
 using UnityEngine;
 
 namespace Eclipse.Editor
@@ -98,18 +99,29 @@ namespace Eclipse.Editor
 
             // We update the list of assemblies to analyze.
             // TODO: Only analyze the assembly if it actually present in the game. Use name only as a look-up reference.
-            var assemblies = UnityEditor.Compilation.CompilationPipeline.GetAssemblies(UnityEditor.Compilation.AssembliesType.Player);
-            var result = configuration.AssemblyNames;
-            if (result.Length != assemblies.Length)
-            {
-                result = new string[assemblies.Length];
-            }
-
+            var assemblies = CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies);
+            var names = new List<string>(assemblies.Length);
             for (int i = 0; i < assemblies.Length; i++)
             {
-                result[i] = assemblies[i].name;
-                Debug.Log("Assembly name: " + result[i]);
+                var assembly = assemblies[i];
+                if (string.IsNullOrWhiteSpace(assembly.rootNamespace))
+                {
+                    // Root is empty in Unity's DLLs for some reason.
+                    // I believe that's because you don't have direct access to their assemblies at compile time?
+                    // Whatever the reason - we can use it to filter-out assemblies that we don't need to process.
+                    continue;
+                }
+
+                names.Add(assembly.name);
             }
+
+            if (configuration.FoundAssemblyNames.Length != names.Count)
+            {
+                configuration.FoundAssemblyNames = new string[names.Count];
+            }
+
+            names.CopyTo(configuration.FoundAssemblyNames);
+            EditorUtility.SetDirty(configuration);
         }
 
 
@@ -130,6 +142,5 @@ namespace Eclipse.Editor
         /// .                                               Private Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-
     }
 }

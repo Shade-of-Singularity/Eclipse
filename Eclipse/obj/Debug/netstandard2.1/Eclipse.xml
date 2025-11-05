@@ -433,6 +433,91 @@
             </summary>
             <param name="raw">Raw data to deserialize.</param>
         </member>
+        <member name="T:Eclipse.Configuration.ImbeddedConfiguration`1">
+            <summary>
+            Base class for all configuration files that are imbedded into the game.
+            Used by <see cref="N:Eclipse"/> to retrieve settings that are used before <see cref="M:Eclipse.Engine.Initialize"/> happens.
+            </summary>
+            <typeparam name="T">Type of your configuration file.</typeparam>
+        </member>
+        <member name="P:Eclipse.Configuration.ImbeddedConfiguration`1.Instance">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Instance of the <see cref="T:Eclipse.Configuration.ImbeddedConfiguration"/> file, loaded from <see cref="T:UnityEngine.Resources"/>.
+            </summary>
+        </member>
+        <member name="F:Eclipse.Configuration.ImbeddedConfiguration`1.m_Instance">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Static Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.Configuration.ImbeddedConfiguration">
+            <summary>
+            Base class for generic <see cref="T:Eclipse.Configuration.ImbeddedConfiguration`1"/> Unity <see cref="T:UnityEngine.Resources"/>-based configuration class.
+            </summary>
+        </member>
+        <member name="F:Eclipse.Configuration.ImbeddedConfiguration.m_Configurations">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Static Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.ImbeddedConfiguration.GetOrNew``1">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Static Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Retrieves instance of <see cref="T:Eclipse.Configuration.ImbeddedConfiguration"/> of a given type (<typeparamref name="T"/>).
+            If instance do not exist in <see cref="T:UnityEngine.Resources"/> - creates new instance with <see cref="M:UnityEngine.ScriptableObject.CreateInstance``1"/>.
+            </summary>
+            <remarks>
+            Newly created value will also be automatically associated with given <typeparamref name="T"/>, as to not create new instance on each call.
+            </remarks>
+            <returns>
+            Existing instance of <see cref="T:Eclipse.Configuration.ImbeddedConfiguration"/> from <see cref="T:UnityEngine.Resources"/>
+            or new instance created with <see cref="M:UnityEngine.ScriptableObject.CreateInstance``1"/> method.
+            </returns>
+        </member>
+        <member name="M:Eclipse.Configuration.ImbeddedConfiguration.GetOrDefault``1(``0)">
+            <summary>
+            Retrieves instance of <see cref="T:Eclipse.Configuration.ImbeddedConfiguration"/> of a given type (<typeparamref name="T"/>).
+            </summary>
+            <returns>
+            Existing instance of <see cref="T:Eclipse.Configuration.ImbeddedConfiguration"/> from <see cref="T:UnityEngine.Resources"/>
+            or provided default value (<paramref name="def"/>).
+            </returns>
+        </member>
+        <member name="M:Eclipse.Configuration.ImbeddedConfiguration.GetOrDefault``1(System.Func{``0})">
+            <summary>
+            Retrieves instance of <see cref="T:Eclipse.Configuration.ImbeddedConfiguration"/> of a given type (<typeparamref name="T"/>).
+            </summary>
+            <returns>
+            Existing instance of <see cref="T:Eclipse.Configuration.ImbeddedConfiguration"/> from <see cref="T:UnityEngine.Resources"/>.
+            If instance fo not exist - calls <paramref name="def"/> instance provider function.
+            </returns>
+        </member>
+        <member name="M:Eclipse.Configuration.ImbeddedConfiguration.TryGet``1(``0@)">
+            <summary>
+            Tries to retrieve <see cref="T:Eclipse.Configuration.ImbeddedConfiguration"/> file from <see cref="T:UnityEngine.Resources"/>.
+            </summary>
+            <typeparam name="T">Type of your configuration class.</typeparam>
+            <param name="configuration">Configuration file retrieved from <see cref="T:UnityEngine.Resources"/> or <c>null</c>.</param>
+            <returns>'<c>true</c>' when file was found and <paramref name="configuration"/> variable was set. '<c>false</c>' if otherwise.</returns>
+        </member>
+        <member name="M:Eclipse.Configuration.ImbeddedConfiguration.Initialize">
+            <summary>
+            Finds all <see cref="T:Eclipse.Configuration.ImbeddedConfiguration"/> files in <see cref="T:UnityEngine.Resources"/> and associates them with their types in cache.
+            </summary>
+        </member>
         <member name="T:Eclipse.Configuration.Parameters.AbstractParameter`1">
             <summary>
             Parameter for the settings of the game.
@@ -950,12 +1035,52 @@
             (TODO) Main Unity assembly is automatically added to the list.
             </remarks>
         </member>
-        <member name="F:Eclipse.EclipseConfiguration.AssemblyNames">
+        <member name="P:Eclipse.EclipseConfiguration.TargetAssemblyNames">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            [Cached] List of all assembly names (see also: <see cref="P:System.Reflection.AssemblyName.Name"/>),
+            with <see cref="F:Eclipse.EclipseConfiguration.ExcludedAssemblyNames"/> excluded from the list.
+            </summary>
+        </member>
+        <member name="F:Eclipse.EclipseConfiguration.InitializationType">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                                Public Fields
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            When <see cref="T:Eclipse.Engine"/> should be automatically initialized.
+            </summary>
+            <remarks>
+            Set to <see cref="F:Eclipse.Structs.EclipseInitializationType.Manual"/> to prevent any automatic initialization and to handle it manually from your code.
+            (TODO) Alternatively, you can use special MonoBehaviours for initializing.
+            </remarks>
+        </member>
+        <member name="F:Eclipse.EclipseConfiguration.FoundAssemblyNames">
+            <summary>
+            List of names to all <see cref="T:System.Reflection.Assembly"/> files to analyze.
+            </summary>
+        </member>
+        <member name="F:Eclipse.EclipseConfiguration.ExcludedAssemblyNames">
+            <summary>
+            List of all assemblies to exclude from analysis on initialization.
+            </summary>
+        </member>
+        <member name="F:Eclipse.EclipseConfiguration.ProcessedAssemblies">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.Engine">
+            <summary>
+            Main class for <see cref="N:Eclipse"/> Foundation Library
+            </summary>
         </member>
         <member name="F:Eclipse.Engine.LogName">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -963,25 +1088,52 @@
             .                                                 Constants
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Log name of this class for when it logs anything. Used for identifying what exactly warns you about an exception.
+            </summary>
+        </member>
+        <member name="F:Eclipse.Engine.LogNameBraced">
+            <summary>
+            Same as <see cref="F:Eclipse.Engine.LogName"/> but this square braces.
+            </summary>
         </member>
         <member name="E:Eclipse.Engine.OnEngineInitialized">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                              Public Properties
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Event that is fired when <see cref="P:Eclipse.Engine.IsInitialized"/> is set to '<c>true</c>'
+            </summary>
         </member>
         <member name="E:Eclipse.Engine.OnEngineResetting">
             <summary>
-            Called when every existing instance of <see cref="T:Eclipse.EngineService"/> and similar is fully unloaded.
+            Called when every existing instance of <see cref="T:Eclipse.EngineService"/> and similar is fully unloaded. (e.g. on <see cref="M:Eclipse.Engine.Unload(Eclipse.Structs.UnloadSettings)"/>)
             </summary>
             <remarks>
             Used to reset static references to the old services and configuration classes, as to prevent memory leaks on mod reloading.
             </remarks>
         </member>
+        <member name="P:Eclipse.Engine.Services">
+            <summary>
+            Collection of all services.
+            </summary>
+            <remarks>
+            All non-overwritten services are constructed (from .ctor) before <see cref="M:Eclipse.EngineService.Initialize"/> is run.
+            So it is safe to reference this collection from <see cref="M:Eclipse.EngineService.Initialize"/>.
+            (However, in this case, some services might not be initialized yet.)
+            </remarks>
+        </member>
+        <member name="P:Eclipse.Engine.IsInitialized">
+            <summary>
+            Whether engine initialized: all mods are checked and loaded, assemblies as well, services are initialized and so on.
+            </summary>
+            <remarks>
+            Will be also set to 'true' when initialization failed, to prevent a lot of reloads. (Note: not right now)
+            </remarks>
+        </member>
         <member name="F:Eclipse.Engine.m_Services">
-            TODO: References the entire tree of parents of given service to itself, so retrieving,
-            So retrieving, for example, replaced <see cref="!:Localization.LocalizationService"/> will yield you a reference of a replacement.
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
         <member name="M:Eclipse.Engine.GetOrThrow``1">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -1004,6 +1156,22 @@
             Use '<see cref="M:Eclipse.Engine.TryGet``1(``0@)"/>' or '<see cref="M:Eclipse.Engine.GetOrDefault``1(``0)"/>' if you need to handle missing services more gracefully.
             </remarks>
         </member>
+        <member name="M:Eclipse.Engine.GetOrDefault``1(``0)">
+            <summary>
+            Returns a service, associated with a given type (<typeparamref name="T"/>), or default value (<paramref name="def"/>).
+            </summary>
+            <typeparam name="T">Type of the service to retrieve.</typeparam>
+            <param name="def">Default value to return.</param>
+            <returns>Either a requested service, or its version, overwritten by another mod.</returns>
+        </member>
+        <member name="M:Eclipse.Engine.TryGet``1(``0@)">
+            <summary>
+            Tries to retrieve <see cref="T:Eclipse.EngineService"/> associated with given type (<typeparamref name="T"/>).
+            </summary>
+            <typeparam name="T">Target type of <see cref="T:Eclipse.EngineService"/> to retrieve.</typeparam>
+            <param name="service">Retrieved <see cref="T:Eclipse.EngineService"/> or null.</param>
+            <returns>'<c>true</c>' if service was found. Otherwise '<c>false</c>'.</returns>
+        </member>
         <member name="M:Eclipse.Engine.SetInitialized">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
@@ -1017,14 +1185,47 @@
             .                                             Initialization API
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <inheritdoc cref="M:Eclipse.Engine.Reload(Eclipse.Structs.UnloadSettings)"/>
+        </member>
+        <member name="M:Eclipse.Engine.Reload(Eclipse.Structs.UnloadSettings)">
             <summary>
             Reloads entire engine from the ground-up.
             </summary>
+            <param name="unloading"><see cref="T:Eclipse.Structs.UnloadSettings"/> to use with <see cref="M:Eclipse.Engine.Unload(Eclipse.Structs.UnloadSettings)"/></param>
+        </member>
+        <member name="M:Eclipse.Engine.Initialize">
+            <summary>
+            Initializes the entire engine: <see cref="T:Eclipse.EngineService"/>s, <see cref="T:Eclipse.Modding.Mod"/>s, and so on.
+            </summary>
+            <remarks>
+            (TODO) Use <see cref="M:Eclipse.Engine.Reload"/> instead to make a "shallow reload" - with all the same configurations,
+            but without Textures and other assets being fully unloaded from the memory.
+            </remarks>
+        </member>
+        <member name="M:Eclipse.Engine.Unload">
+            <inheritdoc cref="M:Eclipse.Engine.Unload(Eclipse.Structs.UnloadSettings)"/>
+        </member>
+        <member name="M:Eclipse.Engine.Unload(Eclipse.Structs.UnloadSettings)">
+            <summary>
+            Unloads entire engine, all initialized services and mods from the memory.
+            </summary>
+            <remarks>
+            (TODO) Use <see cref="M:Eclipse.Engine.Reload"/> instead to make a "shallow reload" - with all the same configurations,
+            but without Textures and other assets being fully unloaded from the memory.
+            </remarks>
+            <param name="settings">Settings to use for unloading.</param>
+        </member>
+        <member name="M:Eclipse.Engine.OnSubsystemRegistration">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                       Unity Initialization Callbacks
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
         <member name="M:Eclipse.Engine.ResetState">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
-            .                                            Fetching and Loading
+            .                                                 Unloading
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
@@ -1034,6 +1235,13 @@
             Will cache resources like textures, atlases, music and etc. in case it will be referenced again.
             Will use update date and time to decide whether to update a resource or not.
             </remarks>
+        </member>
+        <member name="M:Eclipse.Engine.LoadModsAndAssemblies">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                            Fetching and Loading
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
         <member name="M:Eclipse.Engine.Harmony_BeforeLoadingMods">
             <summary>
@@ -1355,6 +1563,22 @@
             </para>
             </remarks>
         </member>
+        <member name="P:Eclipse.ServiceAttribute.Dispose">
+            <summary>
+            Whether to fully dispose this <see cref="T:Eclipse.EngineService"/> for <see cref="T:System.GC"/> to recollect it
+            after <see cref="M:Eclipse.EngineService.Unload"/> was called.
+            </summary>
+            <remarks>
+            <para>
+            When '<c>true</c>', on <see cref="T:Eclipse.Engine"/> and after <see cref="M:Eclipse.EngineService.Unload"/>,
+            it will essentially ask <see cref="T:System.GC"/> to unload service from the memory.
+            </para>
+            <para>
+            When '<c>false</c>' on <see cref="M:Eclipse.Engine.Reload"/> and after <see cref="M:Eclipse.EngineService.Unload"/>,
+            it will keep class in memory, and call <see cref="M:Eclipse.EngineService.Initialize"/> on it during initialization.
+            </para>
+            </remarks>
+        </member>
         <member name="P:Eclipse.ServiceAttribute.Replace">
             <summary>
             Target service type to replace it during initialization.
@@ -1398,6 +1622,65 @@
             .                                                Constructors
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.Structs.EclipseInitializationType">
+            <summary>
+            Specifies when <see cref="N:Eclipse"/> should be initialized.
+            </summary>
+            <remarks>
+            Depends on <see cref="T:UnityEngine.RuntimeInitializeLoadType"/>
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Structs.EclipseInitializationType.SubsystemRegistration">
+            <summary>
+            Callback invoked when starting up the runtime. Called before the first scene is loaded.
+            </summary>
+            <remarks>
+            See also: <see cref="F:UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration"/>
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Structs.EclipseInitializationType.AfterAssembliesLoaded">
+            <summary>
+            Callback invoked when all assemblies are loaded and preloaded assets are initialized.
+            At this time the objects of the first scene have not been loaded yet.
+            </summary>
+            <remarks>
+            See also: <see cref="F:UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded"/>
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Structs.EclipseInitializationType.BeforeSplashScreen">
+            <summary>
+             Callback invoked before the splash screen is shown.
+             At this time the objects of the first scene have not been loaded yet.
+            </summary>
+            <remarks>
+            See also: <see cref="F:UnityEngine.RuntimeInitializeLoadType.BeforeSplashScreen"/>
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Structs.EclipseInitializationType.BeforeSceneLoad">
+            <summary>
+            Callback invoked when the first scene's objects are loaded into memory but before Awake has been called.
+            </summary>
+            <remarks>
+            See also: <see cref="F:UnityEngine.RuntimeInitializeLoadType.BeforeSceneLoad"/>
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Structs.EclipseInitializationType.AfterSceneLoad">
+            <summary>
+            Callback invoked when the first scene's objects are loaded into memory and after Awake has been called.
+            </summary>
+            <remarks>
+            See also: <see cref="F:UnityEngine.RuntimeInitializeLoadType.AfterSceneLoad"/>
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Structs.EclipseInitializationType.Manual">
+            <summary>
+            Indicates that engine should be manually initialized from your custom code.
+            Useful when you want to show a warning, message, animation, cutscene, or anything else first, before engine initializes.
+            </summary>
+            <remarks>
+            (TODO) It is possible to make partial initialization only first in such cases.
+            </remarks>
         </member>
         <member name="T:Eclipse.Structs.FullCategory">
             <summary>
@@ -1561,6 +1844,47 @@
             .                                               Static Methods
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.Structs.UnloadSettings">
+            <summary>
+            Settings for unloading <see cref="T:Eclipse.Engine"/> with <see cref="M:Eclipse.Engine.Unload"/> method.
+            </summary>
+        </member>
+        <member name="P:Eclipse.Structs.UnloadSettings.UnloadEverything">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Settings to unload everything from the memory: Textures, models, any other assets, and so on.
+            </summary>
+        </member>
+        <member name="P:Eclipse.Structs.UnloadSettings.ReloadSettings">
+            <summary>
+            Unloading settings usually used for <see cref="M:Eclipse.Engine.Reload"/>ing.
+            </summary>
+        </member>
+        <member name="F:Eclipse.Structs.UnloadSettings.UnloadTextures">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Public Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Whether to unload textures from the memory during unloading.
+            </summary>
+            <remarks>
+            (TODO) Used in <see cref="M:Eclipse.Engine.Reload"/> to ask <see cref="M:Eclipse.EngineService.Unload"/> to not dereference textures, so they can be reused.
+            </remarks>
+        </member>
+        <member name="M:Eclipse.Structs.UnloadSettings.#ctor(System.Boolean)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <param name="all">Whether to unload everything or keep things like Textures in the memory during reloading.</param>
         </member>
     </members>
 </doc>

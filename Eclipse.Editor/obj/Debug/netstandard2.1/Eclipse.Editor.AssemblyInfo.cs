@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Eclipse.Editor")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ff90adfd208bc6c8f5ce2c4d0fb2d90fb2942d5f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+aefd6e61182fafdf18d10a56b2c11b27e5dd89db")]
 [assembly: System.Reflection.AssemblyProductAttribute("Eclipse.Editor")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Eclipse.Editor")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

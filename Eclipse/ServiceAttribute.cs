@@ -69,6 +69,22 @@ namespace Eclipse
         public ThreadExecutionMode ThreadExecutionOrder { get; set; } = ThreadExecutionMode.MainThread;
 
         /// <summary>
+        /// Whether to fully dispose this <see cref="EngineService"/> for <see cref="GC"/> to recollect it
+        /// after <see cref="EngineService.Unload"/> was called.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// When '<c>true</c>', on <see cref="Engine"/> and after <see cref="EngineService.Unload"/>,
+        /// it will essentially ask <see cref="GC"/> to unload service from the memory.
+        /// </para>
+        /// <para>
+        /// When '<c>false</c>' on <see cref="Engine.Reload"/> and after <see cref="EngineService.Unload"/>,
+        /// it will keep class in memory, and call <see cref="EngineService.Initialize"/> on it during initialization.
+        /// </para>
+        /// </remarks>
+        public bool Dispose { get; set; } = false;
+
+        /// <summary>
         /// Target service type to replace it during initialization.
         /// </summary>
         public Type? Replace { get; set; }
