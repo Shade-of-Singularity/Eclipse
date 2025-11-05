@@ -1,6 +1,6 @@
 # Eclipse
 Is a Service-based moddable Unity Foundation Library for any game or application.
-It should be used as core for your application.
+It should be used as a core for your application to support proper runtime modding.
 
 It provides a way for you or modders to modify initialization orders of different systems to made modding easier.
 Or depend on a specific order to initialize its own systems in the right moment.
