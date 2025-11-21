@@ -1219,6 +1219,7 @@
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                       Unity Initialization Callbacks
+            .                                TODO: Add Editor-time initialization methods.
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>

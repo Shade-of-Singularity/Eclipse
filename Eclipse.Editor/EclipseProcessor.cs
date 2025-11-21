@@ -64,7 +64,7 @@ namespace Eclipse.Editor
             EclipseConfiguration configuration;
             if (guids.Count == 0)
             {
-                const string DefaultFolder = "Assets/Resources/Configurations";
+                const string DefaultFolder = "Assets/Resources/Configurations/Imbedded";
                 AssetDatabaseExtensions.EnsurePathExists(DefaultFolder);
 
                 configuration = ScriptableObject.CreateInstance<EclipseConfiguration>();

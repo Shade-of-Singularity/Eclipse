@@ -39,7 +39,7 @@ namespace Eclipse.Editor
             for (int i = 1; i < sequence.Length; i++)
             {
                 builder.Append('/');
-                builder.Append(sequence);
+                builder.Append(sequence[i]);
 
                 string tmp = builder.ToString();
                 if (!AssetDatabase.IsValidFolder(tmp))

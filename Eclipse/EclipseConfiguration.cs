@@ -82,7 +82,8 @@ namespace Eclipse
         /// <summary>
         /// List of names to all <see cref="System.Reflection.Assembly"/> files to analyze.
         /// </summary>
-        [UnityEngine.HideInInspector, UnityEngine.SerializeField] public string[] FoundAssemblyNames = Array.Empty<string>();
+        /*[UnityEngine.HideInInspector, UnityEngine.SerializeField] */
+        public string[] FoundAssemblyNames = Array.Empty<string>();
 
         /// <summary>
         /// List of all assemblies to exclude from analysis on initialization.
