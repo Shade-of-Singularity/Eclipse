@@ -49,9 +49,10 @@ namespace Eclipse.Editor
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         [InitializeOnLoadMethod]
-        public static void UpdateResourcesReferences()
+        public static void HandleAssetDatabaseReload() => EditorApplication.delayCall += UpdateResourceReferences;
+        private static void UpdateResourceReferences()
         {
-            List<GUID> guids = new List<GUID>(AssetDatabase.FindAssetGUIDs($"t:{nameof(EclipseConfiguration)}"));
+            List<string> guids = new List<string>(AssetDatabase.FindAssets($"t:{nameof(EclipseConfiguration)}"));
             for (int i = 0; i < guids.Count; i++)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guids[i]);
@@ -64,7 +65,7 @@ namespace Eclipse.Editor
             EclipseConfiguration configuration;
             if (guids.Count == 0)
             {
-                const string DefaultFolder = "Assets/Resources/Configurations/Imbedded";
+                const string DefaultFolder = @"Assets\Resources\Configurations\Imbedded";
                 AssetDatabaseExtensions.EnsurePathExists(DefaultFolder);
 
                 configuration = ScriptableObject.CreateInstance<EclipseConfiguration>();
@@ -80,7 +81,7 @@ namespace Eclipse.Editor
                 return;
             }
 
-            configuration = AssetDatabase.LoadAssetByGUID<EclipseConfiguration>(guids[0]);
+            configuration = AssetDatabase.LoadAssetAtPath<EclipseConfiguration>(AssetDatabase.GUIDToAssetPath(guids[0]));
             if (guids.Count >= 2)
             {
 

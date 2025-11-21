@@ -1125,7 +1125,7 @@
             Whether engine initialized: all mods are checked and loaded, assemblies as well, services are initialized and so on.
             </summary>
             <remarks>
-            Will be also set to 'true' when initialization failed, to prevent a lot of reloads. (Note: not right now)
+            Will be also set to 'true' when initialization failed, to prevent a lot of reloads. (Note: TODO)
             </remarks>
         </member>
         <member name="F:Eclipse.Engine.m_Services">
@@ -1175,16 +1175,28 @@
         <member name="M:Eclipse.Engine.SetInitialized">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
-            .                                               Finalization
+            .                                                Finalization
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
-        <member name="M:Eclipse.Engine.Reload">
+        <member name="M:Eclipse.Engine.AssertModifiable(System.String)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                             Initialization API
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Throws "Not modifiable" exception if called when <see cref="P:Eclipse.Engine.IsInitialized"/> is false.
+            This is usually when assets are still modifiable.
+            </summary>
+            <remarks>
+            Is it a good idea to lock systems behind such limitation though?
+            <para>
+            Use it only in a non-performance critical code, like class setters that usually never called, or initialization-only setters.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:Eclipse.Engine.Reload">
             <inheritdoc cref="M:Eclipse.Engine.Reload(Eclipse.Structs.UnloadSettings)"/>
         </member>
         <member name="M:Eclipse.Engine.Reload(Eclipse.Structs.UnloadSettings)">

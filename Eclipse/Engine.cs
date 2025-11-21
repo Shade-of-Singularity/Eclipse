@@ -19,8 +19,10 @@ using Eclipse.Structs;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace Eclipse
@@ -111,7 +113,7 @@ namespace Eclipse
         /// Whether engine initialized: all mods are checked and loaded, assemblies as well, services are initialized and so on.
         /// </summary>
         /// <remarks>
-        /// Will be also set to 'true' when initialization failed, to prevent a lot of reloads. (Note: not right now)
+        /// Will be also set to 'true' when initialization failed, to prevent a lot of reloads. (Note: TODO)
         /// </remarks>
         public static bool IsInitialized => m_IsInitialized;
 
@@ -226,7 +228,7 @@ namespace Eclipse
 
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
-        /// .                                               Finalization
+        /// .                                                Finalization
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         private static void SetInitialized()
@@ -274,6 +276,21 @@ namespace Eclipse
         /// .                                             Initialization API
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Throws "Not modifiable" exception if called when <see cref="IsInitialized"/> is false.
+        /// This is usually when assets are still modifiable.
+        /// </summary>
+        /// <remarks>
+        /// Is it a good idea to lock systems behind such limitation though?
+        /// <para>
+        /// Use it only in a non-performance critical code, like class setters that usually never called, or initialization-only setters.
+        /// </para>
+        /// </remarks>
+        public static void AssertModifiable([CallerFilePath] string caller = "")
+        {
+            if (IsInitialized) throw new Exception($"Cannot modify ('{Path.GetFileNameWithoutExtension(caller)}') outside of the engine initialization stage.");
+        }
+        
         /// <inheritdoc cref="Reload(UnloadSettings)"/>
         public static async UniTask Reload() => await Reload(UnloadSettings.ReloadSettings);
 

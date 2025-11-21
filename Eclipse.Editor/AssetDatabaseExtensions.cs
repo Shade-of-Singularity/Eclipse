@@ -13,7 +13,7 @@ namespace Eclipse.Editor
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         public static void EnsurePathExists(string path)
         {
-            string[] sequence = path.Split('/');
+            string[] sequence = path.Split('\\', '/');
             if (sequence.Length == 0)
             {
                 return;
@@ -22,12 +22,12 @@ namespace Eclipse.Editor
             {
                 if (string.Equals(sequence[0], "Assets"))
                 {
-                    // Only assets folder will always exist.
+                    // The assets folder will always exist.
                     return;
                 }
                 else
                 {
-                    // Ensures that "Assets" always present.
+                    // Ensures that "Assets" always present in the list.
                     Array.Resize(ref sequence, 2);
                     sequence[1] = sequence[0];
                     sequence[0] = "Assets";
@@ -38,13 +38,13 @@ namespace Eclipse.Editor
             StringBuilder builder = new StringBuilder(sequence[0]); // "Assets" always exist.
             for (int i = 1; i < sequence.Length; i++)
             {
-                builder.Append('/');
+                builder.Append('\\');
                 builder.Append(sequence[i]);
 
                 string tmp = builder.ToString();
                 if (!AssetDatabase.IsValidFolder(tmp))
                 {
-                    AssetDatabase.CreateFolder(last, tmp);
+                    AssetDatabase.CreateFolder(last, sequence[i]);
                 }
 
                 last = tmp;
