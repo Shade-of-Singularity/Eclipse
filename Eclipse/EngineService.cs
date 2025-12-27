@@ -28,7 +28,7 @@ namespace Eclipse
     /// Use '<see cref="Engine.TryGet{T}(out T)"/>' or '<see cref="Engine.GetOrDefault{T}(T)"/>' if you need to handle missing services more gracefully.
     /// </remarks>
     /// <typeparam name="T">The type of the service to retrieve. Must inherit from <see cref="EngineService"/>.</typeparam>
-    public static class EngineService<T> where T : EngineService
+    public static class EngineService<T> where T : class, IEngineService
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -81,7 +81,7 @@ namespace Eclipse
     /// <remarks>
     /// Add an <see cref="ServiceAttribute"/> to your final service implementation.
     /// </remarks>
-    public abstract class EngineService : IEngineServiceDirectControlHandler
+    public abstract class EngineService : IEngineService, IEngineServiceDirectControlHandler
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -186,9 +186,24 @@ namespace Eclipse
 
     }
 
+    /// <summary>
+    /// General interface for any class.
+    /// </summary>
+    public interface IEngineService { }
+
+    /// <summary>
+    /// Interface for directly fire internal engine callbacks.
+    /// </summary>
     public interface IEngineServiceDirectControlHandler
     {
+        /// <summary>
+        /// Called when <see cref="Engine"/> initialized this service.
+        /// </summary>
         void EngineInvokeInitialization();
+
+        /// <summary>
+        /// Called when <see cref="Engine"/> unloads this service.
+        /// </summary>
         void EngineInvokeUnloading();
     }
 }

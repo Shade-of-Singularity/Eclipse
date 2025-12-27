@@ -73,8 +73,22 @@ namespace Eclipse
         /// <remarks>
         /// Set to <see cref="EclipseInitializationType.Manual"/> to prevent any automatic initialization and to handle it manually from your code.
         /// (TODO) Alternatively, you can use special MonoBehaviours for initializing.
+        /// <para>
+        /// Regardless of the initialization type, if any mods are detected - initialization type will be set to <see cref="EclipseInitializationType.Manual"/>
+        /// as to allow you to show appropriate warning.
+        /// </para>
         /// </remarks>
         public EclipseInitializationType InitializationType = EclipseInitializationType.AfterAssembliesLoaded;
+
+        /// <summary>
+        /// Whether to allow modding the game.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="InitializationType"/> will be set to <see cref="EclipseInitializationType.Manual"/> if any mod will be detected.
+        /// </remarks>
+        /// Note: I won't change this behaviour for BepInEx mods. It might introduce a vulnerability that hackers can use to inject malicious code in Steam mods.
+        /// TODO: Add the warning above on the Editor UI.
+        public bool AllowModding = false;
 
         // TODO: Finish.
         // TODO: Automatically create one if there is no configuration file in any resource folder, on InitializeOnLoadMethod.

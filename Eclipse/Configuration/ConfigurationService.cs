@@ -86,6 +86,12 @@ namespace Eclipse.Configuration
         public static event Action? OnCategorizationChanged;
 
         // Properties:
+        /// <summary>
+        /// Path to configuration files on the disk.
+        /// </summary>
+        /// <remarks>
+        /// Also path to save files, as <see cref="ConfigurationService"/> also responsible for general serialization.
+        /// </remarks>
         public static readonly string ConfigurationPath = Application.persistentDataPath;
 
         /// <summary>

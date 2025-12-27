@@ -9,14 +9,6 @@
     public enum EclipseInitializationType : byte
     {
         /// <summary>
-        /// Callback invoked when starting up the runtime. Called before the first scene is loaded.
-        /// </summary>
-        /// <remarks>
-        /// See also: <see cref="UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration"/>
-        /// </remarks>
-        SubsystemRegistration,
-
-        /// <summary>
         /// Callback invoked when all assemblies are loaded and preloaded assets are initialized.
         /// At this time the objects of the first scene have not been loaded yet.
         /// </summary>
@@ -24,6 +16,14 @@
         /// See also: <see cref="UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded"/>
         /// </remarks>
         AfterAssembliesLoaded,
+
+        /// <summary>
+        /// Callback invoked when starting up the runtime. Called before the first scene is loaded.
+        /// </summary>
+        /// <remarks>
+        /// See also: <see cref="UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration"/>
+        /// </remarks>
+        SubsystemRegistration,
 
         /// <summary>
         ///  Callback invoked before the splash screen is shown.

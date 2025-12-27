@@ -71,6 +71,14 @@
             Called when any of the <see cref="T:Eclipse.Configuration.Parameters.Parameter"/>s have their name/category changed. (See also: <seealso cref="P:Eclipse.Configuration.Parameters.Parameter.Name"/>)
             </summary>
         </member>
+        <member name="F:Eclipse.Configuration.ConfigurationService.ConfigurationPath">
+            <summary>
+            Path to configuration files on the disk.
+            </summary>
+            <remarks>
+            Also path to save files, as <see cref="T:Eclipse.Configuration.ConfigurationService"/> also responsible for general serialization.
+            </remarks>
+        </member>
         <member name="P:Eclipse.Configuration.ConfigurationService.ExecutesSerialization">
             <summary>
             Whether <see cref="T:Eclipse.Configuration.ConfigurationService"/> saves anything to the disk at the moment.
@@ -1058,7 +1066,21 @@
             <remarks>
             Set to <see cref="F:Eclipse.Structs.EclipseInitializationType.Manual"/> to prevent any automatic initialization and to handle it manually from your code.
             (TODO) Alternatively, you can use special MonoBehaviours for initializing.
+            <para>
+            Regardless of the initialization type, if any mods are detected - initialization type will be set to <see cref="F:Eclipse.Structs.EclipseInitializationType.Manual"/>
+            as to allow you to show appropriate warning.
+            </para>
             </remarks>
+        </member>
+        <member name="F:Eclipse.EclipseConfiguration.AllowModding">
+            <summary>
+            Whether to allow modding the game.
+            </summary>
+            <remarks>
+            <see cref="F:Eclipse.EclipseConfiguration.InitializationType"/> will be set to <see cref="F:Eclipse.Structs.EclipseInitializationType.Manual"/> if any mod will be detected.
+            </remarks>
+            Note: I won't change this behaviour for BepInEx mods. It might introduce a vulnerability that hackers can use to inject malicious code in Steam mods.
+            TODO: Add this warning on the Editor UI.
         </member>
         <member name="F:Eclipse.EclipseConfiguration.FoundAssemblyNames">
             <summary>
@@ -1376,6 +1398,26 @@
             You are meant to save/serialize the state of your service when this event occurs.
             </summary>
         </member>
+        <member name="T:Eclipse.IEngineService">
+            <summary>
+            General interface for any class.
+            </summary>
+        </member>
+        <member name="T:Eclipse.IEngineServiceDirectControlHandler">
+            <summary>
+            Interface for directly fire internal engine callbacks.
+            </summary>
+        </member>
+        <member name="M:Eclipse.IEngineServiceDirectControlHandler.EngineInvokeInitialization">
+            <summary>
+            Called when <see cref="T:Eclipse.Engine"/> initialized this service.
+            </summary>
+        </member>
+        <member name="M:Eclipse.IEngineServiceDirectControlHandler.EngineInvokeUnloading">
+            <summary>
+            Called when <see cref="T:Eclipse.Engine"/> unloads this service.
+            </summary>
+        </member>
         <member name="T:Eclipse.Modding.Mod">
             <summary>
             Class describes all the mod data it can have.
@@ -1644,14 +1686,6 @@
             Depends on <see cref="T:UnityEngine.RuntimeInitializeLoadType"/>
             </remarks>
         </member>
-        <member name="F:Eclipse.Structs.EclipseInitializationType.SubsystemRegistration">
-            <summary>
-            Callback invoked when starting up the runtime. Called before the first scene is loaded.
-            </summary>
-            <remarks>
-            See also: <see cref="F:UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration"/>
-            </remarks>
-        </member>
         <member name="F:Eclipse.Structs.EclipseInitializationType.AfterAssembliesLoaded">
             <summary>
             Callback invoked when all assemblies are loaded and preloaded assets are initialized.
@@ -1659,6 +1693,14 @@
             </summary>
             <remarks>
             See also: <see cref="F:UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded"/>
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Structs.EclipseInitializationType.SubsystemRegistration">
+            <summary>
+            Callback invoked when starting up the runtime. Called before the first scene is loaded.
+            </summary>
+            <remarks>
+            See also: <see cref="F:UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration"/>
             </remarks>
         </member>
         <member name="F:Eclipse.Structs.EclipseInitializationType.BeforeSplashScreen">
