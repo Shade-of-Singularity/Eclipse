@@ -20,12 +20,12 @@ using UnityEngine;
 namespace Eclipse
 {
     /// <summary>
-    /// An StackControl service to be initialized.
+    /// An Eclipse service to be initialized.
     /// </summary>
     /// <remarks>
     /// Add an <see cref="ServiceAttribute"/> to your service class to make it a valid service.
     /// </remarks>
-    public abstract class EngineService : IEngineServiceDirectControlHandler
+    public abstract class EngineService : IEngineServiceDirectAccess
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -82,7 +82,7 @@ namespace Eclipse
         /// .                                             Internal Callbacks
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        void IEngineServiceDirectControlHandler.EngineInvokeInitialization()
+        void IEngineServiceDirectAccess.EngineInvokeInitialization()
         {
             if (!Initialized)
             {
@@ -99,7 +99,7 @@ namespace Eclipse
             }
         }
 
-        void IEngineServiceDirectControlHandler.EngineInvokeUnloading()
+        void IEngineServiceDirectAccess.EngineInvokeUnloading()
         {
             if (Initialized)
             {
@@ -120,7 +120,7 @@ namespace Eclipse
     /// <summary>
     /// Interface for directly fire internal engine callbacks.
     /// </summary>
-    public interface IEngineServiceDirectControlHandler
+    public interface IEngineServiceDirectAccess
     {
         /// <summary>
         /// Called when <see cref="Engine"/> initialized this service.

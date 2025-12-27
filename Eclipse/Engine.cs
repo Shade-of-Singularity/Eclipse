@@ -451,7 +451,7 @@ namespace Eclipse
         {
             foreach (var service in m_Services.Values)
             {
-                ((IEngineServiceDirectControlHandler)service).EngineInvokeUnloading();
+                ((IEngineServiceDirectAccess)service).EngineInvokeUnloading();
             }
 
             m_Services.Clear();
@@ -520,6 +520,8 @@ namespace Eclipse
                     // TODO: Load-in all C# mods.
                     // TODO: Register their assemblies.
                     // TODO: Load-in all textures and other resources.
+                    //
+                    // TODO: Instead of service initialization order-based systems, additionally order method callbacks using mod dependency trees.
                     LoadModsAndAssemblies_LoadMods();
                     LoadModsAndAssemblies_RegisterModAssemblies();
                     LoadModsAndAssemblies_IndexAndLoadTexturesAndAtlases();
@@ -713,7 +715,7 @@ namespace Eclipse
                     {
                         if (summary.attribute.ThreadExecutionOrder != ServiceAttribute.ThreadExecutionMode.MainThread) continue;
                         summary.preload.ForEach(m => m.method.Invoke(null, null));
-                        ((IEngineServiceDirectControlHandler)m_Services[summary.service]).EngineInvokeInitialization();
+                        ((IEngineServiceDirectAccess)m_Services[summary.service]).EngineInvokeInitialization();
                         summary.afterload.ForEach(m => m.method.Invoke(null, null));
                     }
                 }
@@ -766,7 +768,7 @@ namespace Eclipse
                                     if (c.attribute.ThreadSafe) c.method.Invoke(null, null);
                                 });
 
-                                ((IEngineServiceDirectControlHandler)m_Services[set.service]).EngineInvokeInitialization();
+                                ((IEngineServiceDirectAccess)m_Services[set.service]).EngineInvokeInitialization();
                                 set.afterload.ForEach(c =>
                                 {
                                     if (c.attribute.ThreadSafe) c.method.Invoke(null, null);

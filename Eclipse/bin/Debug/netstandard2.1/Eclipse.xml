@@ -59,7 +59,7 @@
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
             <see cref="T:Eclipse.Configuration.ConfigurationService"/> is initialized very first in the entire game,
-            as even <see cref="!:Localization.ILocalizationService"/> relies on it.
+            as even <see cref="T:Eclipse.Localization.LocalizationService"/> relies on it.
             </summary>
             Note: This is why you cannot localize anything here btw.
         </member>
@@ -978,6 +978,11 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
+        <member name="T:Eclipse.Configuration.SettingsAttribute">
+            <summary>
+            Classes with this attribute will run their class constructor
+            </summary>
+        </member>
         <member name="F:Eclipse.Configuration.Storages.ParameterStorage`1.Instance">
             <summary>
             Static instance of an <see cref="T:Eclipse.Configuration.Storages.IParameterStorage"/> implementation.
@@ -1485,6 +1490,9 @@
             .                                                Constructors
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Default mod name to be used.
+            </summary>
         </member>
         <member name="P:Eclipse.Modding.Mod.IsEnabled">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[

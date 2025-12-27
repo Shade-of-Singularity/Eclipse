@@ -1,4 +1,7 @@
-﻿/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
+﻿
+using System;
+
+/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
 /// 
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -13,7 +16,6 @@
 /// limitations under the License.
 /// 
 /// ]]>
-
 namespace Eclipse.Modding
 {
     public static class ModManager
@@ -63,7 +65,10 @@ namespace Eclipse.Modding
         /// .                                               Public Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-
+        public static T GetOrThrow<T>() where T : Mod
+        {
+            throw new NotImplementedException();
+        }
 
 
 

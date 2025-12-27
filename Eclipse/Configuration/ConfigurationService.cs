@@ -45,7 +45,7 @@ namespace Eclipse.Configuration
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
         /// <see cref="ConfigurationService"/> is initialized very first in the entire game,
-        /// as even <see cref="Localization.ILocalizationService"/> relies on it.
+        /// as even <see cref="Localization.LocalizationService"/> relies on it.
         /// </summary>
         /// Note: This is why you cannot localize anything here btw.
         public const int InitializationOrder = -2_000_000_000;
@@ -290,7 +290,7 @@ namespace Eclipse.Configuration
         private readonly Dictionary<string, Parameter> m_Parameters = new Dictionary<string, Parameter>();
         private readonly Dictionary<string, Category> m_Categories = new Dictionary<string, Category>();
         private readonly Dictionary<Type, GameState> m_GameStates = new Dictionary<Type, GameState>();
-        private UniTaskCompletionSource m_AwaitSource = new UniTaskCompletionSource();
+        private readonly UniTaskCompletionSource m_AwaitSource = new UniTaskCompletionSource();
         private readonly object m_AwaitLock = new object();
 
 

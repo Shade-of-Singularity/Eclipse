@@ -26,7 +26,7 @@ namespace Eclipse.Modding
             {
                 if (m_Instance is null)
                 {
-                    m_Instance = Mod.GetOrThrow<T>();
+                    m_Instance = ModManager.GetOrThrow<T>();
                     Engine.OnEngineResetting += () => m_Instance = null;
                 }
 
@@ -66,15 +66,17 @@ namespace Eclipse.Modding
     /// (This message is from Dark)
     /// </para>
     /// </remarks>
-    public abstract class Mod
+    public abstract class Mod : IEngineModDirectAccess
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
         /// .                                                Constructors
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Default mod name to be used.
+        /// </summary>
         public const string EmptyModName = "";
-        public const string CoreModName = "Core";
 
 
 
@@ -91,7 +93,7 @@ namespace Eclipse.Modding
         // Properties:
         public bool IsEnabled { get; set; } = true;
         public bool IsLoaded { get; set; } = false;
-        public string Name { get; set; } = EmptyModName;
+        public virtual string Name => EmptyModName;
 
 
 
@@ -106,7 +108,7 @@ namespace Eclipse.Modding
         // Encapsulated Fields:
 
         // Local Fields:
-
+        private IEngineModDirectAccess.Callback m_SkippedCallbacks = IEngineModDirectAccess.Callback.Unloading | IEngineModDirectAccess.Callback.Unloaded;
 
 
 
@@ -126,7 +128,50 @@ namespace Eclipse.Modding
         /// .                                               Implementations
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        void IEngineModDirectAccess.EngineInvokeInitializing()
+        {
+            if ((m_SkippedCallbacks & IEngineModDirectAccess.Callback.Initializing) == IEngineModDirectAccess.Callback.None)
+            {
+                m_SkippedCallbacks |= IEngineModDirectAccess.Callback.Initializing;
+                Initializing();
+            }
+        }
 
+        void IEngineModDirectAccess.EngineInvokeInitialized()
+        {
+            if ((m_SkippedCallbacks & IEngineModDirectAccess.Callback.Initialized) == IEngineModDirectAccess.Callback.None)
+            {
+                m_SkippedCallbacks |= IEngineModDirectAccess.Callback.Initialized;
+                Initialized();
+            }
+        }
+
+        void IEngineModDirectAccess.EngineInvokeGameLoaded()
+        {
+            if ((m_SkippedCallbacks & IEngineModDirectAccess.Callback.GameLoaded) == IEngineModDirectAccess.Callback.None)
+            {
+                m_SkippedCallbacks |= IEngineModDirectAccess.Callback.GameLoaded;
+                GameLoaded();
+            }
+        }
+
+        void IEngineModDirectAccess.EngineInvokeUnloading()
+        {
+            if ((m_SkippedCallbacks & IEngineModDirectAccess.Callback.Unloading) == IEngineModDirectAccess.Callback.None)
+            {
+                m_SkippedCallbacks |= IEngineModDirectAccess.Callback.Unloading;
+                Unloading();
+            }
+        }
+
+        void IEngineModDirectAccess.EngineInvokeUnloaded()
+        {
+            if ((m_SkippedCallbacks & IEngineModDirectAccess.Callback.Unloaded) == IEngineModDirectAccess.Callback.None)
+            {
+                m_SkippedCallbacks = IEngineModDirectAccess.Callback.Unloading | IEngineModDirectAccess.Callback.Unloaded;
+                Unloaded();
+            }
+        }
 
 
 
@@ -136,19 +181,72 @@ namespace Eclipse.Modding
         /// .                                               Public Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public static T GetOrThrow<T>() where T : Mod
-        {
-            throw new NotImplementedException();
-        }
+
 
 
 
 
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
-        /// .                                               Private Methods
+        /// .                                              Protected Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Called synchronously when mod is first loaded, before any services are initialized. 
+        /// </summary>
+        /// <remarks>
+        /// Other services might not be available at this point.
+        /// </remarks>
+        protected virtual void Initializing() { }
 
+        /// <summary>
+        /// Called synchronously when all mod data and services were loaded.
+        /// </summary>
+        /// <remarks>
+        /// Services from next mods in a queue will not be accessible at this point.
+        /// </remarks>
+        protected virtual void Initialized() { }
+
+        /// <summary>
+        /// Called synchronously when all mods in the entire game was successfully initialized.
+        /// </summary>
+        protected virtual void GameLoaded() { }
+
+        /// <summary>
+        /// Called synchronously when mod and services is right about to be unloaded. 
+        /// </summary>
+        /// <remarks>
+        /// Unloading order is reversed to the loading order. Do not expect any service to be available at this point.
+        /// </remarks>
+        protected virtual void Unloading() { }
+
+        /// <summary>
+        /// Called synchronously when all mod data and services were unloaded.
+        /// </summary>
+        /// <remarks>
+        /// Unloading order is reversed to the loading order. Do not expect any service to be available at this point.
+        /// </remarks>
+        protected virtual void Unloaded() { }
+    }
+
+    // TODO: Review important callbacks and when they are called.
+    public interface IEngineModDirectAccess
+    {
+        [Flags]
+        public enum Callback : byte
+        {
+            None = 0b000_0000,
+            Initializing = 0b0000_0001,
+            Initialized = 0b0000_0010,
+            GameLoaded = 0b0000_0100,
+            Unloading = 0b0000_1000,
+            Unloaded = 0b0001_0000,
+        }
+
+        void EngineInvokeInitializing();
+        void EngineInvokeInitialized();
+        void EngineInvokeGameLoaded();
+        void EngineInvokeUnloading();
+        void EngineInvokeUnloaded();
     }
 }

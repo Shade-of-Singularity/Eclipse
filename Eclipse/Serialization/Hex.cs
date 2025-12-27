@@ -14,7 +14,7 @@
 /// 
 /// ]]>
 
-//namespace StackControl.Serialization
+//namespace Eclipse.Serialization
 //{
 //    public static class Hex
 //    {
