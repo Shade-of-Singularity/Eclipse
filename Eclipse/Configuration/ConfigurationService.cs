@@ -45,7 +45,7 @@ namespace Eclipse.Configuration
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
         /// <see cref="ConfigurationService"/> is initialized very first in the entire game,
-        /// as even <see cref="Localization.LocalizationService"/> relies on it.
+        /// as even <see cref="Localization.ILocalizationService"/> relies on it.
         /// </summary>
         /// Note: This is why you cannot localize anything here btw.
         public const int InitializationOrder = -2_000_000_000;
@@ -85,7 +85,6 @@ namespace Eclipse.Configuration
         /// </summary>
         public static event Action? OnCategorizationChanged;
 
-        // Properties:
         /// <summary>
         /// Path to configuration files on the disk.
         /// </summary>
@@ -94,6 +93,7 @@ namespace Eclipse.Configuration
         /// </remarks>
         public static readonly string ConfigurationPath = Application.persistentDataPath;
 
+        // Properties:
         /// <summary>
         /// Whether <see cref="ConfigurationService"/> saves anything to the disk at the moment.
         /// </summary>
@@ -276,7 +276,7 @@ namespace Eclipse.Configuration
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         // Static Fields:
-        private static ConfigurationServiceCoroutineHandler m_CoroutineRunner;
+        private static ConfigurationServiceCoroutineHandler? m_CoroutineRunner;
 
         // Encapsulated Fields:
         private IParameterStorage m_Storage = PlayerPreferenceStorage.Instance;
@@ -302,14 +302,17 @@ namespace Eclipse.Configuration
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         private void InitializeParameters() => ApplyForceCallbacks();
-        protected override void Initialize()
+        
+        /// <inheritdoc cref="EngineService.Initialize"/>
+        protected virtual void Initialize()
         {
             Engine.OnEngineInitialized += InitializeParameters;
             LoadResources();
             LoadInternal();
         }
 
-        protected override void Unload()
+        /// <inheritdoc cref="EngineService.Unload"/>
+        protected virtual void Unload()
         {
             Engine.OnEngineInitialized -= InitializeParameters;
             SaveInternal();

@@ -28,7 +28,7 @@ namespace Eclipse
     /// Use '<see cref="Engine.TryGet{T}(out T)"/>' or '<see cref="Engine.GetOrDefault{T}(T)"/>' if you need to handle missing services more gracefully.
     /// </remarks>
     /// <typeparam name="T">The type of the service to retrieve. Must inherit from <see cref="EngineService"/>.</typeparam>
-    public static class EngineService<T> where T : class, IEngineService
+    public static class EngineService<T> where T : EngineService
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -50,7 +50,7 @@ namespace Eclipse
                 if (m_Instance is null)
                 {
                     m_Instance = Engine.GetOrThrow<T>();
-                    Engine.OnEngineResetting += () => m_Instance = null;
+                    Engine.OnEngineResetting += () => m_Instance = default!;
                 }
 
                 return m_Instance;
@@ -72,138 +72,6 @@ namespace Eclipse
         /// It would have been far more optimized to use direct field reference instead without null check...
         /// But we need null checks to provide reliable Engine reloading at runtime.
         /// </remarks>
-        private static T? m_Instance;
-    }
-
-    /// <summary>
-    /// An StackControl service to be initialized.
-    /// </summary>
-    /// <remarks>
-    /// Add an <see cref="ServiceAttribute"/> to your final service implementation.
-    /// </remarks>
-    public abstract class EngineService : IEngineService, IEngineServiceDirectControlHandler
-    {
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                              Public Properties
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        // Delegates:
-
-        // Events:
-
-        // Properties:
-        public bool Initialized { get; private set; }
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                               Private Fields
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        // Static Fields:
-
-        // Encapsulated Fields:
-
-        // Local Fields:
-
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                                Constructors
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                               Implementations
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                               Public Methods
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        void IEngineServiceDirectControlHandler.EngineInvokeInitialization()
-        {
-            if (!Initialized)
-            {
-                Initialize();
-                Initialized = true;
-            }
-        }
-
-        void IEngineServiceDirectControlHandler.EngineInvokeUnloading()
-        {
-            if (Initialized)
-            {
-                Unload();
-                Initialized = false;
-            }
-        }
-
-        /// <summary>
-        /// Initializes Engine service.
-        /// <para>
-        /// Unlike any <see cref="EngineService"/> .ctor (constructor), this method is thread-safe.
-        /// (as long as <see cref="ServiceAttribute.ThreadExecutionOrder"/> is <see cref="ServiceAttribute.ThreadExecutionMode.MainThread"/>)
-        /// </para>
-        /// </summary>
-        /// <remarks>
-        /// Won't be even instantiated if you don't have <see cref="ServiceAttribute"/> on your class.
-        /// Use <see cref="ServiceAttribute.InitializationOrder"/> to specify initialization order.
-        /// </remarks>
-        protected virtual void Initialize() { }
-
-        /// <summary>
-        /// Called when <see cref="Engine"/> unloads all the code and resources from the memory.
-        /// You are meant to save/serialize the state of your service when this event occurs.
-        /// </summary>
-        protected virtual void Unload() { }
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                               Private Methods
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-
-    }
-
-    /// <summary>
-    /// General interface for any class.
-    /// </summary>
-    public interface IEngineService { }
-
-    /// <summary>
-    /// Interface for directly fire internal engine callbacks.
-    /// </summary>
-    public interface IEngineServiceDirectControlHandler
-    {
-        /// <summary>
-        /// Called when <see cref="Engine"/> initialized this service.
-        /// </summary>
-        void EngineInvokeInitialization();
-
-        /// <summary>
-        /// Called when <see cref="Engine"/> unloads this service.
-        /// </summary>
-        void EngineInvokeUnloading();
+        private static T m_Instance = default!;
     }
 }

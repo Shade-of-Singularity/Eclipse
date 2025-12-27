@@ -67,7 +67,10 @@ namespace Eclipse.Configuration.Parameters
         /// .                                               Implementations
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <inheritdoc cref="Parameter.Serialize"/>
         public override string Serialize() => Base64.Int(Value);
+
+        /// <inheritdoc cref="Parameter.Deserialize"/>
         public override void Deserialize(string raw) => Value = Base64.ToInt(raw);
 
 

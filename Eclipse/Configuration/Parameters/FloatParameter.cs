@@ -67,7 +67,10 @@ namespace Eclipse.Configuration.Parameters
         /// .                                               Implementations
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <inheritdoc cref="Parameter.Serialize"/>
         public override string Serialize() => Value.ToString(CultureInfo.InvariantCulture);
+
+        /// <inheritdoc cref="Parameter.Deserialize"/>
         public override void Deserialize(string raw) => Value = float.Parse(raw, CultureInfo.InvariantCulture);
 
 

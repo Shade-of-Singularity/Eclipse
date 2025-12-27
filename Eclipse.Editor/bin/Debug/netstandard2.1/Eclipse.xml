@@ -59,7 +59,7 @@
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
             <see cref="T:Eclipse.Configuration.ConfigurationService"/> is initialized very first in the entire game,
-            as even <see cref="!:Localization.LocalizationService"/> relies on it.
+            as even <see cref="!:Localization.ILocalizationService"/> relies on it.
             </summary>
             Note: This is why you cannot localize anything here btw.
         </member>
@@ -145,6 +145,12 @@
             .                                              Implementations
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.Initialize">
+            <inheritdoc cref="M:Eclipse.EngineService.Initialize"/>
+        </member>
+        <member name="M:Eclipse.Configuration.ConfigurationService.Unload">
+            <inheritdoc cref="M:Eclipse.EngineService.Unload"/>
         </member>
         <member name="M:Eclipse.Configuration.ConfigurationService.SetSettings(System.Type)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -650,6 +656,10 @@
             .                                               Implementations
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <inheritdoc cref="M:Eclipse.Configuration.Parameters.Parameter.Serialize"/>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.BooleanParameter.Deserialize(System.String)">
+            <inheritdoc cref="M:Eclipse.Configuration.Parameters.Parameter.Deserialize(System.String)"/>
         </member>
         <member name="T:Eclipse.Configuration.Parameters.EnumParameter`1">
             <summary>
@@ -781,6 +791,10 @@
             .                                               Implementations
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <inheritdoc cref="M:Eclipse.Configuration.Parameters.Parameter.Serialize"/>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.FloatParameter.Deserialize(System.String)">
+            <inheritdoc cref="M:Eclipse.Configuration.Parameters.Parameter.Deserialize(System.String)"/>
         </member>
         <member name="M:Eclipse.Configuration.Parameters.IntegerParameter.#ctor(Eclipse.Structs.FullName)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -795,6 +809,10 @@
             .                                               Implementations
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <inheritdoc cref="M:Eclipse.Configuration.Parameters.Parameter.Serialize"/>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.IntegerParameter.Deserialize(System.String)">
+            <inheritdoc cref="M:Eclipse.Configuration.Parameters.Parameter.Deserialize(System.String)"/>
         </member>
         <member name="T:Eclipse.Configuration.Parameters.Parameter.ParameterChangeHandler">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -939,6 +957,10 @@
             .                                               Implementations
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <inheritdoc cref="M:Eclipse.Configuration.Parameters.Parameter.Serialize"/>
+        </member>
+        <member name="M:Eclipse.Configuration.Parameters.StringParameter.Deserialize(System.String)">
+            <inheritdoc cref="M:Eclipse.Configuration.Parameters.Parameter.Deserialize(System.String)"/>
         </member>
         <member name="T:Eclipse.Configuration.ReconfigurationService">
             <summary>
@@ -1080,7 +1102,7 @@
             <see cref="F:Eclipse.EclipseConfiguration.InitializationType"/> will be set to <see cref="F:Eclipse.Structs.EclipseInitializationType.Manual"/> if any mod will be detected.
             </remarks>
             Note: I won't change this behaviour for BepInEx mods. It might introduce a vulnerability that hackers can use to inject malicious code in Steam mods.
-            TODO: Add this warning on the Editor UI.
+            TODO: Add the warning above on the Editor UI.
         </member>
         <member name="F:Eclipse.EclipseConfiguration.FoundAssemblyNames">
             <summary>
@@ -1166,7 +1188,7 @@
             <summary>
             Method is extremely optimized for a repeated usage. Feel free to use it very frequently.
             <para>
-            However, using generic <see cref="T:Eclipse.EngineService`1"/> is even better.
+            However, using generic <see cref="T:Eclipse.EngineService`1"/> is even better (by like x20 times).
             </para>
             <para>
             Can be used in <see cref="M:Eclipse.EngineService.Initialize"/> method,
@@ -1184,6 +1206,14 @@
             </summary>
             <typeparam name="T">Type of the service to retrieve.</typeparam>
             <param name="def">Default value to return.</param>
+            <returns>Either a requested service, or its version, overwritten by another mod.</returns>
+        </member>
+        <member name="M:Eclipse.Engine.GetOrDefault``1(System.Func{``0})">
+            <summary>
+            Returns a service, associated with a given type (<typeparamref name="T"/>), or default value provided by (<paramref name="def"/>).
+            </summary>
+            <typeparam name="T">Type of the service to retrieve.</typeparam>
+            <param name="def">Default value provider to use.</param>
             <returns>Either a requested service, or its version, overwritten by another mod.</returns>
         </member>
         <member name="M:Eclipse.Engine.TryGet``1(``0@)">
@@ -1352,34 +1382,24 @@
             An StackControl service to be initialized.
             </summary>
             <remarks>
-            Add an <see cref="T:Eclipse.ServiceAttribute"/> to your final service implementation.
+            Add an <see cref="T:Eclipse.ServiceAttribute"/> to your service class to make it a valid service.
             </remarks>
         </member>
         <member name="P:Eclipse.EngineService.Initialized">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                              Public Properties
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Whether service was initialized by engine or not.
+            </summary>
+            <remarks>
+            Set to <c>true</c> *after* initialization. Similarly, set to <c>false</c> *after* unloading.
+            <para>Status will be set regardless if there was exception during service initialization.</para>
+            </remarks>
         </member>
-        <member name="M:Eclipse.EngineService.Eclipse#IEngineServiceDirectControlHandler#EngineInvokeInitialization">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                                Constructors
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                               Implementations
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        <member name="M:Eclipse.EngineService.Initialize">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                               Public Methods
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        </member>
-        <member name="M:Eclipse.EngineService.Initialize">
             <summary>
             Initializes Engine service.
             <para>
@@ -1388,8 +1408,8 @@
             </para>
             </summary>
             <remarks>
-            Won't be even instantiated if you don't have <see cref="T:Eclipse.ServiceAttribute"/> on your class.
-            Use <see cref="P:Eclipse.ServiceAttribute.InitializationOrder"/> to specify initialization order.
+            Note: Service won't be even instantiated if you don't have <see cref="T:Eclipse.ServiceAttribute"/> on your class.
+            <para>Use <see cref="P:Eclipse.ServiceAttribute.InitializationOrder"/> to specify initialization order.</para>
             </remarks>
         </member>
         <member name="M:Eclipse.EngineService.Unload">
@@ -1398,10 +1418,12 @@
             You are meant to save/serialize the state of your service when this event occurs.
             </summary>
         </member>
-        <member name="T:Eclipse.IEngineService">
-            <summary>
-            General interface for any class.
-            </summary>
+        <member name="M:Eclipse.EngineService.Eclipse#IEngineServiceDirectControlHandler#EngineInvokeInitialization">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                             Internal Callbacks
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
         <member name="T:Eclipse.IEngineServiceDirectControlHandler">
             <summary>
@@ -1417,6 +1439,19 @@
             <summary>
             Called when <see cref="T:Eclipse.Engine"/> unloads this service.
             </summary>
+        </member>
+        <member name="T:Eclipse.Localization.LocalizationService">
+            <summary>
+            General language service for asset localization.
+            </summary>
+            <remarks>
+            Planned to support localization for:
+            [ ] - Text.
+            [ ] - Images.
+            [ ] - GameObjects.
+            [ ] - Audio.
+            [ ] - Misc resources.
+            </remarks>
         </member>
         <member name="T:Eclipse.Modding.Mod">
             <summary>

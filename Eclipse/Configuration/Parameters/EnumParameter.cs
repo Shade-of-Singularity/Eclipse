@@ -14,6 +14,7 @@
 /// 
 /// ]]>
 
+using Eclipse.Localization;
 using Eclipse.Serialization;
 using Eclipse.Structs;
 using System;

@@ -107,7 +107,7 @@ namespace Eclipse
         /// So it is safe to reference this collection from <see cref="EngineService.Initialize"/>.
         /// (However, in this case, some services might not be initialized yet.)
         /// </remarks>
-        public static IReadOnlyCollection<IEngineService> Services => m_Services.Values;
+        public static IReadOnlyCollection<EngineService> Services => m_Services.Values;
 
         /// <summary>
         /// Whether engine initialized: all mods are checked and loaded, assemblies as well, services are initialized and so on.
@@ -126,7 +126,7 @@ namespace Eclipse
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         // Static Fields:
-        private static readonly Dictionary<Type, IEngineService> m_Services = new Dictionary<Type, IEngineService>();
+        private static readonly Dictionary<Type, EngineService> m_Services = new Dictionary<Type, EngineService>();
         private static readonly List<Assembly> m_Assemblies = new List<Assembly>();
 
         // Encapsulated Fields:
@@ -148,7 +148,7 @@ namespace Eclipse
         /// <summary>
         /// Method is extremely optimized for a repeated usage. Feel free to use it very frequently.
         /// <para>
-        /// However, using generic <see cref="EngineService{T}"/> is even better.
+        /// However, using generic <see cref="EngineService{T}"/> is even better (by like x20 times).
         /// </para>
         /// <para>
         /// Can be used in <see cref="EngineService.Initialize"/> method,
@@ -159,9 +159,9 @@ namespace Eclipse
         /// Will throw if requested <see cref="EngineService"/> was not created on initialization.
         /// Use '<see cref="TryGet{T}(out T)"/>' or '<see cref="GetOrDefault{T}(T)"/>' if you need to handle missing services more gracefully.
         /// </remarks>
-        public static T GetOrThrow<T>() where T : class, IEngineService
+        public static T GetOrThrow<T>() where T : EngineService
         {
-            if (m_Services.TryGetValue(typeof(T), out IEngineService? service))
+            if (m_Services.TryGetValue(typeof(T), out EngineService? service))
             {
                 if (service is T result)
                 {
@@ -184,9 +184,9 @@ namespace Eclipse
         /// <typeparam name="T">Type of the service to retrieve.</typeparam>
         /// <param name="def">Default value to return.</param>
         /// <returns>Either a requested service, or its version, overwritten by another mod.</returns>
-        public static T? GetOrDefault<T>(T? def = default) where T : EngineService
+        public static T GetOrDefault<T>(T def = default!) where T : EngineService
         {
-            if (m_Services.TryGetValue(typeof(T), out IEngineService? service))
+            if (m_Services.TryGetValue(typeof(T), out EngineService? service))
             {
                 if (service is T result)
                 {
@@ -209,9 +209,9 @@ namespace Eclipse
         /// <typeparam name="T">Type of the service to retrieve.</typeparam>
         /// <param name="def">Default value provider to use.</param>
         /// <returns>Either a requested service, or its version, overwritten by another mod.</returns>
-        public static T? GetOrDefault<T>(Func<T> def) where T : EngineService
+        public static T GetOrDefault<T>(Func<T> def) where T : EngineService
         {
-            if (m_Services.TryGetValue(typeof(T), out IEngineService? service))
+            if (m_Services.TryGetValue(typeof(T), out EngineService? service))
             {
                 if (service is T result)
                 {
@@ -234,16 +234,16 @@ namespace Eclipse
         /// <typeparam name="T">Target type of <see cref="EngineService"/> to retrieve.</typeparam>
         /// <param name="service">Retrieved <see cref="EngineService"/> or null.</param>
         /// <returns>'<c>true</c>' if service was found. Otherwise '<c>false</c>'.</returns>
-        public static bool TryGet<T>([NotNullWhen(true)] out T? service) where T : EngineService
+        public static bool TryGet<T>([NotNullWhen(true)] out T service) where T : EngineService
         {
-            if (m_Services.TryGetValue(typeof(T), out IEngineService? finding) && finding is T result)
+            if (m_Services.TryGetValue(typeof(T), out EngineService? finding) && finding is T result)
             {
                 service = result;
                 return true;
             }
             else
             {
-                service = null;
+                service = default!;
                 return false;
             }
         }
@@ -633,7 +633,7 @@ namespace Eclipse
                         m_Services[target] = service;
                         target = target.BaseType!;
                     }
-                    while (!(target is null) && target != typeof(EngineService) && target != typeof(IEngineService));
+                    while (!(target is null) && target != typeof(EngineService) && target != typeof(EngineService));
                 }
 
                 // No reason to parallelize this one - it will just create unnecessary overhead.
@@ -840,7 +840,7 @@ namespace Eclipse
         {
             foreach (Type type in assembly.GetTypes())
             {
-                if (typeof(IEngineService).IsAssignableFrom(type) && !type.IsAbstract)
+                if (typeof(EngineService).IsAssignableFrom(type) && !type.IsAbstract)
                 {
                     var attribute = type.GetCustomAttribute<ServiceAttribute>();
                     if (attribute == null)
