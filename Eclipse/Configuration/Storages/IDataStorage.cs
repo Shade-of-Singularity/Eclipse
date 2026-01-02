@@ -18,30 +18,40 @@ using Eclipse.Configuration.Parameters;
 
 namespace Eclipse.Configuration.Storages
 {
-    public abstract class ParameterStorage<T> : IParameterStorage where T : ParameterStorage<T>, new()
+    public abstract class DataStorage<T> : IDataStorage where T : DataStorage<T>, new()
     {
         /// <summary>
-        /// Static instance of an <see cref="IParameterStorage"/> implementation.
+        /// Static instance of an <see cref="IDataStorage"/> implementation.
         /// </summary>
         public static readonly T Instance = new T();
 
-        /// <inheritdoc cref="IParameterStorage.Load(Parameter)"/>
+        /// <inheritdoc cref="IDataStorage.Load(Parameter)"/>
         public abstract void Load(Parameter parameter);
 
-        /// <inheritdoc cref="IParameterStorage.Save(Parameter)"/>
+        /// <inheritdoc cref="IDataStorage.Save(Parameter)"/>
         public abstract void Save(Parameter parameter);
     }
 
     /// <summary>
     /// Processor interface which controls where data is stored.
     /// </summary>
-    public interface IParameterStorage
+    public interface IDataStorage
     {
         /// <summary>
         /// If has any data about it - will call <see cref="Parameter.Deserialize(string)"/> using a raw string data about this parameter.
         /// </summary>
         /// <param name="parameter">Parameter to be updated.</param>
         public void Load(Parameter parameter);
+
+        public void Load(string key, out short data);
+        public void Load(string key, out int data);
+        public void Load(string key, out uint data);
+        public void Load(string key, out long data);
+        public void Load(string key, out float data);
+        public void Load(string key, out double data);
+        public void Load(string key, out ulong data);
+        public void Load(string key, out float data);
+        public void Load(string key, out double data);
 
         /// <summary>
         /// Calls <see cref="Parameter.Serialize"/> method and stores a return value 

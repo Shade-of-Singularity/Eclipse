@@ -19,8 +19,18 @@ using UnityEngine;
 
 namespace Eclipse.Configuration.Storages
 {
-    public sealed class PlayerPreferenceStorage : ParameterStorage<PlayerPreferenceStorage>
+    public sealed class PlayerPreferenceStorage : DataStorage<PlayerPreferenceStorage>
     {
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                              Static Properties
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        public static PlayerPreferenceStorage Instance = new PlayerPreferenceStorage();
+
+
+
+
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
         /// .                                               Public Methods

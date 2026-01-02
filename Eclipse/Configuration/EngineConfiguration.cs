@@ -20,13 +20,11 @@ using UnityEngine;
 namespace Eclipse.Configuration
 {
     /// <summary>
-    /// Provides fast, type-safe access to engine-level configurations registered during initialization.
-    /// <para>
-    /// Can be used in <see cref="EngineService.Initialize"/> method after <see cref="ConfigurationService"/> was initialized.
-    /// </para>
+    /// Fast, type-safe access to internal configuration classes. Will throw exception if accessed before <see cref="ConfigurationService"/> is initialized.
     /// </summary>
     /// <remarks>
-    /// Will return default <see cref="EngineConfiguration"/> if it wasn't loaded or found in a safe-file.
+    /// <seealso cref="ImbeddedConfiguration"/> classes provide readonly configurations required to start-up the engine at all.
+    /// Mods cannot use them.
     /// </remarks>
     /// <typeparam name="T">The type of the configuration to retrieve. Must inherit from <see cref="EngineConfiguration"/>.</typeparam>
     public static class EngineConfiguration<T> where T : EngineConfiguration

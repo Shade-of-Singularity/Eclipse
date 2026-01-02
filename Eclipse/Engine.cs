@@ -146,6 +146,15 @@ namespace Eclipse
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
+        /// Checks whether <see cref="Eclipse"/> <see cref="Engine"/> has a specific <see cref="EngineService"/> initialized at this point.
+        /// </summary>
+        /// <returns><c>true</c> if has target <see cref="EngineService"/>, <c>false</c> otherwise.</returns>
+        public static bool Has<T>() where T : EngineService
+        {
+
+        }
+        
+        /// <summary>
         /// Method is extremely optimized for a repeated usage. Feel free to use it very frequently.
         /// <para>
         /// However, using generic <see cref="EngineService{T}"/> is even better (by like x20 times).
@@ -619,6 +628,7 @@ namespace Eclipse
                 // Creates association between all parent classes with ServiceAttribute of replaced services, so for any of them child will be returned.
                 for (int i = 0; i < summaries.Length; i++)
                 {
+                    // TODO: Test if service types are still valid.
                     ServiceSummary summary = summaries[i];
                     Type target = summary.service!;
 

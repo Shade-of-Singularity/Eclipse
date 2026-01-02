@@ -66,13 +66,13 @@ namespace Eclipse
         /// Note: Service won't be even instantiated if you don't have <see cref="ServiceAttribute"/> on your class.
         /// <para>Use <see cref="ServiceAttribute.InitializationOrder"/> to specify initialization order.</para>
         /// </remarks>
-        protected virtual void Initialize() { }
+        protected abstract void Initialize();
 
         /// <summary>
         /// Called when <see cref="Engine"/> unloads all the code and resources from the memory.
         /// You are meant to save/serialize the state of your service when this event occurs.
         /// </summary>
-        protected virtual void Unload() { }
+        protected abstract void Unload();
 
 
 
