@@ -15,7 +15,6 @@
 /// ]]>
 
 using Cysharp.Threading.Tasks;
-using Eclipse.Configuration.Categorization;
 using Eclipse.Configuration.Parameters;
 using Eclipse.Configuration.Storages;
 using Eclipse.Extensions;
@@ -294,7 +293,6 @@ namespace Eclipse.Configuration
         // Local Fields:
         private readonly Dictionary<Type, EngineConfiguration> m_EngineConfigurations = new Dictionary<Type, EngineConfiguration>();
         private readonly Dictionary<string, Parameter> m_Parameters = new Dictionary<string, Parameter>();
-        private readonly Dictionary<string, Category> m_Categories = new Dictionary<string, Category>();
         private readonly Dictionary<Type, GameState> m_GameStates = new Dictionary<Type, GameState>();
         private readonly UniTaskCompletionSource m_AwaitSource = new UniTaskCompletionSource();
         private readonly object m_AwaitLock = new object();
@@ -664,6 +662,7 @@ namespace Eclipse.Configuration
         /// .        Or in other words: you can see, I wasn't expecting anyone to inherit ConfigurationService XD
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        #region Set (custom variable)
         /// <summary><inheritdoc cref="Set(string, string)"/></summary>
         public abstract bool Set(string id, bool value);
 
@@ -717,6 +716,7 @@ namespace Eclipse.Configuration
         /// will always return true instead and will set <see cref="IsDirty"/> to true as well)
         /// </returns>
         public abstract bool Set(string id, string value);
+        #endregion
 
         /// <summary>
         /// Checks if any parameter with a given name was changed before <see cref="Apply"/> or <see cref="Revert"/> was used.
@@ -791,8 +791,8 @@ namespace Eclipse.Configuration
         public abstract Parameter? Find(FullName name);
         public abstract Parameter? Find(string name);
 
-        public abstract TParameter FindOrThrow<TParameter>(FullName name) where TParameter : Parameter => FindOrThrow<TParameter>(name.Full);
-        public abstract TParameter FindOrThrow<TParameter>(string name) where TParameter : Parameter
+        public virtual TParameter FindOrThrow<TParameter>(FullName name) where TParameter : Parameter => FindOrThrow<TParameter>(name.Full);
+        public virtual TParameter FindOrThrow<TParameter>(string name) where TParameter : Parameter
         {
             if (m_Parameters.TryGetValue(name, out Parameter? finding))
             {
@@ -1007,33 +1007,6 @@ namespace Eclipse.Configuration
         /// <typeparam name="T"><see cref="EngineConfiguration"/> to use.</typeparam>
         /// <returns>Configuration file (existing or default) of a given type.</returns>
         public T GetOrNew<T>() where T : EngineConfiguration => m_EngineConfigurations.GetValueOrDefault(typeof(T)) as T ?? ScriptableObject.CreateInstance<T>();
-        public void NotifyCategorizationChanged()
-        {
-            // TODO: Separate category management in its own class.
-            if (DoCategorizationCallbackDelays && !CoroutineRunner.IsRunning)
-            {
-                CoroutineRunner.StartCoroutine(() => OnCategorizationChanged?.Invoke());
-            }
-            else
-            {
-                // I wasn't feeling like dealing with callback resolving for when you switch that value on and off frequently.
-                throw new NotSupportedException("Non-delayed categorization is not supported at the moment.");
-            }
-        }
-
-        public bool TryGetCategory(FullCategory category, [NotNullWhen(true)] out Category? result) => TryGetCategory(category.Name, out result);
-        public bool TryGetCategory(string category, [NotNullWhen(true)] out Category? result)
-        {
-            result = GetCategory(category);
-            return result != null;
-        }
-
-        public Category? GetCategory(FullCategory category) => GetCategory(category.Name);
-        public Category? GetCategory(string category)
-        {
-            m_Categories.TryGetValue(category, out Category? result);
-            return result;
-        }
 
 
 

@@ -18,6 +18,9 @@ using Eclipse.Structs;
 
 namespace Eclipse.Configuration.Parameters
 {
+    /// <summary>
+    /// Base parameter which can be serialized to- or deserialized from <see cref="Storages.IDataStorage"/> via <see cref="ConfigurationService"/>.
+    /// </summary>
     public abstract class Parameter
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -26,7 +29,6 @@ namespace Eclipse.Configuration.Parameters
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         public delegate void ParameterChangeHandler(Parameter parameter);
-        public delegate void VisibilityChangeHandler(bool visible);
 
 
 
@@ -43,24 +45,7 @@ namespace Eclipse.Configuration.Parameters
         /// It is not recommended to change <see cref="FullName.Mod"/> outside of the initialization.
         /// You can do it, but it will cause UI rebuilds, and might break stuff.
         /// </remarks>
-        public event ParameterChangeHandler OnNameChanged;
-
-        /// <summary>
-        /// Called when either <see cref="FullCategory.Name"/>
-        /// or both <see cref="FullCategory.Name"/> AND <see cref="FullCategory.Visible"/> was changed.
-        /// (see also: <see cref="Category"/>)
-        /// </summary>
-        /// <remarks>
-        /// Was made this way so updates to <see cref="FullCategory.Visible"/> won't force UI to rebuild constantly.
-        /// </remarks>
-        public event ParameterChangeHandler OnCategoryChanged;
-
-        /// <summary>
-        /// Called when <see cref="FullCategory.Visible"/> has changed.
-        /// (see also: <see cref="Category"/>)
-        /// </summary>
-        public event VisibilityChangeHandler OnVisibilityChanged;
-
+        public event ParameterChangeHandler? OnNameChanged;
 
         // Fire-on-add events:
         /// <inheritdoc cref="OnNameChanged"/>
@@ -73,34 +58,6 @@ namespace Eclipse.Configuration.Parameters
                 {
                     OnNameChanged += value;
                     value(this);
-                }
-            }
-        }
-
-        /// <inheritdoc cref="OnCategoryChanged"/>
-        public event ParameterChangeHandler FireWithCategoryChanged
-        {
-            remove => OnCategoryChanged -= value;
-            add
-            {
-                if (value != null)
-                {
-                    OnCategoryChanged += value;
-                    value(this);
-                }
-            }
-        }
-
-        /// <inheritdoc cref="OnVisibilityChanged"/>
-        public event VisibilityChangeHandler FireWithVisibilityChanged
-        {
-            remove => OnVisibilityChanged -= value;
-            add
-            {
-                if (value != null)
-                {
-                    OnVisibilityChanged += value;
-                    value(m_Category.Visible);
                 }
             }
         }
@@ -120,38 +77,7 @@ namespace Eclipse.Configuration.Parameters
         /// Note: please, refrain from modifying <see cref="FullName.Mod"/> here.
         /// This might cause a lot of UI updates, and might break stuff at times.
         /// </remarks>
-        public FullName Name
-        {
-            get => m_Name;
-            set
-            {
-                if (m_Name != value)
-                {
-                    m_Name = value;
-                    OnNameChanged?.Invoke(this);
-                    EngineService<ConfigurationService>.Instance.NotifyCategorizationChanged();
-                }
-            }
-        }
-
-        public FullCategory Category
-        {
-            get => m_Category;
-            set
-            {
-                if (m_Category != value)
-                {
-                    bool invokeVisibility = m_Category.Visible != value.Visible;
-
-                    m_Category = value;
-                    OnCategoryChanged?.Invoke(this);
-                    if (invokeVisibility)
-                    {
-                        OnVisibilityChanged?.Invoke(value.Visible);
-                    }
-                }
-            }
-        }
+        public FullName Name => m_Name;
 
 
 
@@ -165,7 +91,6 @@ namespace Eclipse.Configuration.Parameters
 
         // Encapsulated Fields:
         protected FullName m_Name;
-        protected FullCategory m_Category;
 
         // Local Fields:
 
