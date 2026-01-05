@@ -33,6 +33,14 @@ namespace Eclipse.Configuration
     /// Service, responsible for providing ways for configuring the game either from the editor,
     /// manually during game development, or using in-game settings.
     /// </summary>
+    /// <remarks>
+    /// You might struggle to decide if you should manually implement your settings or use <see cref="Parameter"/>s instead.
+    /// For that, keep in might rule of thumb:
+    /// <para>- if it is modifiable at runtime - use <see cref="Parameter"/>s.</para>
+    /// <para>- if is can be modified by other mods at runtime - use <see cref="Parameter"/>s.</para>
+    /// <para>- if it is only set at launch or engine restart - use C# Properties.</para>
+    /// <para>- if it can be 'set' at runtime, but value will only update after reload - use custom implementation (for now).</para>
+    /// </remarks>
     public abstract class ConfigurationService : EngineService
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -769,6 +777,7 @@ namespace Eclipse.Configuration
         /// </summary>
         /// <param name="id">ID of the raw parameter to set. Usually in a "@name" pattern.</param>
         /// <param name="value">Value to set.</param>
+        /// <param name="def">Default value to take if there is no set data in storage.</param>
         public abstract void Get(string id, out string value, string def = "");
         #endregion
 

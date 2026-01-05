@@ -30,7 +30,7 @@ namespace Eclipse
     /// <summary>
     /// Main class for <see cref="Eclipse"/> Foundation Library
     /// </summary>
-    public static class Engine
+    public static partial class Engine
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -149,11 +149,8 @@ namespace Eclipse
         /// Checks whether <see cref="Eclipse"/> <see cref="Engine"/> has a specific <see cref="EngineService"/> initialized at this point.
         /// </summary>
         /// <returns><c>true</c> if has target <see cref="EngineService"/>, <c>false</c> otherwise.</returns>
-        public static bool Has<T>() where T : EngineService
-        {
+        public static bool Has<T>() where T : EngineService => EngineService<T>.Instance != null;
 
-        }
-        
         /// <summary>
         /// Method is extremely optimized for a repeated usage. Feel free to use it very frequently.
         /// <para>

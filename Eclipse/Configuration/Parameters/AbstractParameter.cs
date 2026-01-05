@@ -181,8 +181,8 @@ namespace Eclipse.Configuration.Parameters
         {
             // TODO: Actually load-in the values from storage XD
             m_Value = m_LastValue = m_DefaultValue = def;
-            EngineService<ConfigurationService>.Instance.OnAfterApplyChanges += ApplyChanges;
-            EngineService<ConfigurationService>.Instance.OnAfterRevertChanges += RevertChanges;
+            ConfigurationService.OnAfterApplyChanges += ApplyChanges;
+            ConfigurationService.OnAfterRevertChanges += RevertChanges;
         }
 
 

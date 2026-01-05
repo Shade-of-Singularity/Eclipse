@@ -43,7 +43,7 @@ namespace Eclipse.Structs
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Full name ("<see cref="Mod"/><see cref="ParameterSeparator"/><see cref="Parameter"/>") of the parameter.
+        /// Full name ("<see cref="Mod"/><see cref="ParameterSeparator"/><see cref="Name"/>") of the parameter.
         /// </summary>
         public readonly string Full;
 
@@ -55,7 +55,7 @@ namespace Eclipse.Structs
         /// <summary>
         /// A last parameter of the name. See <see cref="Full"/> to see how full name looks like.
         /// </summary>
-        public readonly string Parameter;
+        public readonly string Name;
 
 
 
@@ -72,7 +72,7 @@ namespace Eclipse.Structs
             if (string.IsNullOrWhiteSpace(name))
             {
                 Full = string.Empty;
-                Parameter = string.Empty;
+                Name = string.Empty;
                 Mod = string.IsNullOrWhiteSpace(mod) ? Modding.Mod.EmptyModName : mod;
                 return;
             }
@@ -80,13 +80,13 @@ namespace Eclipse.Structs
             if (string.IsNullOrWhiteSpace(mod))
             {
                 Full = name;
-                Parameter = name;
+                Name = name;
                 Mod = Modding.Mod.EmptyModName;
             }
             else
             {
                 Full = string.Join(ParameterSeparator, mod, name);
-                Parameter = name;
+                Name = name;
                 Mod = mod;
             }
         }
@@ -94,7 +94,7 @@ namespace Eclipse.Structs
         private FullName(string name, string mod, string full)
         {
             Mod = mod;
-            Parameter = name;
+            Name = name;
             Full = full;
         }
 
