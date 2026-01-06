@@ -446,8 +446,6 @@ namespace Eclipse
         public static async UniTask Unload(UnloadSettings settings)
         {
             ResetState();
-            GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
-            GC.Collect();
 
             // TODO: Still decide what to do with service unloading in the editor.
             Application.quitting -= ResetState;
