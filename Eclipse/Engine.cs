@@ -22,6 +22,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -38,14 +39,9 @@ namespace Eclipse
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Log name of this class for when it logs anything. Used for identifying what exactly warns you about an exception.
+        /// Prefix for console messages sent from this class.
         /// </summary>
-        public const string LogName = nameof(Eclipse);
-
-        /// <summary>
-        /// Same as <see cref="LogName"/> but this square braces.
-        /// </summary>
-        public const string LogNameBraced = "[" + LogName + "]";
+        public const string LogPrefix = "[" + nameof(Eclipse) + "]";
 
 
 
@@ -61,10 +57,14 @@ namespace Eclipse
         /// <summary>
         /// Event that is fired when <see cref="IsInitialized"/> is set to '<c>true</c>'
         /// </summary>
+        /// <remarks>
+        /// Reset during each engine initialization.
+        /// </remarks>
         public static event Action OnEngineInitialized
         {
             remove
             {
+                if (value == null) return;
                 lock (m_OnEngineInitializedCallbacks)
                 {
                     m_OnEngineInitializedCallbacks.Remove(value);
@@ -91,12 +91,61 @@ namespace Eclipse
         }
 
         /// <summary>
-        /// Called when every existing instance of <see cref="EngineService"/> and similar is fully unloaded. (e.g. on <see cref="Unload(UnloadSettings)"/>)
+        /// Event that is fired when <see cref="IsInitialized"/> is set to '<c>true</c>'
         /// </summary>
         /// <remarks>
+        /// Event list for this callback is never cleared out.
+        /// </remarks>
+        public static event Action PersistentOnEngineInitialized
+        {
+            remove
+            {
+                if (value == null) return;
+                lock (m_PersistentOnEngineInitializedCallbacks)
+                {
+                    m_PersistentOnEngineInitializedCallbacks.Remove(value);
+                }
+            }
+
+            add
+            {
+                if (value == null) return;
+                lock (m_OnEngineInitializedCallbacks)
+                {
+                    m_OnEngineInitializedCallbacks.Add(value);
+                }
+
+                lock (m_IsInitializedStateLock)
+                {
+                    if (m_IsInitialized)
+                    {
+                        value.Invoke();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when every existing instance of <see cref="EngineService"/> and similar is fully unloaded. (e.g. on <see cref="Unload(UnloadSettings)"/>)
+        /// <para>
         /// Used to reset static references to the old services and configuration classes, as to prevent memory leaks on mod reloading.
+        /// </para>
+        /// </summary>
+        /// <remarks>
+        /// Callback list is cleared after each engine reset.
         /// </remarks>
         public static event Action? OnEngineResetting;
+
+        /// <summary>
+        /// Called when every existing instance of <see cref="EngineService"/> and similar is fully unloaded. (e.g. on <see cref="Unload(UnloadSettings)"/>)
+        /// <para>
+        /// Used to reset static references to the old services and configuration classes, as to prevent memory leaks on mod reloading.
+        /// </para>
+        /// </summary>
+        /// <remarks>
+        /// Callback list is never cleared.
+        /// </remarks>
+        public static event Action? PersistentOnEngineResetting;
 
         // Properties:
         /// <summary>
@@ -131,6 +180,7 @@ namespace Eclipse
 
         // Encapsulated Fields:
         private static readonly HashSet<Action> m_OnEngineInitializedCallbacks = new HashSet<Action>();
+        private static readonly HashSet<Action> m_PersistentOnEngineInitializedCallbacks = new HashSet<Action>();
         private static readonly object m_IsInitializedStateLock = new object();
         private static volatile bool m_IsInitialized;
 
@@ -273,22 +323,41 @@ namespace Eclipse
             }
 
             bool exceptions = false;
-            foreach (var callback in m_OnEngineInitializedCallbacks)
+            lock (m_OnEngineInitializedCallbacks)
             {
-                try
+                foreach (var callback in m_OnEngineInitializedCallbacks)
                 {
-                    callback.Invoke();
+                    try
+                    {
+                        callback.Invoke();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogException(ex);
+                        exceptions |= true;
+                    }
                 }
-                catch (Exception ex)
+            }
+
+            lock (m_PersistentOnEngineInitializedCallbacks)
+            {
+                foreach (var callback in m_PersistentOnEngineInitializedCallbacks)
                 {
-                    Debug.LogException(ex);
-                    exceptions |= true;
+                    try
+                    {
+                        callback.Invoke();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogException(ex);
+                        exceptions |= true;
+                    }
                 }
             }
 
             if (exceptions)
             {
-                Debug.LogError($"{LogNameBraced} Some callbacks during '{nameof(OnEngineInitialized)}' event has encountered exceptions! Look above for errors.");
+                Debug.LogError($"{LogNameBraced} Some callbacks on '{nameof(OnEngineInitialized)}' thrown exceptions! Look above for errors.");
             }
 
             // Only locks on clear, since after 'm_IsInitialized' was set to true - nothing can be modified.
@@ -321,7 +390,7 @@ namespace Eclipse
         {
             if (IsInitialized) throw new Exception($"Cannot modify ('{Path.GetFileNameWithoutExtension(caller)}') outside of the engine initialization stage.");
         }
-        
+
         /// <inheritdoc cref="Reload(UnloadSettings)"/>
         public static async UniTask Reload() => await Reload(UnloadSettings.ReloadSettings);
 
@@ -377,6 +446,7 @@ namespace Eclipse
         public static async UniTask Unload(UnloadSettings settings)
         {
             ResetState();
+            GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
             GC.Collect();
 
             // TODO: Still decide what to do with service unloading in the editor.
@@ -471,6 +541,17 @@ namespace Eclipse
             catch (Exception ex)
             {
                 Debug.LogError($"{LogNameBraced} Failed to dispose references on engine reload. Expect small/large memory leaks.");
+                Debug.LogException(ex);
+            }
+
+
+            try
+            {
+                PersistentOnEngineResetting?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"{LogNameBraced} Failed to run persistent {nameof(OnEngineResetting)} callback. Expect small/large memory leaks.");
                 Debug.LogException(ex);
             }
 

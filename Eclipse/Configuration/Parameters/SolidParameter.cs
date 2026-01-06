@@ -1,21 +1,4 @@
-﻿/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
-/// 
-/// Licensed under the Apache License, Version 2.0 (the "License");
-/// you may not use this file except in compliance with the License.
-/// You may obtain a copy of the License at
-/// 
-///         http://www.apache.org/licenses/LICENSE-2.0
-/// 
-/// Unless required by applicable law or agreed to in writing, software
-/// distributed under the License is distributed on an "AS IS" BASIS,
-/// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-/// See the License for the specific language governing permissions and
-/// limitations under the License.
-/// 
-/// ]]>
-
-using Eclipse.Serialization;
-using Eclipse.Structs;
+﻿using Eclipse.Structs;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,7 +6,8 @@ using UnityEngine;
 namespace Eclipse.Configuration.Parameters
 {
     /// <summary>
-    /// Parameter for the settings of the game.
+    /// Solid parameters can only be changed with Engine reload.
+    /// You can prompt user to reload the game manually by calling (TODO) method.
     /// </summary>
     /// <remarks>
     /// Rule of thumbs as to when to use those parameters:
@@ -32,23 +16,15 @@ namespace Eclipse.Configuration.Parameters
     /// <para>- if parameter is only set at launch or engine restart - use C# Properties.</para>
     /// <para>- if parameter can be 'set' at runtime, but value will only update after reload - use <see cref="SolidParameter{TValue}"/>.</para>
     /// </remarks>
-    /// <typeparam name="TValue">Type of the variable parameter stores.</typeparam>
-    public sealed class Parameter<TValue> : AbstractParameter where TValue : IConvertible, IEquatable<TValue>
+    public sealed class SolidParameter<TValue> : AbstractParameter where TValue : IConvertible, IEquatable<TValue>
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
         /// .                                                 Delegates
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <summary>
-        /// Handler for when value of the parameter has changed.
-        /// </summary>
-        /// <remarks>
-        /// Can also be used by UI components to check for <see cref="IsModified"/> and <see cref="IsDirty"/> property states.
-        /// </remarks>
-        /// <param name="parameter">Parameter that was modified.</param>
-        /// <param name="last">Last value of the parameter.</param>
-        public delegate void ValueChangeHandler(Parameter<TValue> parameter, TValue last);
+        public delegate void ValueChangeHandler(TValue old, TValue current);
+        public delegate void ModifiedStateChangeHandler(bool modified);
 
 
 
@@ -68,6 +44,11 @@ namespace Eclipse.Configuration.Parameters
         /// </summary>
         public event ValueChangeHandler? OnValueApplied;
 
+        /// <summary>
+        /// Called when <see cref="IsModified"/> has changed.
+        /// </summary>
+        public event ModifiedStateChangeHandler? OnModifiedChanged;
+
 
         // Fire-on-add events:
         // TODO: Auto-fire regular events when Engine was initialized.
@@ -83,7 +64,7 @@ namespace Eclipse.Configuration.Parameters
                 if (value != null)
                 {
                     OnValueApplied += value;
-                    value(this, m_Value);
+                    value(m_Value, m_Value);
                 }
             }
         }
@@ -100,7 +81,24 @@ namespace Eclipse.Configuration.Parameters
                 if (value != null)
                 {
                     OnValueApplied += value;
-                    value(this, m_LastValue);
+                    value(m_StoredValue, m_StoredValue);
+                }
+            }
+        }
+
+        /// <summary><inheritdoc cref="OnModifiedChanged"/></summary>
+        /// <remarks>
+        /// Both attaches the event handler to <see cref="OnValueApplied"/>, and instantly fires the event for it.
+        /// </remarks>
+        public event ModifiedStateChangeHandler FireWithModifiedChanged
+        {
+            remove => OnModifiedChanged -= value;
+            add
+            {
+                if (value != null)
+                {
+                    OnModifiedChanged += value;
+                    value(IsModified);
                 }
             }
         }
@@ -113,11 +111,8 @@ namespace Eclipse.Configuration.Parameters
         /// .                                              Public Properties
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <inheritdoc/>
-        public override bool IsDirty => !EqualityComparer<TValue>.Default.Equals(m_LastValue, m_Value);
-        
-        /// <inheritdoc/>
-        public override bool IsModified => !EqualityComparer<TValue>.Default.Equals(m_Value, m_DefaultValue);
+        public bool IsDirty => !EqualityComparer<TValue>.Default.Equals(m_StoredValue, m_Value);
+        public bool IsModified => !EqualityComparer<TValue>.Default.Equals(m_Value, m_DefaultValue);
 
         /// <summary>
         /// Default value of the parameter to be used.
@@ -133,6 +128,15 @@ namespace Eclipse.Configuration.Parameters
         {
             get => m_DefaultValue;
             set => SetDefault(value);
+        }
+
+        /// <summary>
+        /// Internal value that will be applied to the parameter on the next <see cref="Engine"/> reload.
+        /// </summary>
+        public TValue StoredValue
+        {
+            get => m_StoredValue;
+            set => Set(value);
         }
 
         /// <summary>
@@ -158,11 +162,11 @@ namespace Eclipse.Configuration.Parameters
         // Static Fields:
 
         // Encapsulated Fields:
-        protected TValue m_DefaultValue;
-        protected TValue m_Value;
+        private TValue m_DefaultValue;
+        private TValue m_Value;
 
         // Local Fields:
-        protected TValue m_LastValue;
+        private TValue m_StoredValue;
 
 
 
@@ -172,13 +176,11 @@ namespace Eclipse.Configuration.Parameters
         /// .                                                Constructors
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public Parameter(FullName name) : this(name, default!) { }
-        public Parameter(FullName name, TValue def) : base(name)
+        public SolidParameter(FullName name) : this(name, default!) { }
+        public SolidParameter(FullName name, TValue def) : base(name)
         {
-            m_Value = m_LastValue = m_DefaultValue = def;
-
-            /// Note: Registration also immediately calls <see cref="Deserialize(string)"/> with parameter data if available.
-            EngineService<ConfigurationService>.Instance.Register(this);
+            // TODO: Actually load-in the values from storage XD
+            m_Value = m_StoredValue = m_DefaultValue = def;
             ConfigurationService.OnAfterApplyChanges += ApplyChanges;
             ConfigurationService.OnAfterRevertChanges += RevertChanges;
         }
@@ -191,55 +193,42 @@ namespace Eclipse.Configuration.Parameters
         /// .                                               Implementations
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <inheritdoc/>
-        public override string Serialize() => Serializers<TValue>.Serializer(Value);
+        public override object GetValue() => m_Value;
 
-        /// <inheritdoc/>
-        public override void Deserialize(string raw)
-        {
-            try
-            {
-                Value = Serializers<TValue>.Deserializer(raw);
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning($"Parameter {m_Name} ({typeof(TValue).Name}]) was not able to deserialize properly. Default value ({m_DefaultValue}) will be used instead.\nFailed data: {raw}\nException: {ex}");
-            }
-        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override string Serialize() => JsonUtility.ToJson(m_StoredValue);
 
-        /// <inheritdoc/>
-        public override void ApplyChanges()
-        {
-            if (IsDirty) ApplyChangesForceFireCallbacks();
-        }
+        /// <summary>
+        /// Deserializes <paramref name="raw"/> data and stores value in internal variable.
+        /// </summary>
+        /// <remarks>
+        /// Actually works even after Engine initialization! However, does not fire any callbacks.
+        /// </remarks>
+        /// <param name="raw"></param>
+        public override void Deserialize(string raw) => Value = JsonUtility.FromJson<TValue>(raw);
 
-        public override void ApplyChangesForceFireCallbacks()
-        {
-            TValue old = m_LastValue;
-            m_LastValue = m_Value;
-            OnValueApplied?.Invoke(old, m_Value);
-        }
+        /// <summary>
+        /// Normally applies changed <see cref="Value"/>, but does nothing with <see cref="SolidParameter{TValue}"/>.
+        /// </summary>
+        public override void ApplyChanges() { }
 
-        public override void RevertChanges()
-        {
-            if (IsDirty)
-            {
-                RevertChangesForceFireCallbacks();
-            }
-        }
+        /// <summary>
+        /// Normally applies changed <see cref="Value"/> and fides on change callbacks, but does nothing with <see cref="SolidParameter{TValue}"/>.
+        /// </summary>
+        public override void ApplyChangesForceFireCallbacks() { }
 
-        public override void RevertChangesForceFireCallbacks()
-        {
-            bool modified = IsModified;
-            TValue old = m_Value;
-            m_Value = m_LastValue;
-            OnValueApplied?.Invoke(old, m_LastValue);
-            OnValueChanged?.Invoke(old, m_LastValue);
-            if (IsModified != modified)
-            {
-                OnModifiedChanged?.Invoke(!modified);
-            }
-        }
+        /// <summary>
+        /// Normally reverts changed <see cref="Value"/>, but does nothing with <see cref="SolidParameter{TValue}"/>.
+        /// </summary>
+        public override void RevertChanges() { }
+
+        /// <summary>
+        /// Normally reverts changed <see cref="Value"/> and fides on change callbacks, but does nothing with <see cref="SolidParameter{TValue}"/>.
+        /// </summary>
+        public override void RevertChangesForceFireCallbacks() { }
 
 
 
@@ -252,6 +241,9 @@ namespace Eclipse.Configuration.Parameters
         /// <summary>
         /// Resets <see cref="Value"/> to a <see cref="DefaultValue"/>.
         /// </summary>
+        /// <remarks>
+        /// Will only apply new value on the next <see cref="Engine"/> reload.
+        /// </remarks>
         public void Reset() => Set(DefaultValue);
 
 
@@ -262,7 +254,7 @@ namespace Eclipse.Configuration.Parameters
         /// .                                               Private Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public virtual void Set(TValue value)
+        private void Set(TValue value)
         {
             if (!EqualityComparer<TValue>.Default.Equals(m_Value, value))
             {

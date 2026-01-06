@@ -20,14 +20,14 @@ using UnityEngine;
 namespace Eclipse.Configuration.UI
 {
     /// <summary>
-    /// UI component for an <see cref="Parameters.Parameter"/>.
+    /// UI component for an <see cref="Parameters.AbstractParameter"/>.
     /// </summary>
     /// <remarks>
     /// When implementing, don't forget that <see cref="Parameter"/>s can be modified in the editor, on <see cref="Application.isPlaying"/> == <c>false</c>.
     /// Account for that by not modifying the UI in such cases, but you can modify the parameters themselves.
     /// </remarks>
-    /// <typeparam name="TParameter">Special type of the parameter to try to look for. Specify <see cref="Parameters.Parameter"/> for any type.</typeparam>
-    public abstract class ParameterUI<TParameter> : MonoBehaviour where TParameter : Parameter
+    /// <typeparam name="TParameter">Special type of the parameter to try to look for. Specify <see cref="Parameters.AbstractParameter"/> for any type.</typeparam>
+    public abstract class ParameterUI<TParameter> : MonoBehaviour where TParameter : AbstractParameter
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .

@@ -57,7 +57,7 @@ namespace Eclipse.Configuration
     }
 
     /// <summary>
-    /// Custom class for your settings, which doesn't use <see cref="Parameters.Parameter"/>.
+    /// Custom class for your settings, which doesn't use <see cref="Parameters.AbstractParameter"/>.
     /// </summary>
     /// <remarks>
     /// Works similarly to Naninovel, if you familiar with it.

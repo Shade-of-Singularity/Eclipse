@@ -18,11 +18,11 @@ using Cysharp.Threading.Tasks;
 using Eclipse.Configuration.Parameters;
 using Eclipse.Configuration.Storages;
 using Eclipse.Extensions;
+using Eclipse.Serialization;
 using Eclipse.Structs;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -33,12 +33,12 @@ namespace Eclipse.Configuration
     /// manually during game development, or using in-game settings.
     /// </summary>
     /// <remarks>
-    /// You might struggle to decide if you should manually implement your settings or use <see cref="Parameter"/>s instead.
+    /// You might struggle to decide if you should manually implement your settings or use <see cref="AbstractParameter"/>s instead.
     /// For that, keep in might rule of thumb:
-    /// <para>- if it is modifiable at runtime - use <see cref="Parameter"/>s.</para>
-    /// <para>- if is can be modified by other mods at runtime - use <see cref="Parameter"/>s.</para>
-    /// <para>- if it is only set at launch or engine restart - use C# Properties.</para>
-    /// <para>- if it can be 'set' at runtime, but value will only update after reload - use custom implementation (for now).</para>
+    /// <para>- if parameter is modifiable at runtime - use <see cref="Parameter{TValue}"/>.</para>
+    /// <para>- if parameter can be modified by other mods at runtime - use <see cref="Parameter{TValue}"/>.</para>
+    /// <para>- if parameter is only set at launch or engine restart - use C# Properties.</para>
+    /// <para>- if parameter can be 'set' at runtime, but value will only update after reload - use <see cref="SolidParameter{TValue}"/>.</para>
     /// </remarks>
     public abstract class ConfigurationService : EngineService
     {
@@ -48,24 +48,16 @@ namespace Eclipse.Configuration
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// <see cref="ConfigurationService"/> is initialized very first in the entire game,
-        /// as even <see cref="Localization.LocalizationService"/> relies on it.
+        /// <see cref="ConfigurationService"/> is initialized after <see cref="Serialization.SerializationService"/>, as it relies on it to serialize parameters.
+        /// One of the first to be initialized, as all other services, like <see cref="Localization.LocalizationService"/>, relies on it.
         /// </summary>
         /// Note: This is why you cannot localize anything here btw.
-        public const int InitializationOrder = -2_000_000_000;
+        public const int InitializationOrder = -1_700_000_000;
 
         /// <summary>
-        /// Identifier for any console logs this service makes.
+        /// Prefix for messages sent to the console from this class.
         /// </summary>
-        public const string LogName = nameof(ConfigurationService);
-
-        /// <summary>
-        /// Same as <see cref="LogName"/>, but in braces.
-        /// <para>
-        /// Identifier for any console logs this service makes.
-        /// </para>
-        /// </summary>
-        public const string LogNameBraced = "[" + LogName + "]";
+        public const string LogPrefix = Engine.LogPrefix + "[" + nameof(ConfigurationService) + "]";
 
         /// <summary>
         /// Path to configuration files on the disk.
@@ -192,7 +184,7 @@ namespace Eclipse.Configuration
         }
 
         /// <summary>
-        /// Whether <see cref="ConfigurationService"/> is going through every <see cref="Parameter"/> and saves its state to the disk.
+        /// Whether <see cref="ConfigurationService"/> is going through every <see cref="AbstractParameter"/> and saves its state to the disk.
         /// </summary>
         public bool ExecutesParameterSaving
         {
@@ -224,10 +216,10 @@ namespace Eclipse.Configuration
         /// Whether any of the parameters have changed and can be applied.
         /// </summary>
         /// <remarks>
-        /// Directly modified by <see cref="Parameter"/>s.
+        /// Directly modified by <see cref="AbstractParameter"/>s.
         /// </remarks>
         /// TODO: Reset <see cref="IsDirty"/> if all the parameters is no longer modifies
-        /// after direct user inputs or direct <see cref="Parameter.RevertChanges"/> usage.
+        /// after direct user inputs or direct <see cref="AbstractParameter.RevertChanges"/> usage.
         public abstract bool IsDirty { get; }
 
         /// <summary>
@@ -258,7 +250,7 @@ namespace Eclipse.Configuration
         /// .                                             Private Properties
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private CoroutineHandler CoroutineRunner
+        private static CoroutineHandler CoroutineRunner
         {
             get
             {
@@ -292,7 +284,7 @@ namespace Eclipse.Configuration
 
         // Local Fields:
         private readonly Dictionary<Type, EngineConfiguration> m_EngineConfigurations = new Dictionary<Type, EngineConfiguration>();
-        private readonly Dictionary<string, Parameter> m_Parameters = new Dictionary<string, Parameter>();
+        private readonly Dictionary<string, AbstractParameter> m_Parameters = new Dictionary<string, AbstractParameter>();
         private readonly Dictionary<Type, GameState> m_GameStates = new Dictionary<Type, GameState>();
         private readonly UniTaskCompletionSource m_AwaitSource = new UniTaskCompletionSource();
         private readonly object m_AwaitLock = new object();
@@ -306,349 +298,53 @@ namespace Eclipse.Configuration
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Initializes all <see cref="Parameter"/>s in a given class.
+        /// Initializes all <see cref="AbstractParameter"/>s in a given class.
         /// </summary>
         /// <remarks>
         /// In reality, just runs a static constructor on it.
         /// </remarks>
         /// <seealso cref="RuntimeHelpers.RunClassConstructor(RuntimeTypeHandle)"/>
-        /// <param name="class">Type of the class which holds <see cref="Parameter"/>s.</param>
+        /// <param name="class">Type of the class which holds <see cref="AbstractParameter"/>s.</param>
         public static void SetSettings(Type @class) => SetSettings(@class.TypeHandle);
 
         /// <inheritdoc cref="SetSettings(Type)"/>
-        /// <param name="handle">Handle of the class which holds <see cref="Parameter"/>s.</param>
+        /// <param name="handle">Handle of the class which holds <see cref="AbstractParameter"/>s.</param>
         public static void SetSettings(RuntimeTypeHandle handle) => RuntimeHelpers.RunClassConstructor(handle);
 
+        #region Callback handling
 
-        #region Custom 'SetValue/GetValue' Fast-access
-        /// <summary><inheritdoc cref="SetValue(string, ref string, string)"/></summary>
-        /// <remarks>
-        /// Sets custom value using <see cref="Set(string, bool)"/> method.
-        /// </remarks>
-        /// <returns><inheritdoc cref="SetValue(string, ref string, string)"/></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool SetValue(string id, ref bool var, bool value)
+        /// <summary>
+        /// Delays given action by a frame, and invokes it afterwards.
+        /// </summary>
+        /// <param name="wasScheduled">Indicates if this callback was already scheduled or not. Won't schedule if it is <c>true</c>.</param>
+        /// <param name="action">Action to schedule and run a frame later. Not scheduled it <paramref name="wasScheduled"/> is <c>true</c>.</param>
+        public static void Delay(ref bool wasScheduled, Action? action)
         {
-            if (var == value) return false;
-            EngineService<ConfigurationService>.Instance.Set(id, var = value);
-            return true;
-        }
+            if (wasScheduled || action is null) return;
+            wasScheduled = true;
 
-        /// <summary><inheritdoc cref="SetValue(string, ref string, string)"/></summary>
-        /// <remarks>
-        /// Sets custom value using <see cref="Set(string, byte)"/> method.
-        /// </remarks>
-        /// <returns><inheritdoc cref="SetValue(string, ref string, string)"/></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool SetValue(string id, ref byte var, byte value)
-        {
-            if (var == value) return false;
-            EngineService<ConfigurationService>.Instance.Set(id, var = value);
-            return true;
-        }
-
-        /// <summary><inheritdoc cref="SetValue(string, ref string, string)"/></summary>
-        /// <remarks>
-        /// Sets custom value using <see cref="Set(string, sbyte)"/> method.
-        /// </remarks>
-        /// <returns><inheritdoc cref="SetValue(string, ref string, string)"/></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool SetValue(string id, ref sbyte var, sbyte value)
-        {
-            if (var == value) return false;
-            EngineService<ConfigurationService>.Instance.Set(id, var = value);
-            return true;
-        }
-
-        /// <summary><inheritdoc cref="SetValue(string, ref string, string)"/></summary>
-        /// <remarks>
-        /// Sets custom value using <see cref="Set(string, short)"/> method.
-        /// </remarks>
-        /// <returns><inheritdoc cref="SetValue(string, ref string, string)"/></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool SetValue(string id, ref short var, short value)
-        {
-            if (var == value) return false;
-            EngineService<ConfigurationService>.Instance.Set(id, var = value);
-            return true;
-        }
-
-        /// <summary><inheritdoc cref="SetValue(string, ref string, string)"/></summary>
-        /// <remarks>
-        /// Sets custom value using <see cref="Set(string, ushort)"/> method.
-        /// </remarks>
-        /// <returns><inheritdoc cref="SetValue(string, ref string, string)"/></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool SetValue(string id, ref ushort var, ushort value)
-        {
-            if (var == value) return false;
-            EngineService<ConfigurationService>.Instance.Set(id, var = value);
-            return true;
-        }
-
-        /// <summary><inheritdoc cref="SetValue(string, ref string, string)"/></summary>
-        /// <remarks>
-        /// Sets custom value using <see cref="Set(string, char)"/> method.
-        /// </remarks>
-        /// <returns><inheritdoc cref="SetValue(string, ref string, string)"/></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool SetValue(string id, ref char var, char value)
-        {
-            if (var == value) return false;
-            EngineService<ConfigurationService>.Instance.Set(id, var = value);
-            return true;
-        }
-
-        /// <summary><inheritdoc cref="SetValue(string, ref string, string)"/></summary>
-        /// <remarks>
-        /// Sets custom value using <see cref="Set(string, int)"/> method.
-        /// </remarks>
-        /// <returns>
-        /// <c>true</c> if <paramref name="var"/> changed. <c>false</c> otherwise.
-        /// </returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool SetValue(string id, ref int var, int value)
-        {
-            if (var == value) return false;
-            EngineService<ConfigurationService>.Instance.Set(id, var = value);
-            return true;
-        }
-
-        /// <summary><inheritdoc cref="SetValue(string, ref string, string)"/></summary>
-        /// <remarks>
-        /// Sets custom value using <see cref="Set(string, uint)"/> method.
-        /// </remarks>
-        /// <returns><inheritdoc cref="SetValue(string, ref string, string)"/></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool SetValue(string id, ref uint var, uint value)
-        {
-            if (var == value) return false;
-            EngineService<ConfigurationService>.Instance.Set(id, var = value);
-            return true;
-        }
-
-        /// <summary><inheritdoc cref="SetValue(string, ref string, string)"/></summary>
-        /// <remarks>
-        /// Sets custom value using <see cref="Set(string, long)"/> method.
-        /// </remarks>
-        /// <returns><inheritdoc cref="SetValue(string, ref string, string)"/></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool SetValue(string id, ref long var, long value)
-        {
-            if (var == value) return false;
-            EngineService<ConfigurationService>.Instance.Set(id, var = value);
-            return true;
-        }
-
-        /// <summary><inheritdoc cref="SetValue(string, ref string, string)"/></summary>
-        /// <remarks>
-        /// Sets custom value using <see cref="Set(string, ulong)"/> method.
-        /// </remarks>
-        /// <returns><inheritdoc cref="SetValue(string, ref string, string)"/></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool SetValue(string id, ref ulong var, ulong value)
-        {
-            if (var == value) return false;
-            EngineService<ConfigurationService>.Instance.Set(id, var = value);
-            return true;
-        }
-
-        /// <summary><inheritdoc cref="SetValue(string, ref string, string)"/></summary>
-        /// <remarks>
-        /// Sets custom value using <see cref="Set(string, float)"/> method.
-        /// </remarks>
-        /// <returns><inheritdoc cref="SetValue(string, ref string, string)"/></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool SetValue(string id, ref float var, float value)
-        {
-            if (var == value) return false;
-            EngineService<ConfigurationService>.Instance.Set(id, var = value);
-            return true;
-        }
-
-        /// <summary><inheritdoc cref="SetValue(string, ref string, string)"/></summary>
-        /// <remarks>
-        /// Sets custom value using <see cref="Set(string, double)"/> method.
-        /// </remarks>
-        /// <returns><inheritdoc cref="SetValue(string, ref string, string)"/></returns>aramref name="var"/> changed. <c>false</c> otherwise.
-        /// </returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool SetValue(string id, ref double var, double value)
-        {
-            if (var == value) return false;
-            EngineService<ConfigurationService>.Instance.Set(id, var = value);
-            return true;
-        }
-
-        /// <summary><inheritdoc cref="SetValue(string, ref string, string)"/></summary>
-        /// <remarks>
-        /// Sets custom value using <see cref="Set(string, decimal)"/> method.
-        /// </remarks>
-        /// <returns><inheritdoc cref="SetValue(string, ref string, string)"/></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool SetValue(string id, ref decimal var, decimal value)
-        {
-            if (var == value) return false;
-            EngineService<ConfigurationService>.Instance.Set(id, var = value);
-            return true;
+            CoroutineRunner.StartCoroutine(DelayedInvoke());
+            IEnumerator DelayedInvoke()
+            {
+                yield return null;
+                action();
+            }
         }
 
         /// <summary>
-        /// (Supports <see cref="Revert"/>) Allows you to set values to raw parameters which require highest performance (i.e. <see cref="Specs.Memory.L1Memory"/>).
+        /// Delays given action by a frame, and invokes it afterwards.
         /// </summary>
-        /// <remarks>
-        /// Sets custom value using <see cref="Set(string, string)"/> method.
-        /// </remarks>
-        /// <returns>
-        /// <c>true</c> if <paramref name="var"/> changed. <c>false</c> otherwise.
-        /// </returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool SetValue(string id, ref string var, string value)
+        /// <param name="action">Action to schedule and run a frame later.</param>
+        public static void Delay(Action? action)
         {
-            if (var == value) return false;
-            EngineService<ConfigurationService>.Instance.Set(id, var = value);
-            return true;
-        }
+            if (action is null) return;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void GetValue(string id, out bool value) => EngineService<ConfigurationService>.Instance.Get(id, out value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void GetValue(string id, out byte value) => EngineService<ConfigurationService>.Instance.Get(id, out value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void GetValue(string id, out sbyte value) => EngineService<ConfigurationService>.Instance.Get(id, out value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void GetValue(string id, out short value) => EngineService<ConfigurationService>.Instance.Get(id, out value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void GetValue(string id, out ushort value) => EngineService<ConfigurationService>.Instance.Get(id, out value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void GetValue(string id, out char value) => EngineService<ConfigurationService>.Instance.Get(id, out value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void GetValue(string id, out int value) => EngineService<ConfigurationService>.Instance.Get(id, out value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void GetValue(string id, out uint value) => EngineService<ConfigurationService>.Instance.Get(id, out value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void GetValue(string id, out long value) => EngineService<ConfigurationService>.Instance.Get(id, out value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void GetValue(string id, out ulong value) => EngineService<ConfigurationService>.Instance.Get(id, out value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void GetValue(string id, out float value) => EngineService<ConfigurationService>.Instance.Get(id, out value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void GetValue(string id, out double value) => EngineService<ConfigurationService>.Instance.Get(id, out value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void GetValue(string id, out decimal value) => EngineService<ConfigurationService>.Instance.Get(id, out value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void GetValue(string id, out string value) => EngineService<ConfigurationService>.Instance.Get(id, out value);
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool GetBool(string id)
-        {
-            EngineService<ConfigurationService>.Instance.Get(id, out bool value);
-            return value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static byte GetByte(string id)
-        {
-            EngineService<ConfigurationService>.Instance.Get(id, out byte value);
-            return value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static sbyte GetSByte(string id)
-        {
-            EngineService<ConfigurationService>.Instance.Get(id, out sbyte value);
-            return value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short GetShort(string id)
-        {
-            EngineService<ConfigurationService>.Instance.Get(id, out short value);
-            return value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ushort GetUShort(string id)
-        {
-            EngineService<ConfigurationService>.Instance.Get(id, out ushort value);
-            return value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static char GetChar(string id)
-        {
-            EngineService<ConfigurationService>.Instance.Get(id, out char value);
-            return value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetInt(string id)
-        {
-            EngineService<ConfigurationService>.Instance.Get(id, out int value);
-            return value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint GetUInt(string id)
-        {
-            EngineService<ConfigurationService>.Instance.Get(id, out uint value);
-            return value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long GetLong(string id)
-        {
-            EngineService<ConfigurationService>.Instance.Get(id, out long value);
-            return value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ulong GetULong(string id)
-        {
-            EngineService<ConfigurationService>.Instance.Get(id, out ulong value);
-            return value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float GetFloat(string id)
-        {
-            EngineService<ConfigurationService>.Instance.Get(id, out float value);
-            return value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static double GetDouble(string id)
-        {
-            EngineService<ConfigurationService>.Instance.Get(id, out double value);
-            return value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static decimal GetDecimal(string id)
-        {
-            EngineService<ConfigurationService>.Instance.Get(id, out decimal value);
-            return value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string GetString(string id)
-        {
-            EngineService<ConfigurationService>.Instance.Get(id, out string value);
-            return value;
+            CoroutineRunner.StartCoroutine(DelayedInvoke());
+            IEnumerator DelayedInvoke()
+            {
+                yield return null;
+                action();
+            }
         }
 
         #endregion
@@ -703,7 +399,7 @@ namespace Eclipse.Configuration
         public abstract bool Set(string id, decimal value);
 
         /// <summary>
-        /// (Supports <see cref="Revert"/>) Allows you to set values to raw parameters which require highest performance (i.e. <see cref="Specs.Memory.L1Memory"/>).
+        /// (Supports <see cref="Revert"/>) Allows you to set values to raw parameters which require highest performance (i.e. <see cref="Specs.Cache.L1Cache"/>).
         /// </summary>
         /// <remarks>
         /// Might not support reverting with custom <see cref="ConfigurationService"/> implementation.
@@ -784,17 +480,20 @@ namespace Eclipse.Configuration
         /// <summary>
         /// Registers new parameter.
         /// </summary>
-        public abstract void Register(Parameter parameter);
+        /// <remarks>
+        /// Also tries to look-up data about parameter and deserialize it if possible.
+        /// </remarks>
+        public abstract void Register(AbstractParameter parameter);
 
-        public abstract Parameter? FindOrThrow(FullName name);
-        public abstract Parameter? FindOrThrow(string name);
-        public abstract Parameter? Find(FullName name);
-        public abstract Parameter? Find(string name);
+        public abstract AbstractParameter? FindOrThrow(FullName name);
+        public abstract AbstractParameter? FindOrThrow(string name);
+        public abstract AbstractParameter? Find(FullName name);
+        public abstract AbstractParameter? Find(string name);
 
-        public virtual TParameter FindOrThrow<TParameter>(FullName name) where TParameter : Parameter => FindOrThrow<TParameter>(name.Full);
-        public virtual TParameter FindOrThrow<TParameter>(string name) where TParameter : Parameter
+        public virtual TParameter FindOrThrow<TParameter>(FullName name) where TParameter : AbstractParameter => FindOrThrow<TParameter>(name.Full);
+        public virtual TParameter FindOrThrow<TParameter>(string name) where TParameter : AbstractParameter
         {
-            if (m_Parameters.TryGetValue(name, out Parameter? finding))
+            if (m_Parameters.TryGetValue(name, out AbstractParameter? finding))
             {
                 if (finding is TParameter result)
                 {
@@ -810,8 +509,8 @@ namespace Eclipse.Configuration
             throw new Exception($"{LogNameBraced} Cannot find property with name: '{name}'. Type: {typeof(TParameter).Name}");
         }
 
-        public abstract TParameter? Find<TParameter>(FullName name) where TParameter : Parameter;
-        public abstract TParameter? Find<TParameter>(string name) where TParameter : Parameter;
+        public abstract TParameter? Find<TParameter>(FullName name) where TParameter : AbstractParameter;
+        public abstract TParameter? Find<TParameter>(string name) where TParameter : AbstractParameter;
 
         /// <summary>
         /// Applies all dirty properties.
@@ -865,7 +564,7 @@ namespace Eclipse.Configuration
         /// <summary>
         /// Reverts all properties and fires related callbacks (e.g. <see cref="AbstractParameter{TValue}.OnValueApplied"/>)
         /// regardless of whether parameter actually changed.
-        /// (See also: <seealso cref="Parameter.ApplyChangesForceFireCallbacks"/>)
+        /// (See also: <seealso cref="AbstractParameter.ApplyChangesForceFireCallbacks"/>)
         /// </summary>
         public void RevertForceCallbacks()
         {

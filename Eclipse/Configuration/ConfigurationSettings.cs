@@ -31,7 +31,7 @@ namespace Eclipse.Configuration
 
         // Properties:
         /// <summary>
-        /// Automatically applies all changes made to <see cref="Parameters.Parameter"/>.
+        /// Automatically applies all changes made to <see cref="Parameters.AbstractParameter"/>.
         /// Can be useful if there is only simple settings on UI, and you don't want to bother with "Apply/Revert" much.
         /// </summary>
         public bool SettingsAutoApply
@@ -41,7 +41,7 @@ namespace Eclipse.Configuration
         }
 
         /// <summary>
-        /// Whether to do auto-save of <see cref="Parameters.Parameter"/>s during the game.
+        /// Whether to do auto-save of <see cref="Parameters.AbstractParameter"/>s during the game.
         /// When <c>false</c> - settings will only be saved when exiting the game.
         /// </summary>
         public bool SettingsAutoSave
@@ -51,7 +51,7 @@ namespace Eclipse.Configuration
         }
 
         /// <summary>
-        /// How long to wait (is seconds) after changes to any <see cref="Parameters.Parameter"/> were applied?
+        /// How long to wait (is seconds) after changes to any <see cref="Parameters.AbstractParameter"/> were applied?
         /// Used to guarantee that settings were saved to the disk in case crash occurs or user exits via Terminal.
         /// </summary>
         /// <remarks>

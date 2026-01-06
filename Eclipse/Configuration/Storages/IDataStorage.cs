@@ -25,11 +25,11 @@ namespace Eclipse.Configuration.Storages
         /// </summary>
         public static readonly T Instance = new T();
 
-        /// <inheritdoc cref="IDataStorage.Load(Parameter)"/>
-        public abstract void Load(Parameter parameter);
+        /// <inheritdoc cref="IDataStorage.Load(AbstractParameter)"/>
+        public abstract void Load(AbstractParameter parameter);
 
-        /// <inheritdoc cref="IDataStorage.Save(Parameter)"/>
-        public abstract void Save(Parameter parameter);
+        /// <inheritdoc cref="IDataStorage.Save(AbstractParameter)"/>
+        public abstract void Save(AbstractParameter parameter);
     }
 
     /// <summary>
@@ -38,10 +38,10 @@ namespace Eclipse.Configuration.Storages
     public interface IDataStorage
     {
         /// <summary>
-        /// If has any data about it - will call <see cref="Parameter.Deserialize(string)"/> using a raw string data about this parameter.
+        /// If has any data about it - will call <see cref="AbstractParameter.Deserialize(string)"/> using a raw string data about this parameter.
         /// </summary>
         /// <param name="parameter">Parameter to be updated.</param>
-        public void Load(Parameter parameter);
+        public void Load(AbstractParameter parameter);
 
         public void Load(string key, out short data);
         public void Load(string key, out int data);
@@ -54,9 +54,9 @@ namespace Eclipse.Configuration.Storages
         public void Load(string key, out double data);
 
         /// <summary>
-        /// Calls <see cref="Parameter.Serialize"/> method and stores a return value 
+        /// Calls <see cref="AbstractParameter.Serialize"/> method and stores a return value 
         /// </summary>
         /// <param name="parameter"></param>
-        public void Save(Parameter parameter);
+        public void Save(AbstractParameter parameter);
     }
 }

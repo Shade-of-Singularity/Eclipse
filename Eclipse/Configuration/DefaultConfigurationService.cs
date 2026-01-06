@@ -57,7 +57,7 @@ namespace Eclipse.Configuration
         public static event Action? OnAfterParameterSerialization;
 
         /// <summary>
-        /// Called when any of the <see cref="Parameter"/>s have their name/category changed. (See also: <seealso cref="Parameter.Name"/>)
+        /// Called when any of the <see cref="AbstractParameter"/>s have their name/category changed. (See also: <seealso cref="AbstractParameter.Name"/>)
         /// </summary>
         public static event Action? OnCategorizationChanged;
 
@@ -161,7 +161,7 @@ namespace Eclipse.Configuration
         }
 
         /// <summary>
-        /// Whether <see cref="ConfigurationService"/> is going through every <see cref="Parameter"/> and saves its state to the disk.
+        /// Whether <see cref="ConfigurationService"/> is going through every <see cref="AbstractParameter"/> and saves its state to the disk.
         /// </summary>
         public bool ExecutesParameterSaving
         {
@@ -193,10 +193,10 @@ namespace Eclipse.Configuration
         /// Whether any of the parameters have changed and can be applied.
         /// </summary>
         /// <remarks>
-        /// Directly modified by <see cref="Parameter"/>s.
+        /// Directly modified by <see cref="AbstractParameter"/>s.
         /// </remarks>
         /// TODO: Reset <see cref="IsDirty"/> if all the parameters is no longer modifies
-        /// after direct user inputs or direct <see cref="Parameter.RevertChanges"/> usage.
+        /// after direct user inputs or direct <see cref="AbstractParameter.RevertChanges"/> usage.
         public bool IsDirty { get; set; }
 
         /// <summary>
@@ -264,7 +264,7 @@ namespace Eclipse.Configuration
 
         // Local Fields:
         private readonly Dictionary<Type, EngineConfiguration> m_EngineConfigurations = new Dictionary<Type, EngineConfiguration>();
-        private readonly Dictionary<string, Parameter> m_Parameters = new Dictionary<string, Parameter>();
+        private readonly Dictionary<string, AbstractParameter> m_Parameters = new Dictionary<string, AbstractParameter>();
         private readonly Dictionary<string, Category> m_Categories = new Dictionary<string, Category>();
         private readonly Dictionary<Type, GameState> m_GameStates = new Dictionary<Type, GameState>();
         private readonly UniTaskCompletionSource m_AwaitSource = new UniTaskCompletionSource();
@@ -312,22 +312,22 @@ namespace Eclipse.Configuration
         }
 
         /// <summary>
-        /// Initializes all <see cref="Parameter"/>s in a given class.
+        /// Initializes all <see cref="AbstractParameter"/>s in a given class.
         /// </summary>
         /// <remarks>
         /// In reality, just runs a static constructor on it.
         /// </remarks>
-        /// <param name="class">Type of the class which holds <see cref="Parameter"/>s.</param>
+        /// <param name="class">Type of the class which holds <see cref="AbstractParameter"/>s.</param>
         public void SetSettings(Type @class) => SetSettings(@class.TypeHandle);
 
         /// <inheritdoc cref="SetSettings(Type)"/>
-        /// <param name="handle">Handle of the class which holds <see cref="Parameter"/>s.</param>
+        /// <param name="handle">Handle of the class which holds <see cref="AbstractParameter"/>s.</param>
         public void SetSettings(RuntimeTypeHandle handle) => RuntimeHelpers.RunClassConstructor(handle);
 
         /// <summary>
         /// Registers new parameter.
         /// </summary>
-        public void Register(Parameter parameter)
+        public void Register(AbstractParameter parameter)
         {
             Assert.IsNotNull(parameter);
             if (string.IsNullOrEmpty(parameter.Name))
@@ -345,10 +345,10 @@ namespace Eclipse.Configuration
         }
 
         // TODO: Add more comments. Those methods just look for a specified parameter in the database.
-        public Parameter? FindOrThrow(FullName name) => FindOrThrow(name.Full);
-        public Parameter? FindOrThrow(string name)
+        public AbstractParameter? FindOrThrow(FullName name) => FindOrThrow(name.Full);
+        public AbstractParameter? FindOrThrow(string name)
         {
-            if (m_Parameters.TryGetValue(name, out Parameter? finding))
+            if (m_Parameters.TryGetValue(name, out AbstractParameter? finding))
             {
                 return finding;
             }
@@ -356,10 +356,10 @@ namespace Eclipse.Configuration
             throw new Exception($"{LogNameBraced} Cannot find property with name: '{name}' (in typeless search scope).");
         }
 
-        public Parameter? Find(FullName name) => Find(name.Full);
-        public Parameter? Find(string name)
+        public AbstractParameter? Find(FullName name) => Find(name.Full);
+        public AbstractParameter? Find(string name)
         {
-            if (m_Parameters.TryGetValue(name, out Parameter? finding))
+            if (m_Parameters.TryGetValue(name, out AbstractParameter? finding))
             {
                 return finding;
             }
@@ -367,10 +367,10 @@ namespace Eclipse.Configuration
             return null;
         }
 
-        public TParameter FindOrThrow<TParameter>(FullName name) where TParameter : Parameter => FindOrThrow<TParameter>(name.Full);
-        public TParameter FindOrThrow<TParameter>(string name) where TParameter : Parameter
+        public TParameter FindOrThrow<TParameter>(FullName name) where TParameter : AbstractParameter => FindOrThrow<TParameter>(name.Full);
+        public TParameter FindOrThrow<TParameter>(string name) where TParameter : AbstractParameter
         {
-            if (m_Parameters.TryGetValue(name, out Parameter? finding))
+            if (m_Parameters.TryGetValue(name, out AbstractParameter? finding))
             {
                 if (finding is TParameter result)
                 {
@@ -386,10 +386,10 @@ namespace Eclipse.Configuration
             throw new Exception($"{LogNameBraced} Cannot find property with name: '{name}'. Type: {typeof(TParameter).Name}");
         }
 
-        public TParameter? Find<TParameter>(FullName name) where TParameter : Parameter => Find<TParameter>(name.Full);
-        public TParameter? Find<TParameter>(string name) where TParameter : Parameter
+        public TParameter? Find<TParameter>(FullName name) where TParameter : AbstractParameter => Find<TParameter>(name.Full);
+        public TParameter? Find<TParameter>(string name) where TParameter : AbstractParameter
         {
-            if (m_Parameters.TryGetValue(name, out Parameter? finding) && finding is TParameter result)
+            if (m_Parameters.TryGetValue(name, out AbstractParameter? finding) && finding is TParameter result)
             {
                 return result;
             }
@@ -449,7 +449,7 @@ namespace Eclipse.Configuration
         /// <summary>
         /// Reverts all properties and fires related callbacks (e.g. <see cref="AbstractParameter{TValue}.OnValueApplied"/>)
         /// regardless of whether parameter actually changed.
-        /// (See also: <seealso cref="Parameter.ApplyChangesForceFireCallbacks"/>)
+        /// (See also: <seealso cref="AbstractParameter.ApplyChangesForceFireCallbacks"/>)
         /// </summary>
         public void RevertForceCallbacks()
         {
