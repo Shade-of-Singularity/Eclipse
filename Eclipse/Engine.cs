@@ -22,7 +22,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -91,41 +90,6 @@ namespace Eclipse
         }
 
         /// <summary>
-        /// Event that is fired when <see cref="IsInitialized"/> is set to '<c>true</c>'
-        /// </summary>
-        /// <remarks>
-        /// Event list for this callback is never cleared out.
-        /// </remarks>
-        public static event Action PersistentOnEngineInitialized
-        {
-            remove
-            {
-                if (value == null) return;
-                lock (m_PersistentOnEngineInitializedCallbacks)
-                {
-                    m_PersistentOnEngineInitializedCallbacks.Remove(value);
-                }
-            }
-
-            add
-            {
-                if (value == null) return;
-                lock (m_OnEngineInitializedCallbacks)
-                {
-                    m_OnEngineInitializedCallbacks.Add(value);
-                }
-
-                lock (m_IsInitializedStateLock)
-                {
-                    if (m_IsInitialized)
-                    {
-                        value.Invoke();
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Called when every existing instance of <see cref="EngineService"/> and similar is fully unloaded. (e.g. on <see cref="Unload(UnloadSettings)"/>)
         /// <para>
         /// Used to reset static references to the old services and configuration classes, as to prevent memory leaks on mod reloading.
@@ -135,17 +99,6 @@ namespace Eclipse
         /// Callback list is cleared after each engine reset.
         /// </remarks>
         public static event Action? OnEngineResetting;
-
-        /// <summary>
-        /// Called when every existing instance of <see cref="EngineService"/> and similar is fully unloaded. (e.g. on <see cref="Unload(UnloadSettings)"/>)
-        /// <para>
-        /// Used to reset static references to the old services and configuration classes, as to prevent memory leaks on mod reloading.
-        /// </para>
-        /// </summary>
-        /// <remarks>
-        /// Callback list is never cleared.
-        /// </remarks>
-        public static event Action? PersistentOnEngineResetting;
 
         // Properties:
         /// <summary>
@@ -180,7 +133,6 @@ namespace Eclipse
 
         // Encapsulated Fields:
         private static readonly HashSet<Action> m_OnEngineInitializedCallbacks = new HashSet<Action>();
-        private static readonly HashSet<Action> m_PersistentOnEngineInitializedCallbacks = new HashSet<Action>();
         private static readonly object m_IsInitializedStateLock = new object();
         private static volatile bool m_IsInitialized;
 
@@ -199,7 +151,7 @@ namespace Eclipse
         /// Checks whether <see cref="Eclipse"/> <see cref="Engine"/> has a specific <see cref="EngineService"/> initialized at this point.
         /// </summary>
         /// <returns><c>true</c> if has target <see cref="EngineService"/>, <c>false</c> otherwise.</returns>
-        public static bool Has<T>() where T : EngineService => EngineService<T>.Instance != null;
+        public static bool Has<T>() where T : EngineService => m_Services.ContainsKey(typeof(T));
 
         /// <summary>
         /// Method is extremely optimized for a repeated usage. Feel free to use it very frequently.
@@ -225,12 +177,12 @@ namespace Eclipse
                 }
                 else
                 {
-                    throw new Exception($"{LogNameBraced} Service type miss-match: Found service '{service.GetType().Name}' but requested '{typeof(T).Name}'");
+                    throw new Exception($"{LogPrefix} Service type miss-match: Found service '{service.GetType().Name}' but requested '{typeof(T).Name}'");
                 }
             }
             else
             {
-                throw new Exception($"{LogNameBraced} Service of type '{typeof(T).Name}' was not provided during initialization and cannot be found.");
+                throw new Exception($"{LogPrefix} Service of type '{typeof(T).Name}' was not provided during initialization and cannot be found.");
             }
         }
 
@@ -290,7 +242,7 @@ namespace Eclipse
         /// <typeparam name="T">Target type of <see cref="EngineService"/> to retrieve.</typeparam>
         /// <param name="service">Retrieved <see cref="EngineService"/> or null.</param>
         /// <returns>'<c>true</c>' if service was found. Otherwise '<c>false</c>'.</returns>
-        public static bool TryGet<T>([NotNullWhen(true)] out T service) where T : EngineService
+        public static bool TryGet<T>([NotNullWhen(true)] out T? service) where T : EngineService
         {
             if (m_Services.TryGetValue(typeof(T), out EngineService? finding) && finding is T result)
             {
@@ -299,7 +251,7 @@ namespace Eclipse
             }
             else
             {
-                service = default!;
+                service = default;
                 return false;
             }
         }
@@ -339,25 +291,9 @@ namespace Eclipse
                 }
             }
 
-            lock (m_PersistentOnEngineInitializedCallbacks)
-            {
-                foreach (var callback in m_PersistentOnEngineInitializedCallbacks)
-                {
-                    try
-                    {
-                        callback.Invoke();
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.LogException(ex);
-                        exceptions |= true;
-                    }
-                }
-            }
-
             if (exceptions)
             {
-                Debug.LogError($"{LogNameBraced} Some callbacks on '{nameof(OnEngineInitialized)}' thrown exceptions! Look above for errors.");
+                Debug.LogError($"{LogPrefix} Some callbacks on '{nameof(OnEngineInitialized)}' thrown exceptions! Look above for errors.");
             }
 
             // Only locks on clear, since after 'm_IsInitialized' was set to true - nothing can be modified.
@@ -391,26 +327,9 @@ namespace Eclipse
             if (IsInitialized) throw new Exception($"Cannot modify ('{Path.GetFileNameWithoutExtension(caller)}') outside of the engine initialization stage.");
         }
 
-        /// <inheritdoc cref="Reload(UnloadSettings)"/>
-        public static async UniTask Reload() => await Reload(UnloadSettings.ReloadSettings);
-
-        /// <summary>
-        /// Reloads entire engine from the ground-up.
-        /// </summary>
-        /// <param name="unloading"><see cref="UnloadSettings"/> to use with <see cref="Unload(UnloadSettings)"/></param>
-        public static async UniTask Reload(UnloadSettings unloading)
-        {
-            await Unload(unloading);
-            await Initialize();
-        }
-
         /// <summary>
         /// Initializes the entire engine: <see cref="EngineService"/>s, <see cref="Modding.Mod"/>s, and so on.
         /// </summary>
-        /// <remarks>
-        /// (TODO) Use <see cref="Reload()"/> instead to make a "shallow reload" - with all the same configurations,
-        /// but without Textures and other assets being fully unloaded from the memory.
-        /// </remarks>
         public static async UniTask Initialize()
         {
             // TODO: Decide what to do with service unloading when in the Editor.
@@ -432,21 +351,18 @@ namespace Eclipse
             await InitializeEngine();
         }
 
-        /// <inheritdoc cref="Unload(UnloadSettings)"/>
-        public static async UniTask Unload() => await Unload(UnloadSettings.UnloadEverything);
-
         /// <summary>
-        /// Unloads entire engine, all initialized services and mods from the memory.
+        /// Unloads entire engine, all initialized services.
         /// </summary>
         /// <remarks>
-        /// (TODO) Use <see cref="Reload()"/> instead to make a "shallow reload" - with all the same configurations,
-        /// but without Textures and other assets being fully unloaded from the memory.
+        /// Will not unload mod Assemblies from the memory, as it is impossible.
         /// </remarks>
-        /// <param name="settings">Settings to use for unloading.</param>
-        public static async UniTask Unload(UnloadSettings settings)
+        public static async UniTask Unload()
         {
-            ResetState();
+            await UnloadEngine();
 
+            ResetState();
+            
             // TODO: Still decide what to do with service unloading in the editor.
             Application.quitting -= ResetState;
             await UniTask.CompletedTask;
@@ -521,7 +437,7 @@ namespace Eclipse
         /// Will cache resources like textures, atlases, music and etc. in case it will be referenced again.
         /// Will use update date and time to decide whether to update a resource or not.
         /// </remarks>
-        private static void ResetState()
+        private static void UnloadEngine()
         {
             foreach (var service in m_Services.Values)
             {
@@ -538,18 +454,7 @@ namespace Eclipse
             }
             catch (Exception ex)
             {
-                Debug.LogError($"{LogNameBraced} Failed to dispose references on engine reload. Expect small/large memory leaks.");
-                Debug.LogException(ex);
-            }
-
-
-            try
-            {
-                PersistentOnEngineResetting?.Invoke();
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"{LogNameBraced} Failed to run persistent {nameof(OnEngineResetting)} callback. Expect small/large memory leaks.");
+                Debug.LogError($"{LogPrefix} Failed to dispose references on engine reload. Expect small/large memory leaks.");
                 Debug.LogException(ex);
             }
 
@@ -567,7 +472,7 @@ namespace Eclipse
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         private static async UniTask LoadModsAndAssemblies()
         {
-            Debug.Log($"{LogNameBraced} Executing '{nameof(LoadModsAndAssemblies)}'");
+            Debug.Log($"{LogPrefix} Executing '{nameof(LoadModsAndAssemblies)}'");
 
             try
             {
@@ -596,7 +501,7 @@ namespace Eclipse
                 // Hope people wont get too scared, but modding support was all made for the security purposes.
                 if (Application.isMobilePlatform || Application.isConsolePlatform)
                 {
-                    Debug.LogWarning($"{LogNameBraced} Just a note to you - modding is not supported on Mobile platforms and Console platforms yet.");
+                    Debug.LogWarning($"{LogPrefix} Just a note to you - modding is not supported on Mobile platforms and Console platforms yet.");
                 }
                 else
                 {
@@ -616,12 +521,12 @@ namespace Eclipse
             }
             catch (Exception ex)
             {
-                Debug.LogError($"{LogNameBraced} Mod registration on '{nameof(LoadModsAndAssemblies)}' failed!");
+                Debug.LogError($"{LogPrefix} Mod registration on '{nameof(LoadModsAndAssemblies)}' failed!");
                 Debug.LogException(ex);
             }
             finally
             {
-                Debug.Log($"{LogNameBraced} Mod registration (on '{nameof(LoadModsAndAssemblies)}') successful!");
+                Debug.Log($"{LogPrefix} Mod registration (on '{nameof(LoadModsAndAssemblies)}') successful!");
             }
 
             Harmony_AfterLoadingMods();
@@ -664,7 +569,7 @@ namespace Eclipse
         private static async UniTask InitializeEngine()
         {
             // Note: async execution messes-up execution order. Account for that further on.
-            Debug.Log($"{LogNameBraced} Executing '{nameof(InitializeEngine)}'");
+            Debug.Log($"{LogPrefix} Executing '{nameof(InitializeEngine)}'");
             m_AcceptsAssemblies = false;
 
             // Loads EngineService attributes.
@@ -877,25 +782,17 @@ namespace Eclipse
             }
             catch (Exception ex)
             {
-                Debug.LogError($"{LogNameBraced} Game and mod initialization on '{nameof(InitializeEngine)}' failed!");
+                Debug.LogError($"{LogPrefix} Game and mod initialization on '{nameof(InitializeEngine)}' failed!");
                 Debug.LogException(ex);
             }
             finally
             {
-                Debug.Log($"{LogNameBraced} Game and mod initialization (on '{nameof(InitializeEngine)}') successful!");
+                Debug.Log($"{LogPrefix} Game and mod initialization (on '{nameof(InitializeEngine)}') successful!");
             }
 
             m_Assemblies.Clear();
             SetInitialized();
         }
-
-#if UNITY_EDITOR
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void OnAfterSplashScreen()
-        {
-            TestEngine();
-        }
-#endif
 
 
 
@@ -914,7 +811,7 @@ namespace Eclipse
 
             if (!m_AcceptsAssemblies)
             {
-                Debug.LogError($"{LogNameBraced} Assembly was not loaded because it was queued after Engine read the queue. ('{assembly.FullName}')");
+                Debug.LogError($"{LogPrefix} Assembly was not loaded because it was queued after Engine read the queue. ('{assembly.FullName}')");
                 return;
             }
 
@@ -986,36 +883,6 @@ namespace Eclipse
             }
         }
 
-
-
-
-#if UNITY_EDITOR
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                                  Testing
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private static void TestEngine()
-        {
-            try
-            {
-                TestServiceRetrieval();
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"{LogNameBraced} Engine testing failed! See below for the exceptions.");
-                Debug.LogException(ex);
-            }
-            finally
-            {
-                Debug.Log($"{LogNameBraced} All tests succeeded!");
-            }
-        }
-        private static void TestServiceRetrieval()
-        {
-            Assert.IsNotNull(Get<Localization.LocalizationService>());
-        }
-#endif
 
 
 

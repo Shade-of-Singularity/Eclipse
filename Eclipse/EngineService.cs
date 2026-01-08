@@ -14,13 +14,16 @@
 /// 
 /// ]]>
 
+using System;
+using UnityEngine;
+
 namespace Eclipse
 {
     /// <summary>
     /// Provides fast, type-safe access to engine-level services registered during initialization.
     /// <para>
     /// Can be used in <see cref="EngineService.Initialize"/> method,
-    /// but service might not be initialized depending on <see cref="ServiceAttribute.InitializationOrder"/>.
+    /// but accessing services before their <see cref="ServiceAttribute.InitializationOrder"/> happens will throw.
     /// </para>
     /// </summary>
     /// <remarks>
@@ -43,35 +46,120 @@ namespace Eclipse
         /// </remarks>
         /// Note: Do NOT replace with <see cref="Engine.GetOrDefault{T}(T)"/>!
         /// This is a readonly field! It won't update after first <see cref="Engine.GetOrDefault{T}(T)"/> usage!
-        public static T Instance
-        {
-            get
-            {
-                if (m_Instance is null)
-                {
-                    m_Instance = Engine.GetOrThrow<T>();
-                    Engine.OnEngineResetting += () => m_Instance = default!;
-                }
+        public static readonly T Instance = Engine.GetOrThrow<T>();
+    }
 
-                return m_Instance;
-            }
-        }
+    /// <summary>
+    /// An Eclipse service to be initialized.
+    /// </summary>
+    /// <remarks>
+    /// Add an <see cref="ServiceAttribute"/> to your service class to make it a valid service.
+    /// </remarks>
+    public abstract class EngineService : IEngineServiceDirectAccess
+    {
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                              Public Properties
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        // Delegates:
+
+        // Events:
+
+        // Properties:
+        /// <summary>
+        /// Whether service was initialized by engine or not.
+        /// </summary>
+        /// <remarks>
+        /// Set to <c>true</c> *after* initialization. Similarly, set to <c>false</c> *after* unloading.
+        /// <para>Status will be set regardless if there was exception during service initialization.</para>
+        /// </remarks>
+        public bool Initialized { get; protected set; }
+
 
 
 
 
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
-        /// .                                               Private Fields
+        /// .                                               Public Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Internal instance holder field.
+        /// Initializes Engine service.
+        /// <para>
+        /// Unlike any <see cref="EngineService"/> .ctor (constructor), this method is thread-safe.
+        /// (as long as <see cref="ServiceAttribute.ThreadExecutionOrder"/> is <see cref="ServiceAttribute.ThreadExecutionMode.MainThread"/>)
+        /// </para>
         /// </summary>
         /// <remarks>
-        /// It would have been far more optimized to use direct field reference instead without null check...
-        /// But we need null checks to provide reliable Engine reloading at runtime.
+        /// Note: Service won't be even instantiated if you don't have <see cref="ServiceAttribute"/> on your class.
+        /// <para>Use <see cref="ServiceAttribute.InitializationOrder"/> to specify initialization order.</para>
         /// </remarks>
-        private static T m_Instance = default!;
+        protected abstract void Initialize();
+
+        /// <summary>
+        /// Called when <see cref="Engine"/> unloads all the code and resources from the memory.
+        /// You are meant to save/serialize the state of your service when this event occurs.
+        /// </summary>
+        protected abstract void Unload();
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                             Internal Callbacks
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        void IEngineServiceDirectAccess.EngineInvokeInitialization()
+        {
+            if (!Initialized)
+            {
+                try
+                {
+                    Initialize();
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogException(new Exception($"Failed to initialize {GetType().Name} service!", ex));
+                }
+
+                Initialized = true;
+            }
+        }
+
+        void IEngineServiceDirectAccess.EngineInvokeUnloading()
+        {
+            if (Initialized)
+            {
+                try
+                {
+                    Unload();
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogException(new Exception($"Failed to unload {GetType().Name} service!", ex));
+                }
+
+                Initialized = false;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Interface for directly fire internal engine callbacks.
+    /// </summary>
+    public interface IEngineServiceDirectAccess
+    {
+        /// <summary>
+        /// Called when <see cref="Engine"/> initialized this service.
+        /// </summary>
+        void EngineInvokeInitialization();
+
+        /// <summary>
+        /// Called when <see cref="Engine"/> unloads this service.
+        /// </summary>
+        void EngineInvokeUnloading();
     }
 }

@@ -1,4 +1,6 @@
 ﻿using Eclipse.Configuration;
+using Eclipse.Extensions;
+using JetBrains.Annotations;
 using System;
 using System.IO;
 using UnityEngine;
@@ -20,9 +22,24 @@ namespace Eclipse
         /// .                                               Static Fields
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Whether user system is a Desktop device (Windows, Linux, macOS, etc.)
+        /// </summary>
         public static readonly bool IsDesktop = SystemInfo.deviceType == DeviceType.Desktop;
+
+        /// <summary>
+        /// Whether user system is a Handheld device (Android, iPhone, etc.)
+        /// </summary>
         public static readonly bool IsHandheld = SystemInfo.deviceType == DeviceType.Handheld;
+
+        /// <summary>
+        /// Whether user system is a Console device (XBox, etc.)
+        /// </summary>
         public static readonly bool IsConsole = SystemInfo.deviceType == DeviceType.Console;
+
+        /// <summary>
+        /// Any other type of device, other than <see cref="IsDesktop"/>, <see cref="IsHandheld"/> and <see cref="IsConsole"/>.
+        /// </summary>
         public static readonly bool IsUnknownDevice = SystemInfo.deviceType == DeviceType.Unknown;
 
 
@@ -288,22 +305,20 @@ namespace Eclipse
             /// .                                                Constructors
             /// .
             /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            static Cache()
+            [ServiceAfterloadMethod(typeof(ConfigurationService))]
+            internal static void Initialize()
             {
-                Engine.PersistentOnEngineInitialized += () =>
-                {
-                    Configure.GetValue(UseCacheOptimizationsKey, out m_UseCacheOptimizations, true);
-                    Configure.GetValue(L1CacheKey, out m_L1Cache);
-                    Configure.GetValue(L2CacheKey, out m_L2Cache);
-                    Configure.GetValue(L3CacheKey, out m_L3Cache);
-                    Configure.GetValue(CacheUtilizationKey, out m_CacheUtilization, def: 0.75f);
-                    FinalL1Cache = (uint)Math.Ceiling(m_L1Cache * m_CacheUtilization);
-                    FinalL2Cache = (uint)Math.Ceiling(m_L2Cache * m_CacheUtilization);
-                    FinalL3Cache = (uint)Math.Ceiling(m_L3Cache * m_CacheUtilization);
-                    TotalCacheSize = FinalL1Cache + FinalL2Cache + FinalL3Cache;
-                    PerformOptimizations = IsSettingsAllowOptimizations();
-                    InvokeSpecsChangedCallback();
-                };
+                Configure.GetValue(UseCacheOptimizationsKey, out m_UseCacheOptimizations, true);
+                Configure.GetValue(L1CacheKey, out m_L1Cache);
+                Configure.GetValue(L2CacheKey, out m_L2Cache);
+                Configure.GetValue(L3CacheKey, out m_L3Cache);
+                Configure.GetValue(CacheUtilizationKey, out m_CacheUtilization, def: 0.75f);
+                FinalL1Cache = (uint)Math.Ceiling(m_L1Cache * m_CacheUtilization);
+                FinalL2Cache = (uint)Math.Ceiling(m_L2Cache * m_CacheUtilization);
+                FinalL3Cache = (uint)Math.Ceiling(m_L3Cache * m_CacheUtilization);
+                TotalCacheSize = FinalL1Cache + FinalL2Cache + FinalL3Cache;
+                PerformOptimizations = IsSettingsAllowOptimizations();
+                InvokeSpecsChangedCallback();
             }
 
 
@@ -588,18 +603,19 @@ namespace Eclipse
                     DataDiskPartition = default;
                     GameDiskPartition = default;
                 }
+            }
 
-                Engine.PersistentOnEngineInitialized += () =>
-                {
-                    Configure.GetValue(ReduceDiskWearKey, out m_ReduceDiskWear, false);
-                    Configure.GetValue(UseDiskSpeedOptimizationsKey, out m_UseDiskOptimizations, true);
-                    Configure.GetValue(DiskUtilizationKey, out m_DiskUtilization, 1.0f);
-                    Configure.GetValue(DataDiskReadingSpeedKey, out m_DataDiskReadingSpeed, 0);
-                    Configure.GetValue(DataDiskWritingSpeedKey, out m_DataDiskWritingSpeed, 0);
-                    Configure.GetValue(GameDiskReadingSpeedKey, out m_GameDiskReadingSpeed, 0);
-                    Configure.GetValue(GameDiskWritingSpeedKey, out m_GameDiskWritingSpeed, 0);
-                    InvokeDiskSpecsChanged();
-                };
+            [ServiceAfterloadMethod(typeof(ConfigurationService))]
+            internal static void Initialized()
+            {
+                Configure.GetValue(ReduceDiskWearKey, out m_ReduceDiskWear, false);
+                Configure.GetValue(UseDiskSpeedOptimizationsKey, out m_UseDiskOptimizations, true);
+                Configure.GetValue(DiskUtilizationKey, out m_DiskUtilization, 1.0f);
+                Configure.GetValue(DataDiskReadingSpeedKey, out m_DataDiskReadingSpeed, 0);
+                Configure.GetValue(DataDiskWritingSpeedKey, out m_DataDiskWritingSpeed, 0);
+                Configure.GetValue(GameDiskReadingSpeedKey, out m_GameDiskReadingSpeed, 0);
+                Configure.GetValue(GameDiskWritingSpeedKey, out m_GameDiskWritingSpeed, 0);
+                InvokeDiskSpecsChanged();
             }
 
 

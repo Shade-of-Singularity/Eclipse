@@ -1,4 +1,5 @@
-﻿using Eclipse.Configuration.Parameters;
+﻿using Eclipse.Configuration;
+using Eclipse.Configuration.Parameters;
 using Eclipse.Modding;
 
 namespace Eclipse
@@ -10,8 +11,26 @@ namespace Eclipse
         /// </summary>
         public static class Settings
         {
-            public static readonly BooleanParameter StreamerMode = new BooleanParameter(
-                new Structs.FullName(nameof(StreamerMode), Mod.EmptyModName), Flags.StreamerMode);
+            /// <summary>
+            /// Streamer mode hides sensitive info on the screen.
+            /// </summary>
+            /// <remarks>
+            /// (TODO) Forcefully set to 'true' if <see cref="Flags"/> contains <see cref="Flags.StreamerModeFlag"/>.
+            /// </remarks>
+            public static readonly Parameter<bool> StreamerMode = new Parameter<bool>(nameof(StreamerMode), Flags.StreamerMode);
+
+
+
+            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            /// .
+            /// .                                                Constructors
+            /// .
+            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            [ServiceAfterloadMethod(typeof(ConfigurationService))]
+            internal static void Initialize()
+            {
+                if (Flags.StreamerMode) StreamerMode.Set
+            }
         }
     }
 }

@@ -33,7 +33,7 @@ namespace Eclipse.Configuration.Parameters
     /// <para>- if parameter can be 'set' at runtime, but value will only update after reload - use <see cref="SolidParameter{TValue}"/>.</para>
     /// </remarks>
     /// <typeparam name="TValue">Type of the variable parameter stores.</typeparam>
-    public sealed class Parameter<TValue> : AbstractParameter where TValue : IConvertible, IEquatable<TValue>
+    public sealed class Parameter<TValue> : AbstractParameter where TValue : IEquatable<TValue>
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -254,6 +254,8 @@ namespace Eclipse.Configuration.Parameters
         /// </summary>
         public void Reset() => Set(DefaultValue);
 
+        public void ForceSet
+
 
 
 
@@ -262,7 +264,7 @@ namespace Eclipse.Configuration.Parameters
         /// .                                               Private Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public virtual void Set(TValue value)
+        private void Set(TValue value)
         {
             if (!EqualityComparer<TValue>.Default.Equals(m_Value, value))
             {
