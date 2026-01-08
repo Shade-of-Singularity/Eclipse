@@ -18,6 +18,9 @@ using UnityEngine;
 
 namespace Eclipse.Configuration
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class ConfigurationSettings : EngineConfiguration
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[

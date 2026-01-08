@@ -25,6 +25,9 @@ namespace Eclipse.Configuration
     /// Base class for all configuration files that are imbedded into the game.
     /// Used by <see cref="Eclipse"/> to retrieve settings that are used before <see cref="Engine.Initialize"/> happens.
     /// </summary>
+    /// <remarks>
+    /// Again - can be read and used before engine is initialized, unlike <see cref="EngineConfiguration"/>s.
+    /// </remarks>
     /// <typeparam name="T">Type of your configuration file.</typeparam>
     public abstract class ImbeddedConfiguration<T> : ImbeddedConfiguration where T : ImbeddedConfiguration<T>
     {
@@ -43,7 +46,7 @@ namespace Eclipse.Configuration
 
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
-        /// .                                               Static Fields
+        /// .                                               Private Fields
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         private static T? m_Instance;

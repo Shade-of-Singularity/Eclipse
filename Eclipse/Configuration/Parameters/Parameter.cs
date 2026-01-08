@@ -158,11 +158,11 @@ namespace Eclipse.Configuration.Parameters
         // Static Fields:
 
         // Encapsulated Fields:
-        protected TValue m_DefaultValue;
-        protected TValue m_Value;
+        private TValue m_DefaultValue;
+        private TValue m_Value;
 
         // Local Fields:
-        protected TValue m_LastValue;
+        private TValue m_LastValue;
 
 
 
@@ -172,7 +172,14 @@ namespace Eclipse.Configuration.Parameters
         /// .                                                Constructors
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Simple constructor for <see cref="Parameter{TValue}"/>.
+        /// </summary>
         public Parameter(FullName name) : this(name, default!) { }
+
+        /// <summary>
+        /// Full constructor for <see cref="Parameter{TValue}"/>. Allows specifying <paramref name="def"/>ault value.
+        /// </summary>
         public Parameter(FullName name, TValue def) : base(name)
         {
             m_Value = m_LastValue = m_DefaultValue = def;
@@ -291,6 +298,11 @@ namespace Eclipse.Configuration.Parameters
                     m_DefaultValue = value;
                 }
             }
+        }
+
+        public override object GetValue()
+        {
+            throw new NotImplementedException();
         }
     }
 }

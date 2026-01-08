@@ -6,6 +6,19 @@ namespace Eclipse.Riptide
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
+        /// .                                                 Constants
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// How many groups can be procedurally generated.
+        /// </summary>
+        public const ushort GroupLimit = byte.MaxValue + 1;
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
         /// .                                              Public Properties
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
@@ -26,6 +39,7 @@ namespace Eclipse.Riptide
         private static readonly ServerHandlers[] m_ServerHandlers = new ServerHandlers[256];
         private static volatile bool m_IsInitialized;
         private static readonly object _lock = new();
+        private static ushort m_NextGroupID = 0;
 
 
 

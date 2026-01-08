@@ -44,7 +44,7 @@ namespace Eclipse.Configuration
                 if (m_Instance == null)
                 {
                     m_Instance = EngineService<ConfigurationService>.Instance.GetOrNew<T>();
-                    Engine.OnEngineResetting += () => m_Instance = null;
+                    Engine.OnEngineReset += () => m_Instance = null;
                 }
 
                 return m_Instance;

@@ -15,7 +15,6 @@
 /// ]]>
 
 using Eclipse.Configuration;
-using Eclipse.Structs;
 using System;
 using System.Collections.Generic;
 
@@ -87,20 +86,20 @@ namespace Eclipse
         /// When <see cref="Engine"/> should be automatically initialized.
         /// </summary>
         /// <remarks>
-        /// Set to <see cref="EclipseInitializationType.Manual"/> to prevent any automatic initialization and to handle it manually from your code.
+        /// Set to <see cref="AutomaticStartupType.Manual"/> to prevent any automatic initialization and to handle it manually from your code.
         /// (TODO) Alternatively, you can use special MonoBehaviours for initializing.
         /// <para>
-        /// Regardless of the initialization type, if any mods are detected - initialization type will be set to <see cref="EclipseInitializationType.Manual"/>
+        /// Regardless of the initialization type, if any mods are detected - initialization type will be set to <see cref="AutomaticStartupType.Manual"/>
         /// as to allow you to show appropriate warning.
         /// </para>
         /// </remarks>
-        public EclipseInitializationType InitializationType = EclipseInitializationType.AfterAssembliesLoaded;
+        public AutomaticStartupType InitializationType = AutomaticStartupType.AfterAssembliesLoaded;
 
         /// <summary>
         /// Whether to allow modding the game.
         /// </summary>
         /// <remarks>
-        /// <see cref="InitializationType"/> will be set to <see cref="EclipseInitializationType.Manual"/> if any mod will be detected.
+        /// <see cref="InitializationType"/> will be set to <see cref="AutomaticStartupType.Manual"/> if any mod will be detected.
         /// </remarks>
         /// Note: I won't change this behaviour for BepInEx mods. It might introduce a vulnerability that hackers can use to inject malicious code in Steam mods.
         /// TODO: Add the warning above on the Editor UI.

@@ -15,8 +15,8 @@
 /// ]]>
 
 using Cysharp.Threading.Tasks;
-using Eclipse.Structs;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -54,51 +54,59 @@ namespace Eclipse
 
         // Events:
         /// <summary>
-        /// Event that is fired when <see cref="IsInitialized"/> is set to '<c>true</c>'
+        /// Event that is fired when <see cref="Status"/> is set <see cref="EngineStatus.Initialized"/>
         /// </summary>
         /// <remarks>
-        /// Reset during each engine initialization.
+        /// Callback list is cleared after initialization.
+        /// This implies that you should only use this callback before calling <see cref="Initialize"/>, or inside <see cref="EngineService.Initialize"/>.
+        /// <para>
+        /// To get consistent callback, you can use <see cref="EclipseInitializeAttribute"/> on custom static methods.
+        /// </para>
         /// </remarks>
         public static event Action OnEngineInitialized
         {
-            remove
-            {
-                if (value == null) return;
-                lock (m_OnEngineInitializedCallbacks)
-                {
-                    m_OnEngineInitializedCallbacks.Remove(value);
-                }
-            }
-
+            remove => m_OnEngineInitialized -= value;
             add
             {
                 if (value == null) return;
-                lock (m_IsInitializedStateLock)
+                if (m_Status == EngineStatus.Initialized)
                 {
-                    if (m_IsInitialized)
-                    {
-                        value.Invoke();
-                        return;
-                    }
+                    value.Invoke();
+                    return;
                 }
 
-                lock (m_OnEngineInitializedCallbacks)
-                {
-                    m_OnEngineInitializedCallbacks.Add(value);
-                }
+                m_OnEngineInitialized += value;
             }
         }
 
         /// <summary>
-        /// Called when every existing instance of <see cref="EngineService"/> and similar is fully unloaded. (e.g. on <see cref="Unload(UnloadSettings)"/>)
+        /// Called when every existing instance of <see cref="EngineService"/> and similar is fully unloaded. (e.g. on <see cref="Unload()"/>)
         /// <para>
         /// Used to reset static references to the old services and configuration classes, as to prevent memory leaks on mod reloading.
         /// </para>
         /// </summary>
         /// <remarks>
-        /// Callback list is cleared after each engine reset.
+        /// Callback list is cleared after engine reset.
+        /// This implies that you should only use this callback before calling <see cref="Unload"/>, or inside <see cref="EngineService.Unload"/>.
+        /// <para>
+        /// To get consistent callback, you can use <see cref="EclipseInitializeAttribute"/> on custom static methods.
+        /// </para>
         /// </remarks>
-        public static event Action? OnEngineResetting;
+        public static event Action? OnEngineReset
+        {
+            remove => m_OnEngineUnloaded -= value;
+            add
+            {
+                if (value == null) return;
+                if (m_Status == EngineStatus.Unloaded)
+                {
+                    value.Invoke();
+                    return;
+                }
+
+                m_OnEngineUnloaded += value;
+            }
+        }
 
         // Properties:
         /// <summary>
@@ -112,12 +120,110 @@ namespace Eclipse
         public static IReadOnlyCollection<EngineService> Services => m_Services.Values;
 
         /// <summary>
-        /// Whether engine initialized: all mods are checked and loaded, assemblies as well, services are initialized and so on.
+        /// Status of the engine.
         /// </summary>
         /// <remarks>
-        /// Will be also set to 'true' when initialization failed, to prevent a lot of reloads. (Note: TODO)
+        /// <para>Set to <see cref="EngineStatus.Unloaded"/> - by default.</para>
+        /// <para>Set to <see cref="EngineStatus.Initializing"/> - during initialization (after calling <see cref="Initialize"/>, potentially automatically).</para>
+        /// <para>Set to <see cref="EngineStatus.Initialized"/> - when <see cref="Engine"/> and <see cref="Modding.Mod"/>s are fully initialized!</para>
+        /// <para>Set to <see cref="EngineStatus.Unloading"/> - during unloading (after calling <see cref="Unload"/>, maybe by <see cref="EngineUnloader"/>)</para>
+        /// <para>Set to <see cref="EngineStatus.InitializationBroken"/> - if engine got irreversibly broken during initialization.</para>
+        /// <para>Set to <see cref="EngineStatus.UnloadingBroken"/> - if engine got irreversibly broken during unloading.</para>
         /// </remarks>
-        public static bool IsInitialized => m_IsInitialized;
+        public static EngineStatus Status
+        {
+            get => m_Status;
+            private set
+            {
+                bool exceptions;
+                Delegate[] delegates;
+                switch (m_Status = value)
+                {
+                    //
+                    // Temporary states are ignored.
+                    //
+                    case EngineStatus.Initializing: break;
+                    case EngineStatus.Unloading: break;
+
+                    //
+                    // Unknown states are immediately reported.
+                    //
+                    default: throw new SwitchExpressionException(value);
+
+                    //
+                    // Final states are processed.
+                    //
+                    case EngineStatus.Initialized:
+                        if (m_OnEngineInitialized == null) break;
+                        delegates = m_OnEngineInitialized.GetInvocationList();
+                        m_OnEngineInitialized = null;
+
+                        // Callback list should not be modifiable at this point, since after IsInitialized is set to true - callbacks are auto fired immediately.
+                        // Because of that, we don't need any locks, AFAIK.
+                        exceptions = false;
+                        foreach (var callback in delegates)
+                        {
+                            try
+                            {
+                                callback.DynamicInvoke();
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.LogException(ex);
+                                exceptions |= true;
+                            }
+                        }
+
+                        if (exceptions)
+                        {
+                            Debug.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineInitialized)}' thrown exceptions! Look above for errors.");
+                        }
+
+                        break;
+
+                    case EngineStatus.Unloaded:
+                        if (m_OnEngineUnloaded == null) break;
+                        delegates = m_OnEngineUnloaded.GetInvocationList();
+                        m_OnEngineUnloaded = null;
+
+                        // Callback list should not be modifiable at this point, since after IsInitialized is set to true - callbacks are auto fired immediately.
+                        // Because of that, we don't need any locks, AFAIK.
+                        exceptions = false;
+                        foreach (var callback in delegates)
+                        {
+                            try
+                            {
+                                callback.DynamicInvoke();
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.LogException(ex);
+                                exceptions |= true;
+                            }
+                        }
+
+                        if (exceptions)
+                        {
+                            Debug.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineInitialized)}' thrown exceptions! Look above for errors.");
+                        }
+
+                        break;
+
+                    //
+                    // Broken states are reported:
+                    //
+                    case EngineStatus.InitializationBroken:
+                        // TODO: Replace with EngineLogger implementation.
+                        Debug.LogError($"{LogPrefix} {nameof(Engine)} was irreversibly broken during initialization. You will need to restart your app to fix this.");
+                        break;
+
+                    case EngineStatus.UnloadingBroken:
+                        // TODO: Replace with EngineLogger implementation.
+                        Debug.LogError($"{LogPrefix} {nameof(Engine)} was irreversibly broken during unloading. You will need to restart your app to fix this.");
+                        break;
+                }
+            }
+        }
 
 
 
@@ -127,16 +233,14 @@ namespace Eclipse
         /// .                                               Private Fields
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        // Static Fields:
-        private static readonly Dictionary<Type, EngineService> m_Services = new Dictionary<Type, EngineService>();
-        private static readonly List<Assembly> m_Assemblies = new List<Assembly>();
-
         // Encapsulated Fields:
-        private static readonly HashSet<Action> m_OnEngineInitializedCallbacks = new HashSet<Action>();
-        private static readonly object m_IsInitializedStateLock = new object();
-        private static volatile bool m_IsInitialized;
+        private static volatile EngineStatus m_Status = EngineStatus.Unloaded;
+        private static volatile Action? m_OnEngineInitialized;
+        private static volatile Action? m_OnEngineUnloaded;
 
         // Local Fields:
+        private static readonly Dictionary<Type, EngineService> m_Services = new Dictionary<Type, EngineService>();
+        private static readonly AssemblyStorage m_Assemblies = new AssemblyStorage(64);
         private static volatile bool m_AcceptsAssemblies = true;
 
 
@@ -144,7 +248,7 @@ namespace Eclipse
 
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
-        /// .                                               Public Methods
+        /// .                                              Service Retrieval
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
@@ -261,118 +365,6 @@ namespace Eclipse
 
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
-        /// .                                                Finalization
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private static void SetInitialized()
-        {
-            if (m_IsInitialized) return;
-
-            // Locks exclusively briefly to avoid deadlocks, if invoked callback, for any reason, tries to add another callback to the list.
-            lock (m_IsInitializedStateLock)
-            {
-                m_IsInitialized = true;
-            }
-
-            bool exceptions = false;
-            lock (m_OnEngineInitializedCallbacks)
-            {
-                foreach (var callback in m_OnEngineInitializedCallbacks)
-                {
-                    try
-                    {
-                        callback.Invoke();
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.LogException(ex);
-                        exceptions |= true;
-                    }
-                }
-            }
-
-            if (exceptions)
-            {
-                Debug.LogError($"{LogPrefix} Some callbacks on '{nameof(OnEngineInitialized)}' thrown exceptions! Look above for errors.");
-            }
-
-            // Only locks on clear, since after 'm_IsInitialized' was set to true - nothing can be modified.
-            // Also should avoid deadlocks if invoked callback, for any reason, tries to add another callback to the list.
-            lock (m_OnEngineInitializedCallbacks)
-            {
-                m_OnEngineInitializedCallbacks.Clear();
-            }
-        }
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                             Initialization API
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <summary>
-        /// Throws "Not modifiable" exception if called when <see cref="IsInitialized"/> is false.
-        /// This is usually when assets are still modifiable.
-        /// </summary>
-        /// <remarks>
-        /// Is it a good idea to lock systems behind such limitation though?
-        /// <para>
-        /// Use it only in a non-performance critical code, like class setters that usually never called, or initialization-only setters.
-        /// </para>
-        /// </remarks>
-        public static void AssertModifiable([CallerFilePath] string caller = "")
-        {
-            if (IsInitialized) throw new Exception($"Cannot modify ('{Path.GetFileNameWithoutExtension(caller)}') outside of the engine initialization stage.");
-        }
-
-        /// <summary>
-        /// Initializes the entire engine: <see cref="EngineService"/>s, <see cref="Modding.Mod"/>s, and so on.
-        /// </summary>
-        public static async UniTask Initialize()
-        {
-            // TODO: Decide what to do with service unloading when in the Editor.
-            //  Maybe provide special UNITY_EDITOR-only methods?
-            //  We can keep them in the code so people can restore Editor's tools more easily.
-            //  Although, a lot of it will be gate-kept behind Application.isEditor anyway.
-            Application.quitting += ResetState;
-
-            if (Application.isEditor)
-            {
-                Debug.LogWarning($"Engine initializes in the Editor. Application.isPlaying: {Application.isPlaying}");
-            }
-            else
-            {
-                Debug.LogWarning($"Engine initializes at Runtime. Application.isPlaying: {Application.isPlaying}");
-            }
-
-            await LoadModsAndAssemblies();
-            await InitializeEngine();
-        }
-
-        /// <summary>
-        /// Unloads entire engine, all initialized services.
-        /// </summary>
-        /// <remarks>
-        /// Will not unload mod Assemblies from the memory, as it is impossible.
-        /// </remarks>
-        public static async UniTask Unload()
-        {
-            await UnloadEngine();
-
-            ResetState();
-            
-            // TODO: Still decide what to do with service unloading in the editor.
-            Application.quitting -= ResetState;
-            await UniTask.CompletedTask;
-        }
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
         /// .                                       Unity Initialization Callbacks
         /// .                                TODO: Add Editor-time initialization methods.
         /// .
@@ -380,7 +372,7 @@ namespace Eclipse
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void OnSubsystemRegistration()
         {
-            if (EclipseConfiguration.Instance.InitializationType == EclipseInitializationType.SubsystemRegistration)
+            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.SubsystemRegistration)
             {
                 Initialize().Forget();
             }
@@ -389,7 +381,7 @@ namespace Eclipse
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         static void OnAfterAssembliesLoaded()
         {
-            if (EclipseConfiguration.Instance.InitializationType == EclipseInitializationType.AfterAssembliesLoaded)
+            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.AfterAssembliesLoaded)
             {
                 Initialize().Forget();
             }
@@ -398,7 +390,7 @@ namespace Eclipse
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
         static void OnBeforeSplashScreen()
         {
-            if (EclipseConfiguration.Instance.InitializationType == EclipseInitializationType.BeforeSplashScreen)
+            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.BeforeSplashScreen)
             {
                 Initialize().Forget();
             }
@@ -407,7 +399,7 @@ namespace Eclipse
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void OnBeforeSceneLoad()
         {
-            if (EclipseConfiguration.Instance.InitializationType == EclipseInitializationType.BeforeSceneLoad)
+            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.BeforeSceneLoad)
             {
                 Initialize().Forget();
             }
@@ -416,9 +408,36 @@ namespace Eclipse
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void OnAfterSceneLoad()
         {
-            if (EclipseConfiguration.Instance.InitializationType == EclipseInitializationType.AfterSceneLoad)
+            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.AfterSceneLoad)
             {
                 Initialize().Forget();
+            }
+        }
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                              Fast-Access API
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Throws "Not modifiable" exception if called when <see cref="Status"/> is anything but <see cref="EngineStatus.Initializing"/>.
+        /// This is usually when core systems are still modifiable.
+        /// Assets and other resources, however, usually still modifiable at runtime to some degree (depends on type).
+        /// </summary>
+        /// <remarks>
+        /// (Hmm... Is it a good idea to lock systems behind such limitation though?)
+        /// <para>
+        /// (Use it in a non-performance critical code, like class setters that usually never called, or initialization-only setters, etc.)
+        /// </para>
+        /// </remarks>
+        public static void AssertModifiable([CallerFilePath] string caller = "")
+        {
+            if (m_Status != EngineStatus.Initializing)
+            {
+                throw new Exception($"Cannot modify ('{Path.GetFileNameWithoutExtension(caller)}') outside of the engine initialization stage.");
             }
         }
 
@@ -431,14 +450,21 @@ namespace Eclipse
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Unloads assemblies and classes from the memory.
+        /// Unloads entire engine, all initialized services.
         /// </summary>
         /// <remarks>
-        /// Will cache resources like textures, atlases, music and etc. in case it will be referenced again.
-        /// Will use update date and time to decide whether to update a resource or not.
+        /// Will not unload mod Assemblies from the memory, as it is impossible.
         /// </remarks>
-        private static void UnloadEngine()
+        public static async UniTask Unload()
         {
+            // Only already initialized engine can be unloaded.
+            // (TODO) Note: should we introduce unloading of a partially loaded engine? Something to think about later.
+            if (Status != EngineStatus.Initialized)
+            {
+                return;
+            }
+
+            Status = EngineStatus.Unloading;
             foreach (var service in m_Services.Values)
             {
                 ((IEngineServiceDirectAccess)service).EngineInvokeUnloading();
@@ -447,19 +473,8 @@ namespace Eclipse
             m_Services.Clear();
             m_Assemblies.Clear();
             m_AcceptsAssemblies = true;
-
-            try
-            {
-                OnEngineResetting?.Invoke();
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"{LogPrefix} Failed to dispose references on engine reload. Expect small/large memory leaks.");
-                Debug.LogException(ex);
-            }
-
-            OnEngineResetting = null;
-            m_IsInitialized = false;
+            await UniTask.CompletedTask;
+            Status = EngineStatus.Unloaded;
         }
 
 
@@ -467,12 +482,43 @@ namespace Eclipse
 
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
-        /// .                                            Fetching and Loading
+        /// .                                               Initialization
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private static async UniTask LoadModsAndAssemblies()
+        /// <summary>
+        /// Initializes the entire engine: <see cref="EngineService"/>s, <see cref="Modding.Mod"/>s, and so on.
+        /// </summary>
+        public static async UniTask Initialize()
         {
-            Debug.Log($"{LogPrefix} Executing '{nameof(LoadModsAndAssemblies)}'");
+            if (Status != EngineStatus.Unloaded)
+            {
+                return;
+            }
+
+            Status = EngineStatus.Initializing;
+            // TODO: Decide what to do with service unloading when in the Editor.
+            //  Maybe provide special UNITY_EDITOR-only methods?
+            //  We can keep them in the code so people can restore Editor's tools more easily.
+            //  Although, a lot of it will be gate-kept behind Application.isEditor anyway.
+            //Application.quitting += ResetState;
+
+            if (Application.isEditor)
+            {
+                Debug.LogWarning($"Engine initializes in the Editor. Application.isPlaying: {Application.isPlaying}");
+            }
+            else
+            {
+                Debug.LogWarning($"Engine initializes at Runtime. Application.isPlaying: {Application.isPlaying}");
+            }
+
+            await LoadModsAndTheirAssemblies();
+            await InitializeEngine();
+            Status = EngineStatus.Initialized;
+        }
+
+        private static async UniTask LoadModsAndTheirAssemblies()
+        {
+            Debug.Log($"{LogPrefix} Executing '{nameof(LoadModsAndTheirAssemblies)}'");
 
             try
             {
@@ -521,12 +567,12 @@ namespace Eclipse
             }
             catch (Exception ex)
             {
-                Debug.LogError($"{LogPrefix} Mod registration on '{nameof(LoadModsAndAssemblies)}' failed!");
+                Debug.LogError($"{LogPrefix} Mod registration on '{nameof(LoadModsAndTheirAssemblies)}' failed!");
                 Debug.LogException(ex);
             }
             finally
             {
-                Debug.Log($"{LogPrefix} Mod registration (on '{nameof(LoadModsAndAssemblies)}') successful!");
+                Debug.Log($"{LogPrefix} Mod registration (on '{nameof(LoadModsAndTheirAssemblies)}') successful!");
             }
 
             Harmony_AfterLoadingMods();
@@ -558,14 +604,6 @@ namespace Eclipse
             // Loads texture atlases and makes them indexable for further use.
         }
 
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                              Initialization
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         private static async UniTask InitializeEngine()
         {
             // Note: async execution messes-up execution order. Account for that further on.
@@ -791,7 +829,6 @@ namespace Eclipse
             }
 
             m_Assemblies.Clear();
-            SetInitialized();
         }
 
 
@@ -815,7 +852,7 @@ namespace Eclipse
                 return;
             }
 
-            m_Assemblies.Add(assembly);
+            m_Assemblies.Register(assembly);
         }
 
         private static void LoadServices(
@@ -915,6 +952,100 @@ namespace Eclipse
                 this.attribute = attribute;
                 this.method = method;
             }
+        }
+
+        /// <summary>
+        /// Stores assemblies while efficiently checking for duplicates.
+        /// </summary>
+        /// <remarks>
+        /// Might be removed in future updates.
+        /// </remarks>
+        private sealed class AssemblyStorage : IEnumerable<Assembly>
+        {
+            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            /// .
+            /// .                                              Public Properties
+            /// .
+            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            public Assembly this[int index]
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => List[index];
+            }
+
+
+
+
+            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            /// .
+            /// .                                                Public Fields
+            /// .
+            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            public readonly List<Assembly> List;
+            public readonly HashSet<Assembly> Set;
+
+
+
+
+            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            /// .
+            /// .                                                Constructors
+            /// .
+            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            public AssemblyStorage() : this(64) { }
+            public AssemblyStorage(int capacity)
+            {
+                List = new List<Assembly>(capacity);
+                Set = new HashSet<Assembly>(capacity);
+            }
+
+
+
+
+
+            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            /// .
+            /// .                                               Public Methods
+            /// .
+            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            public bool Register(Assembly assembly)
+            {
+                if (Set.Add(assembly))
+                {
+                    List.Add(assembly);
+                    return true;
+                }
+
+                return false;
+            }
+
+            public bool Remove(Assembly assembly)
+            {
+                if (Set.Remove(assembly))
+                {
+                    List.Remove(assembly);
+                    return true;
+                }
+
+                return false;
+            }
+
+            public void Clear()
+            {
+                Set.Clear();
+                List.Clear();
+            }
+
+
+
+
+            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            /// .
+            /// .                                              Implementations
+            /// .
+            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            public IEnumerator<Assembly> GetEnumerator() => List.GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }

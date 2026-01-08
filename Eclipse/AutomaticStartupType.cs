@@ -14,7 +14,7 @@
 /// 
 /// ]]>
 
-namespace Eclipse.Structs
+namespace Eclipse
 {
     /// <summary>
     /// Specifies when <see cref="Eclipse"/> should be initialized.
@@ -22,7 +22,7 @@ namespace Eclipse.Structs
     /// <remarks>
     /// Depends on <see cref="UnityEngine.RuntimeInitializeLoadType"/>
     /// </remarks>
-    public enum EclipseInitializationType : byte
+    public enum AutomaticStartupType : byte
     {
         /// <summary>
         /// Callback invoked when all assemblies are loaded and preloaded assets are initialized.
