@@ -98,7 +98,19 @@ namespace Eclipse.Riptide.Messages
         {
             // Note: can this part be multithreaded in some way?
             // I doubt, but if there will be a way to do it, no matter the LoadProfile option - it **might** be work implementing.
-            lock (m_Pool) return m_PoolHead < 0 ? new TMessage() : m_Pool[m_PoolHead--];
+            lock (m_Pool)
+            {
+                if (m_PoolHead < 0)
+                {
+                    return new TMessage();
+                }
+                else
+                {
+                    TMessage result = m_Pool[m_PoolHead];
+                    m_Pool[m_PoolHead--] = default!;
+                    return result;
+                }
+            }
         }
 
         /// <summary>
@@ -134,6 +146,11 @@ namespace Eclipse.Riptide.Messages
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
+        /// Releases itself by running <see cref="Dispose()"/> method and storing itself in a pool, if available.
+        /// </summary>
+        public void Release() => Release(this);
+
+        /// <summary>
         /// Packs <see cref="NetworkMessage{TMessage, TGroup, TProfile}"/> into a message, including its <see cref="MessageID"/> in the data.
         /// </summary>
         /// <param name="mode"><see cref="global::Riptide"/> Send mode of the <see cref="Message"/>.</param>
@@ -163,11 +180,6 @@ namespace Eclipse.Riptide.Messages
         /// Disposes all arrays and strings under instance control, making it possible for <see cref="System.GC"/> to collect those arrays and strings.
         /// </summary>
         protected abstract void Dispose();
-
-        /// <summary>
-        /// Releases itself by running <see cref="Dispose()"/> method and storing itself in a pool, if available.
-        /// </summary>
-        protected void Release() => Release(this);
     }
 
     /// <summary>

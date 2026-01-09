@@ -17,10 +17,11 @@ using Riptide;
 
 namespace Eclipse.Riptide.Testing
 {
+    public sealed class VFXSignal : FlagMessage<VFXSignal, ExampleGroup> { }
     public sealed class ChunkContainer : NetworkMessage<ChunkContainer, ExampleGroup>
     {
-        public const int ChunkSize = 16;
-        public const int ChunkHeight = 128;
+        public const int ChunkSize = 8;
+        public const int ChunkHeight = 64;
         public const int ChunkArea = ChunkSize * ChunkSize;
         public const int ChunkVolume = ChunkArea * ChunkHeight;
 

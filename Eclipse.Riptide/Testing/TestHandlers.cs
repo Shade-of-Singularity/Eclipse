@@ -13,6 +13,7 @@
 /// ]]>
 
 using Riptide;
+using System.ComponentModel;
 using UnityEngine;
 
 namespace Eclipse.Riptide.Testing
@@ -44,6 +45,12 @@ namespace Eclipse.Riptide.Testing
             Debug.Log($"Client-side {nameof(ReceiveInventoryHandler)} was fired with data: {container}");
         }
 
+        [EclipseMessage]
+        public static void HandleVFXSignal(VFXSignal _)
+        {
+            Debug.Log($"Client-side {nameof(VFXSignal)} received.");
+        }
+
 
 
 
@@ -69,7 +76,13 @@ namespace Eclipse.Riptide.Testing
         {
             var container = new ReceiveInventory();
             container.Read(message);
-            Debug.Log($"Client-side {nameof(ReceiveInventoryHandler)} was fired with data from client ({clientID}): {container}");
+            Debug.Log($"Server-side {nameof(ReceiveInventoryHandler)} was fired with data from client ({clientID}): {container}");
+        }
+
+        [EclipseMessage]
+        public static void HandleVFXSignal(ushort clientID, VFXSignal _)
+        {
+            Debug.Log($"Server-side {nameof(VFXSignal)} received from client ({clientID})");
         }
     }
 }

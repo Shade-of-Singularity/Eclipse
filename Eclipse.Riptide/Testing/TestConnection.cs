@@ -1,5 +1,6 @@
 ﻿using Riptide;
 using System;
+using System.Collections;
 using System.Threading;
 using UnityEngine;
 
@@ -40,6 +41,8 @@ namespace Eclipse.Riptide.Testing
         /// .                                               Private Fields
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        private sealed class Runner : MonoBehaviour { }
+        private static readonly Runner m_Runner = new GameObject("Runner").AddComponent<Runner>();
         private static bool m_Enabled = false;
 
 
@@ -61,7 +64,21 @@ namespace Eclipse.Riptide.Testing
         /// .                                               Private Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        private static void OnDisabled()
+        {
+            m_Runner.StopAllCoroutines();
+            Client.Disconnect();
+            Server.Stop();
+            Debug.Log("Test connection was closed.");
+        }
+
         private static void OnEnabled()
+        {
+            m_Runner.StopAllCoroutines();
+            m_Runner.StartCoroutine(StartSequence());
+        }
+
+        private static IEnumerator StartSequence()
         {
             Debug.Log("Starting test connection.");
             int payload = Message.MaxPayloadSize;
@@ -69,37 +86,37 @@ namespace Eclipse.Riptide.Testing
             Server.Start(ServerPort, 1, messageHandlerGroupId: ExampleGroup.GroupID);
             if (!Client.Connect($"127.0.0.1:{ServerPort}", messageHandlerGroupId: ExampleGroup.GroupID))
             {
-                Debug.LogWarning("Cannot connect to the server. Quitting...");
+                Debug.LogWarning("Cannot connect to the server.");
                 Enabled = false;
                 Message.MaxPayloadSize = payload;
-                return;
+                yield break;
             }
 
             uint repeats = 64;
             while (Client.IsConnecting && repeats > 0)
             {
-                Update();
+                yield return Update();
                 repeats--;
             }
 
             if (Client.IsConnecting && repeats == 0)
             {
-                Debug.LogWarning("Client connection timeout. Quitting...");
+                Debug.LogWarning("Client connection timeout.");
                 Enabled = false;
                 Message.MaxPayloadSize = payload;
-                return;
+                yield break;
             }
 
             Debug.Log("Sending example messages.");
-            SendChunkContainerMessage();
-            SendValidateChunkMessage();
-            SendReceiveInventoryMessage();
+            yield return SendChunkContainerMessage();
+            yield return SendValidateChunkMessage();
+            yield return SendReceiveInventoryMessage();
+            yield return SendVFXSignalMessage();
             Debug.Log("All messages was sent! Test concluded.");
             Enabled = false;
             Message.MaxPayloadSize = payload;
 
-            // Simplifications:
-            void SendChunkContainerMessage()
+            IEnumerator SendChunkContainerMessage()
             {
                 // Sending chunk data.
                 ChunkContainer chunk = ChunkContainer.Get();
@@ -107,28 +124,32 @@ namespace Eclipse.Riptide.Testing
                 chunk.blocks = new uint[ChunkContainer.ChunkVolume];
                 Array.Fill<uint>(chunk.blocks, 1);
 
-                Update();
+                yield return Update();
                 Client.Send(chunk.Pack(mode: MessageSendMode.Reliable));
-                Update();
+                yield return Update();
                 Server.SendToAll(chunk.Pack(mode: MessageSendMode.Reliable));
-                Update();
+                yield return Update();
+
+                chunk.Release();
             }
 
-            void SendValidateChunkMessage()
+            IEnumerator SendValidateChunkMessage()
             {
                 // Sending validation data.
                 ValidateChunk validate = ValidateChunk.Get();
                 validate.x = 4; validate.y = 4;
                 validate.hash = (ulong)new System.Random().Next();
 
-                Update();
+                yield return Update();
                 Client.Send(validate.Pack(mode: MessageSendMode.Reliable));
-                Update();
+                yield return Update();
                 Server.SendToAll(validate.Pack(mode: MessageSendMode.Reliable));
-                Update();
+                yield return Update();
+
+                validate.Release();
             }
 
-            void SendReceiveInventoryMessage()
+            IEnumerator SendReceiveInventoryMessage()
             {
                 const int InventorySize = 46;
 
@@ -145,44 +166,41 @@ namespace Eclipse.Riptide.Testing
                 inventory.amounts[0] = 64;
                 inventory.amounts[0] = 64;
 
-                Update();
+                yield return Update();
                 Client.Send(inventory.Pack(mode: MessageSendMode.Reliable));
-                Update();
+                yield return Update();
                 Server.SendToAll(inventory.Pack(mode: MessageSendMode.Reliable));
-                Update();
+                yield return Update();
+
+                inventory.Release();
             }
 
-            static void Update()
+            IEnumerator SendVFXSignalMessage()
             {
-                Thread.Sleep(10);
-                Client.Update();
-                Thread.Sleep(10);
-                Server.Update();
-                Thread.Sleep(10);
-                Client.Update();
-                Thread.Sleep(10);
-                Server.Update();
-                Thread.Sleep(10);
+                // Sending validation data.
+                VFXSignal signal = VFXSignal.Get();
+
+                yield return Update();
+                Client.Send(signal.Pack(mode: MessageSendMode.Reliable));
+                yield return Update();
+                Server.SendToAll(signal.Pack(mode: MessageSendMode.Reliable));
+                yield return Update();
+
+                signal.Release();
             }
         }
 
-        private static void OnDisabled()
+        static IEnumerator Update()
         {
-            Update();
-            Client.Disconnect();
-            Update();
-            Server.Stop();
-            Update();
-            Debug.Log("Test connection was closed.");
-
-            static void Update()
-            {
-                Thread.Sleep(10);
-                Client.Update();
-                Thread.Sleep(10);
-                Server.Update();
-                Thread.Sleep(10);
-            }
+            yield return null;
+            Client.Update();
+            yield return null;
+            Server.Update();
+            yield return null;
+            Client.Update();
+            yield return null;
+            Server.Update();
+            yield return null;
         }
     }
 }

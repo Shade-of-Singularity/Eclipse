@@ -178,12 +178,15 @@ namespace Eclipse.Riptide
             {
                 // Resets all handlers first.
                 // Note: All managed handlers will be locked at this point, so mutation is safe, even in multi-threaded context (untested though)
+                // TODO: Avoid clearing of the entire database on first Initialization. All handlers will be empty at this point anyway.
                 Array.ForEach(m_ClientHandlers, Handlers.ClientHandlers.Unsafe.Clear);
                 Array.ForEach(m_ServerHandlers, Handlers.ServerHandlers.Unsafe.Clear);
 
+                // TODO: Use better assembly handling methods.
                 foreach (var classes in typeof(NetworkIndex).Assembly.GetTypes())
                 {
-                    foreach (var method in classes.GetMethods(BindingFlags.Static | BindingFlags.InvokeMethod))
+                    MethodInfo[] methods = classes.GetMethods();
+                    foreach (var method in methods)
                     {
                         RegisterHandlers(method);
                     }
@@ -205,6 +208,7 @@ namespace Eclipse.Riptide
             ParameterInfo[] parameters = method.GetParameters();
             Type messageType, dataType;
             byte groupID; ushort messageID;
+            string logName;
             switch (parameters.Length)
             {
                 // Likely client-side method - they only have the NetworkMessage in parameters.
@@ -223,12 +227,20 @@ namespace Eclipse.Riptide
                         throw new Exception($"Message handler ({method.Name}) is likely client-side, but has unsupported parameter {parameters[0].Name} ({dataType.Name}). Make sure that parameter is either {nameof(Riptide)}.{nameof(Message)} or {nameof(Messages)}.{nameof(NetworkMessage)}.");
                     }
 
+                    // Retrieves generic base class for messages, which contains GroupID and MessageID.
+                    // We need this since static generic fields cannot be retrieved without specific types (Flatten binding flag doesn't work either).
+                    logName = messageType.Name;
+                    while (messageType.BaseType != typeof(NetworkMessage))
+                    {
+                        messageType = messageType.BaseType;
+                    }
+
                     // Note: GroupID is **property** and MessageID is **field**. Keep that in mind.
-                    groupID = (byte)messageType.GetProperty(nameof(ReflectionMessage.GroupID), BindingFlags.Static).GetValue(null);
-                    messageID = (ushort)messageType.GetField(nameof(ReflectionMessage.MessageID), BindingFlags.Static).GetValue(null);
+                    groupID = (byte)messageType.GetProperty(nameof(ReflectionMessage.GroupID)).GetValue(null);
+                    messageID = (ushort)messageType.GetField(nameof(ReflectionMessage.MessageID)).GetValue(null);
                     ClientHandlers.HandlerInfo clientHandler = new ClientHandlers.HandlerInfo(method, dataType);
                     Handlers.ClientHandlers.Unsafe.Put(m_ClientHandlers[groupID], messageID, clientHandler);
-                    Debug.Log($"Client message handler ({method.Name}) with message type {messageType.Name} was found and it is valid!");
+                    Debug.Log($"Client message handler ({method.Name}) with message type {logName} was found and it is valid!");
                     break;
 
                 // Likely server-side method - they have UserID and INetworkMessage in parameters.
@@ -252,12 +264,20 @@ namespace Eclipse.Riptide
                         throw new Exception($"Message handler ({method.Name}) is likely client-side, but has unsupported parameter {parameters[1].Name} ({dataType.Name}). Make sure that parameter is either {nameof(Riptide)}.{nameof(Message)} or {nameof(Messages)}.{nameof(NetworkMessage)}.");
                     }
 
+                    // Retrieves generic base class for messages, which contains GroupID and MessageID.
+                    // We need this since static generic fields cannot be retrieved without specific types (Flatten binding flag doesn't work either).
+                    logName = messageType.Name;
+                    while (messageType.BaseType != typeof(NetworkMessage))
+                    {
+                        messageType = messageType.BaseType;
+                    }
+
                     // Note: GroupID is **property** and MessageID is **field**. Keep that in mind.
-                    groupID = (byte)messageType.GetProperty(nameof(ReflectionMessage.GroupID), BindingFlags.Static).GetValue(null);
-                    messageID = (ushort)messageType.GetField(nameof(ReflectionMessage.MessageID), BindingFlags.Static).GetValue(null);
+                    groupID = (byte)messageType.GetProperty(nameof(ReflectionMessage.GroupID)).GetValue(null);
+                    messageID = (ushort)messageType.GetField(nameof(ReflectionMessage.MessageID)).GetValue(null);
                     ServerHandlers.HandlerInfo serverHandler = new ServerHandlers.HandlerInfo(method, dataType);
                     Handlers.ServerHandlers.Unsafe.Put(m_ServerHandlers[groupID], messageID, serverHandler);
-                    Debug.Log($"Client message handler ({method.Name}) with message type {messageType.Name} was found and it is valid!");
+                    Debug.Log($"Server message handler ({method.Name}) with message type {logName} was found and it is valid!");
                     break;
 
                 // Any other kind of signature is not supported at the moment.

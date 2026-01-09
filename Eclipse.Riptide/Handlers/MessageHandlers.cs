@@ -102,7 +102,7 @@ namespace Eclipse.Riptide.Handlers
                 if (messageID >= handlers.m_Handlers.Length)
                 {
                     // Resizes array to the next power of two (or the same amount if ID is already PoT).
-                    Array.Resize(ref handlers.m_Handlers, GetPoTArraySize(messageID));
+                    Array.Resize(ref handlers.m_Handlers, GetPoTArraySize(messageID + 1));
                 }
 
                 handlers.m_Handlers[messageID] = handler;
@@ -125,7 +125,7 @@ namespace Eclipse.Riptide.Handlers
             /// .                                               Private Methods
             /// .
             /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            public static int GetPoTArraySize(ushort x)
+            public static int GetPoTArraySize(int x)
             {
                 if (x < (ushort)SystemMessageID.Amount)
                 {
