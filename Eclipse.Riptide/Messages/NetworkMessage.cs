@@ -1,5 +1,6 @@
 ﻿using Eclipse.Riptide.Load;
 using Riptide;
+using System.Xml.Serialization;
 
 namespace Eclipse.Riptide.Messages
 {
@@ -104,7 +105,7 @@ namespace Eclipse.Riptide.Messages
         /// Releases given <paramref name="message"/> by running <see cref="Dispose()"/> method on it and storing it in a pool, if available.
         /// </summary>
         /// <param name="message">Message data container to dispose and store.</param>
-        public static void Release(TMessage message)
+        public static void Release(NetworkMessage<TMessage, TGroup, TProfile> message)
         {
             // Always disposes.
             message.Dispose();
@@ -119,7 +120,7 @@ namespace Eclipse.Riptide.Messages
                 }
 
                 // If index is within array bounds - it will store message there and move head there. 
-                m_Pool[index] = message;
+                m_Pool[index] = (TMessage)message;
                 m_PoolHead = index;
             }
         }
@@ -139,6 +140,17 @@ namespace Eclipse.Riptide.Messages
         /// <returns>Fully prepared <see cref="Message"/>, ready to be sent to another party.</returns>
         public Message Pack(MessageSendMode mode) => Write(Message.Create(mode, MessageID));
 
+        /// <summary>
+        /// Unpacks given message by overwriting values of this <see cref="NetworkMessage{TMessage, TGroup, TProfile}"/> instance.
+        /// </summary>
+        /// <param name="message">Message to unpack.</param>
+        /// <returns>Itself, for convenience.</returns>
+        public NetworkMessage<TMessage, TGroup, TProfile> Unpack(Message message)
+        {
+            Read(message);
+            return this;
+        }
+
 
 
 
@@ -155,7 +167,7 @@ namespace Eclipse.Riptide.Messages
         /// <summary>
         /// Releases itself by running <see cref="Dispose()"/> method and storing itself in a pool, if available.
         /// </summary>
-        protected void Release() => Release((TMessage)this);
+        protected void Release() => Release(this);
     }
 
     /// <summary>

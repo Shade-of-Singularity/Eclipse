@@ -33,7 +33,7 @@ namespace Eclipse.Riptide.Testing
         [EclipseMessage]
         public static void ValidateChunkHandler(ValidateChunk chunk)
         {
-            Debug.Log($"Client-side {nameof(SendChunkHandler)} was fired with data: {chunk}");
+            Debug.Log($"Client-side {nameof(ValidateChunkHandler)} was fired with data: {chunk}");
         }
 
         [EclipseMessage(typeof(ReceiveInventory))] // We need to specify type if we put raw message in method parameters.
@@ -61,7 +61,7 @@ namespace Eclipse.Riptide.Testing
         [EclipseMessage]
         public static void ValidateChunkHandler(ushort clientID, ValidateChunk chunk)
         {
-            Debug.Log($"Server-side {nameof(SendChunkHandler)} was fired with data from client ({clientID}): {chunk}");
+            Debug.Log($"Server-side {nameof(ValidateChunkHandler)} was fired with data from client ({clientID}): {chunk}");
         }
 
         [EclipseMessage(typeof(ReceiveInventory))] // We need to specify type if we put raw message in method parameters.

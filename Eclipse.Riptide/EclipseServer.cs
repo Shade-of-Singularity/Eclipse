@@ -98,7 +98,7 @@ namespace Eclipse.Riptide
             if (!m_BroadcastToHandlers) return;
             if (m_MessageHandlers?.TryFire(args.MessageId, args.FromConnection.Id, args.Message) != true)
             {
-                Debug.LogWarning($"No message handler method found for message ID ({args.MessageId})!");
+                Debug.LogWarning($"No Server-side Eclipse message handler method found for message ID ({args.MessageId})!");
             }
         }
     }
