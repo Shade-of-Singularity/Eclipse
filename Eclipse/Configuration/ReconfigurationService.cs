@@ -32,6 +32,7 @@ namespace Eclipse.Configuration
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         public const int InitializationOrder = ConfigurationService.InitializationOrder + 1000;
+
         /// <see cref="ReconfigurationService"/> itself doesn't reconfigure anything.
         /// Code example: <![CDATA[
         /// [ServicePreloadMethod(typeof(ReconfigurationService), InvokeOrder = 0, ThreadSafe = false)]
@@ -41,5 +42,25 @@ namespace Eclipse.Configuration
         ///     EngineConfiguration<ConfigurationSettings>.Instance.SettingsAutoSaveDelay = 10f;
         /// }
         /// ]]>
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                              Implementations
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <inheritdoc/>
+        protected override void Initialize()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        /// <inheritdoc/>
+        protected override void Unload()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

@@ -14,8 +14,6 @@
 /// 
 /// ]]>
 
-using Eclipse.Structs;
-
 namespace Eclipse.Configuration.Parameters
 {
     /// <summary>
@@ -25,59 +23,16 @@ namespace Eclipse.Configuration.Parameters
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
-        /// .                                                 Delegates
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public delegate void ParameterChangeHandler(AbstractParameter parameter);
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                                   Events
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <summary>
-        /// Called when <see cref="Name"/> has changed in any way.
-        /// </summary>
-        /// <remarks>
-        /// It is not recommended to change <see cref="FullName.Mod"/> outside of the initialization.
-        /// You can do it, but it will cause UI rebuilds, and might break stuff.
-        /// </remarks>
-        public event ParameterChangeHandler? OnNameChanged;
-
-        // Fire-on-add events:
-        /// <inheritdoc cref="OnNameChanged"/>
-        public event ParameterChangeHandler FireWithNameChanged
-        {
-            remove => OnNameChanged -= value;
-            add
-            {
-                if (value != null)
-                {
-                    OnNameChanged += value;
-                    value(this);
-                }
-            }
-        }
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
         /// .                                              Public Properties
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Fully qualified name of the parameter.
+        /// Fully qualified ID of the parameter.
         /// </summary>
         /// <remarks>
-        /// Note: please, refrain from modifying <see cref="FullName.Mod"/> here.
-        /// This might cause a lot of UI updates, and might break stuff at times.
+        /// You can use <see cref="Extensions.Naming"/> to make those.
         /// </remarks>
-        public FullName Name => m_Name;
+        public string ID { get; }
 
         /// <summary>
         /// Whether property awaits being applied.
@@ -94,36 +49,10 @@ namespace Eclipse.Configuration.Parameters
 
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
-        /// .                                               Private Fields
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        // Static Fields:
-
-        // Encapsulated Fields:
-        protected FullName m_Name;
-
-        // Local Fields:
-
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
         /// .                                                Constructors
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public AbstractParameter(FullName name) => m_Name = name;
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                               Implementations
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-
+        public AbstractParameter(string id) => ID = id;
 
 
 
@@ -189,14 +118,5 @@ namespace Eclipse.Configuration.Parameters
         /// </remarks>
         /// <returns>Value of the parameter as <see cref="object"/>.</returns>
         public abstract object GetValue();
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                               Private Methods
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
     }
 }

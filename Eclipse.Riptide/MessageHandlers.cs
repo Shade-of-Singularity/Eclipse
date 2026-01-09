@@ -47,7 +47,7 @@ namespace Eclipse.Riptide
         /// .                                               Private Fields
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private THandler[] m_Handlers = new THandler[SystemMessageID.Amount]
+        private THandler[] m_Handlers = new THandler[(int)SystemMessageID.Amount];
 
 
 

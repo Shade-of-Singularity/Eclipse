@@ -1,4 +1,4 @@
-﻿using Eclipse.Structs;
+﻿using Eclipse.Serialization;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,8 +23,15 @@ namespace Eclipse.Configuration.Parameters
         /// .                                                 Delegates
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public delegate void ValueChangeHandler(TValue old, TValue current);
-        public delegate void ModifiedStateChangeHandler(bool modified);
+        /// <summary>
+        /// Handler for when value of the parameter has changed.
+        /// </summary>
+        /// <remarks>
+        /// Can also be used by UI components to check for <see cref="IsModified"/> and <see cref="IsDirty"/> property states.
+        /// </remarks>
+        /// <param name="parameter">Parameter that was modified.</param>
+        /// <param name="previous">Previous value of the parameter before it was changed.</param>
+        public delegate void ValueChangeHandler(SolidParameter<TValue> parameter, TValue previous);
 
 
 
@@ -44,14 +51,8 @@ namespace Eclipse.Configuration.Parameters
         /// </summary>
         public event ValueChangeHandler? OnValueApplied;
 
-        /// <summary>
-        /// Called when <see cref="IsModified"/> has changed.
-        /// </summary>
-        public event ModifiedStateChangeHandler? OnModifiedChanged;
-
 
         // Fire-on-add events:
-        // TODO: Auto-fire regular events when Engine was initialized.
         /// <summary><inheritdoc cref="OnValueChanged"/></summary>
         /// <remarks>
         /// Both attaches the event handler to <see cref="OnValueChanged"/>, and instantly fires the event for it.
@@ -64,7 +65,7 @@ namespace Eclipse.Configuration.Parameters
                 if (value != null)
                 {
                     OnValueApplied += value;
-                    value(m_Value, m_Value);
+                    value(this, m_Value);
                 }
             }
         }
@@ -81,24 +82,7 @@ namespace Eclipse.Configuration.Parameters
                 if (value != null)
                 {
                     OnValueApplied += value;
-                    value(m_StoredValue, m_StoredValue);
-                }
-            }
-        }
-
-        /// <summary><inheritdoc cref="OnModifiedChanged"/></summary>
-        /// <remarks>
-        /// Both attaches the event handler to <see cref="OnValueApplied"/>, and instantly fires the event for it.
-        /// </remarks>
-        public event ModifiedStateChangeHandler FireWithModifiedChanged
-        {
-            remove => OnModifiedChanged -= value;
-            add
-            {
-                if (value != null)
-                {
-                    OnModifiedChanged += value;
-                    value(IsModified);
+                    value(this, m_LastValue);
                 }
             }
         }
@@ -111,8 +95,11 @@ namespace Eclipse.Configuration.Parameters
         /// .                                              Public Properties
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public bool IsDirty => !EqualityComparer<TValue>.Default.Equals(m_StoredValue, m_Value);
-        public bool IsModified => !EqualityComparer<TValue>.Default.Equals(m_Value, m_DefaultValue);
+        /// <inheritdoc/>
+        public override bool IsDirty => !EqualityComparer<TValue>.Default.Equals(m_LastValue, m_Value);
+
+        /// <inheritdoc/>
+        public override bool IsModified => !EqualityComparer<TValue>.Default.Equals(m_Value, m_DefaultValue);
 
         /// <summary>
         /// Default value of the parameter to be used.
@@ -128,15 +115,6 @@ namespace Eclipse.Configuration.Parameters
         {
             get => m_DefaultValue;
             set => SetDefault(value);
-        }
-
-        /// <summary>
-        /// Internal value that will be applied to the parameter on the next <see cref="Engine"/> reload.
-        /// </summary>
-        public TValue StoredValue
-        {
-            get => m_StoredValue;
-            set => Set(value);
         }
 
         /// <summary>
@@ -166,7 +144,7 @@ namespace Eclipse.Configuration.Parameters
         private TValue m_Value;
 
         // Local Fields:
-        private TValue m_StoredValue;
+        private TValue m_LastValue;
 
 
 
@@ -176,13 +154,31 @@ namespace Eclipse.Configuration.Parameters
         /// .                                                Constructors
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public SolidParameter(FullName name) : this(name, default!) { }
-        public SolidParameter(FullName name, TValue def) : base(name)
+        /// <summary>
+        /// Simple constructor for <see cref="SolidParameter{TValue}"/>.
+        /// </summary>
+        public SolidParameter(string id) : this(id, default!) { }
+
+        /// <summary>
+        /// Full constructor for <see cref="SolidParameter{TValue}"/>. Allows specifying <paramref name="def"/>ault value.
+        /// </summary>
+        public SolidParameter(string id, TValue def) : base(id)
         {
-            // TODO: Actually load-in the values from storage XD
-            m_Value = m_StoredValue = m_DefaultValue = def;
-            ConfigurationService.OnAfterApplyChanges += ApplyChanges;
-            ConfigurationService.OnAfterRevertChanges += RevertChanges;
+            // Parameter values are loaded from disk and applied during ConfigurationService initialization.
+            m_Value = m_LastValue = m_DefaultValue = def;
+        }
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                               Static Methods
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        public static SolidParameter<TValue> Get(string id, TValue def = default!)
+        {
+            return ParameterManager.GetOrNew<SolidParameter<TValue>, TValue>(id, (id) => new SolidParameter<TValue>(id, def));
         }
 
 
@@ -193,22 +189,24 @@ namespace Eclipse.Configuration.Parameters
         /// .                                               Implementations
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public override object GetValue() => m_Value;
+        /// <inheritdoc/>
+        public override object GetValue() => Value;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public override string Serialize() => JsonUtility.ToJson(m_StoredValue);
+        /// <inheritdoc/>
+        public override string Serialize() => Serializers<TValue>.Serializer(Value);
 
-        /// <summary>
-        /// Deserializes <paramref name="raw"/> data and stores value in internal variable.
-        /// </summary>
-        /// <remarks>
-        /// Actually works even after Engine initialization! However, does not fire any callbacks.
-        /// </remarks>
-        /// <param name="raw"></param>
-        public override void Deserialize(string raw) => Value = JsonUtility.FromJson<TValue>(raw);
+        /// <inheritdoc/>
+        public override void Deserialize(string raw)
+        {
+            try
+            {
+                Value = Serializers<TValue>.Deserializer(raw);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"Parameter {ID} ({typeof(TValue).Name}]) was not able to deserialize properly. Default value ({m_DefaultValue}) will be used instead.\nFailed data: {raw}\nException: {ex}");
+            }
+        }
 
         /// <summary>
         /// Normally applies changed <see cref="Value"/>, but does nothing with <see cref="SolidParameter{TValue}"/>.
@@ -241,10 +239,8 @@ namespace Eclipse.Configuration.Parameters
         /// <summary>
         /// Resets <see cref="Value"/> to a <see cref="DefaultValue"/>.
         /// </summary>
-        /// <remarks>
-        /// Will only apply new value on the next <see cref="Engine"/> reload.
-        /// </remarks>
         public void Reset() => Set(DefaultValue);
+        //public void ForceSet
 
 
 
@@ -258,11 +254,9 @@ namespace Eclipse.Configuration.Parameters
         {
             if (!EqualityComparer<TValue>.Default.Equals(m_Value, value))
             {
-                bool modified = IsModified;
                 TValue old = m_Value;
                 m_Value = value;
-                OnValueChanged?.Invoke(old, value);
-                if (IsModified != modified) OnModifiedChanged?.Invoke(!modified);
+                OnValueChanged?.Invoke(this, old);
             }
         }
 

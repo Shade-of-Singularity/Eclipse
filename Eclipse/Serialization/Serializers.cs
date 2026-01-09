@@ -48,7 +48,7 @@ namespace Eclipse.Serialization
                     // Reference will only be set in stone once engine is initialized.
                     // This allows mods to overwrite which serializer is used during initialization, but makes us talk a hit to performance a bit.
                     // TODO: Optimize this section further. Alternatively we can force everyone to only ever update serializers before any service has started.
-                    if (Engine.IsInitialized)
+                    if (Engine.Status == EngineStatus.Initialized)
                     {
                         return m_Serializer = Serializers.GetSerializer<Serialize>(DefaultSerializer);
                     }
@@ -74,7 +74,7 @@ namespace Eclipse.Serialization
                     // Reference will only be set in stone once engine is initialized.
                     // This allows mods to overwrite which serializer is used during initialization, but makes us talk a hit to performance a bit.
                     // TODO: Optimize this section further. Alternatively we can force everyone to only ever update serializers before any service has started.
-                    if (Engine.IsInitialized)
+                    if (Engine.Status == EngineStatus.Initialized)
                     {
                         return m_Deserializer = Serializers.GetSerializer<Deserialize>(DefaultDeserializer);
                     }

@@ -36,8 +36,8 @@ namespace Eclipse.Configuration.Storages
         /// .                                               Public Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public override void Load(AbstractParameter parameter) => parameter.Deserialize(PlayerPrefs.GetString(parameter.Name, string.Empty));
-        public override void Save(AbstractParameter parameter) => PlayerPrefs.SetString(parameter.Name, parameter.Serialize());
+        public override void Load(AbstractParameter parameter) => parameter.Deserialize(PlayerPrefs.GetString(parameter.ID, string.Empty));
+        public override void Save(AbstractParameter parameter) => PlayerPrefs.SetString(parameter.ID, parameter.Serialize());
 
 
 

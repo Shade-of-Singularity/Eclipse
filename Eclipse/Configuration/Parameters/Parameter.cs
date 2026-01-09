@@ -15,7 +15,6 @@
 /// ]]>
 
 using Eclipse.Serialization;
-using Eclipse.Structs;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -47,8 +46,8 @@ namespace Eclipse.Configuration.Parameters
         /// Can also be used by UI components to check for <see cref="IsModified"/> and <see cref="IsDirty"/> property states.
         /// </remarks>
         /// <param name="parameter">Parameter that was modified.</param>
-        /// <param name="last">Last value of the parameter.</param>
-        public delegate void ValueChangeHandler(Parameter<TValue> parameter, TValue last);
+        /// <param name="previous">Previous value of the parameter before it was changed.</param>
+        public delegate void ValueChangeHandler(Parameter<TValue> parameter, TValue previous);
 
 
 
@@ -70,7 +69,6 @@ namespace Eclipse.Configuration.Parameters
 
 
         // Fire-on-add events:
-        // TODO: Auto-fire regular events when Engine was initialized.
         /// <summary><inheritdoc cref="OnValueChanged"/></summary>
         /// <remarks>
         /// Both attaches the event handler to <see cref="OnValueChanged"/>, and instantly fires the event for it.
@@ -175,19 +173,28 @@ namespace Eclipse.Configuration.Parameters
         /// <summary>
         /// Simple constructor for <see cref="Parameter{TValue}"/>.
         /// </summary>
-        public Parameter(FullName name) : this(name, default!) { }
+        public Parameter(string id) : this(id, default!) { }
 
         /// <summary>
         /// Full constructor for <see cref="Parameter{TValue}"/>. Allows specifying <paramref name="def"/>ault value.
         /// </summary>
-        public Parameter(FullName name, TValue def) : base(name)
+        public Parameter(string id, TValue def) : base(id)
         {
+            // Parameter values are loaded from disk and applied during ConfigurationService initialization.
             m_Value = m_LastValue = m_DefaultValue = def;
+        }
 
-            /// Note: Registration also immediately calls <see cref="Deserialize(string)"/> with parameter data if available.
-            EngineService<ConfigurationService>.Instance.Register(this);
-            ConfigurationService.OnAfterApplyChanges += ApplyChanges;
-            ConfigurationService.OnAfterRevertChanges += RevertChanges;
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                               Static Methods
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        public static Parameter<TValue> Get(string id, TValue def = default!)
+        {
+            return ParameterManager.GetOrNew<Parameter<TValue>, TValue>(id, (id) => new Parameter<TValue>(id, def));
         }
 
 
@@ -198,6 +205,9 @@ namespace Eclipse.Configuration.Parameters
         /// .                                               Implementations
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <inheritdoc/>
+        public override object GetValue() => Value;
+
         /// <inheritdoc/>
         public override string Serialize() => Serializers<TValue>.Serializer(Value);
 
@@ -210,7 +220,7 @@ namespace Eclipse.Configuration.Parameters
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"Parameter {m_Name} ({typeof(TValue).Name}]) was not able to deserialize properly. Default value ({m_DefaultValue}) will be used instead.\nFailed data: {raw}\nException: {ex}");
+                Debug.LogWarning($"Parameter {ID} ({typeof(TValue).Name}]) was not able to deserialize properly. Default value ({m_DefaultValue}) will be used instead.\nFailed data: {raw}\nException: {ex}");
             }
         }
 
@@ -220,13 +230,15 @@ namespace Eclipse.Configuration.Parameters
             if (IsDirty) ApplyChangesForceFireCallbacks();
         }
 
+        /// <inheritdoc/>
         public override void ApplyChangesForceFireCallbacks()
         {
             TValue old = m_LastValue;
             m_LastValue = m_Value;
-            OnValueApplied?.Invoke(old, m_Value);
+            OnValueApplied?.Invoke(this, old);
         }
 
+        /// <inheritdoc/>
         public override void RevertChanges()
         {
             if (IsDirty)
@@ -235,17 +247,13 @@ namespace Eclipse.Configuration.Parameters
             }
         }
 
+        /// <inheritdoc/>
         public override void RevertChangesForceFireCallbacks()
         {
-            bool modified = IsModified;
             TValue old = m_Value;
             m_Value = m_LastValue;
-            OnValueApplied?.Invoke(old, m_LastValue);
-            OnValueChanged?.Invoke(old, m_LastValue);
-            if (IsModified != modified)
-            {
-                OnModifiedChanged?.Invoke(!modified);
-            }
+            OnValueApplied?.Invoke(this, old);
+            OnValueChanged?.Invoke(this, old);
         }
 
 
@@ -260,8 +268,7 @@ namespace Eclipse.Configuration.Parameters
         /// Resets <see cref="Value"/> to a <see cref="DefaultValue"/>.
         /// </summary>
         public void Reset() => Set(DefaultValue);
-
-        public void ForceSet
+        //public void ForceSet
 
 
 
@@ -275,11 +282,9 @@ namespace Eclipse.Configuration.Parameters
         {
             if (!EqualityComparer<TValue>.Default.Equals(m_Value, value))
             {
-                bool modified = IsModified;
                 TValue old = m_Value;
                 m_Value = value;
-                OnValueChanged?.Invoke(old, value);
-                if (IsModified != modified) OnModifiedChanged?.Invoke(!modified);
+                OnValueChanged?.Invoke(this, old);
             }
         }
 
@@ -298,11 +303,6 @@ namespace Eclipse.Configuration.Parameters
                     m_DefaultValue = value;
                 }
             }
-        }
-
-        public override object GetValue()
-        {
-            throw new NotImplementedException();
         }
     }
 }

@@ -29,7 +29,10 @@ namespace Eclipse
             [ServiceAfterloadMethod(typeof(ConfigurationService))]
             internal static void Initialize()
             {
-                if (Flags.StreamerMode) StreamerMode.Set
+                if (Flags.StreamerMode)
+                {
+                    StreamerMode.DefaultValue = StreamerMode.Value = true;
+                }
             }
         }
     }

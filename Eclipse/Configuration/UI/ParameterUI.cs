@@ -52,7 +52,7 @@ namespace Eclipse.Configuration.UI
         // Serialized Fields:
         [Header("Settings")]
         [Tooltip("Name of the parameter to process.")]
-        [SerializeField] private string m_Parameter = string.Empty;
+        [SerializeField] private string m_ParameterID = string.Empty;
         [Tooltip("Whether to set value of the UI as a default value of the parameter.")]
         [SerializeField] private bool m_SetAsDefault = true;
 
@@ -71,7 +71,7 @@ namespace Eclipse.Configuration.UI
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         protected virtual void Awake()
         {
-            SetupParameter(EngineService<ConfigurationService>.Instance.FindOrThrow<TParameter>(m_Parameter));
+            SetupParameter(ParameterManager.Get<TParameter>(m_ParameterID));
         }
 
 

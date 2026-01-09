@@ -15,12 +15,27 @@
 /// ]]>
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Eclipse.Localization
 {
+    /// <inheritdoc/>
     public sealed class DefaultLocalizationService : LocalizationService
     {
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                              Implementations
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <inheritdoc/>
+        protected override void Initialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc/>
+        protected override void Unload()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

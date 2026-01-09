@@ -18,8 +18,6 @@ using Cysharp.Threading.Tasks;
 using Eclipse.Configuration.Parameters;
 using Eclipse.Configuration.Storages;
 using Eclipse.Extensions;
-using Eclipse.Serialization;
-using Eclipse.Structs;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -284,10 +282,7 @@ namespace Eclipse.Configuration
 
         // Local Fields:
         private readonly Dictionary<Type, EngineConfiguration> m_EngineConfigurations = new Dictionary<Type, EngineConfiguration>();
-        private readonly Dictionary<string, AbstractParameter> m_Parameters = new Dictionary<string, AbstractParameter>();
         private readonly Dictionary<Type, GameState> m_GameStates = new Dictionary<Type, GameState>();
-        private readonly UniTaskCompletionSource m_AwaitSource = new UniTaskCompletionSource();
-        private readonly object m_AwaitLock = new object();
 
 
 
@@ -414,20 +409,6 @@ namespace Eclipse.Configuration
         public abstract bool Set(string id, string value);
         #endregion
 
-        /// <summary>
-        /// Checks if any parameter with a given name was changed before <see cref="Apply"/> or <see cref="Revert"/> was used.
-        /// </summary>
-        /// <param name="id">ID of the raw parameter to set. It is recommended to follow "@name" pattern.</param>
-        /// <returns><c>true</c> if parameter under given <paramref name="id"/> is waiting to be applied.<c>false</c> otherwise.</returns>
-        public abstract bool IsPending(string id);
-
-        /// <summary>
-        /// Removes a pending <see cref="Set(string, string)"/> action from a raw parameter under given <paramref name="id"/>.
-        /// </summary>
-        /// <param name="id">ID of the raw parameter to set. It is recommended to follow "@name" pattern.</param>
-        /// <returns><c>true</c> if parameter under given <paramref name="id"/> was removed from a pending list.<c>false</c> otherwise.</returns>
-        public abstract bool RemoveSet(string id);
-
         #region Get (with default value)
         /// <summary><inheritdoc cref="Get(string, out string, string)"/></summary>
         public abstract void Get(string id, out bool value, bool def = true);
@@ -478,39 +459,18 @@ namespace Eclipse.Configuration
         #endregion
 
         /// <summary>
-        /// Registers new parameter.
+        /// Checks if any parameter with a given name was changed before <see cref="Apply"/> or <see cref="Revert"/> was used.
         /// </summary>
-        /// <remarks>
-        /// Also tries to look-up data about parameter and deserialize it if possible.
-        /// </remarks>
-        public abstract void Register(AbstractParameter parameter);
+        /// <param name="id">ID of the raw parameter to set. It is recommended to follow "@name" pattern.</param>
+        /// <returns><c>true</c> if parameter under given <paramref name="id"/> is waiting to be applied.<c>false</c> otherwise.</returns>
+        public abstract bool IsPending(string id);
 
-        public abstract AbstractParameter? FindOrThrow(FullName name);
-        public abstract AbstractParameter? FindOrThrow(string name);
-        public abstract AbstractParameter? Find(FullName name);
-        public abstract AbstractParameter? Find(string name);
-
-        public virtual TParameter FindOrThrow<TParameter>(FullName name) where TParameter : AbstractParameter => FindOrThrow<TParameter>(name.Full);
-        public virtual TParameter FindOrThrow<TParameter>(string name) where TParameter : AbstractParameter
-        {
-            if (m_Parameters.TryGetValue(name, out AbstractParameter? finding))
-            {
-                if (finding is TParameter result)
-                {
-                    return result;
-                }
-                else
-                {
-                    throw new Exception($"{LogNameBraced} Property with name '{name}' doesn't have required type." +
-                        $"Found: {finding.GetType().Name}  Requested: {typeof(TParameter).Name}.");
-                }
-            }
-
-            throw new Exception($"{LogNameBraced} Cannot find property with name: '{name}'. Type: {typeof(TParameter).Name}");
-        }
-
-        public abstract TParameter? Find<TParameter>(FullName name) where TParameter : AbstractParameter;
-        public abstract TParameter? Find<TParameter>(string name) where TParameter : AbstractParameter;
+        /// <summary>
+        /// Removes a pending <see cref="Set(string, string)"/> action from a raw parameter under given <paramref name="id"/>.
+        /// </summary>
+        /// <param name="id">ID of the raw parameter to set. It is recommended to follow "@name" pattern.</param>
+        /// <returns><c>true</c> if parameter under given <paramref name="id"/> was removed from a pending list.<c>false</c> otherwise.</returns>
+        public abstract bool RemovePending(string id);
 
         /// <summary>
         /// Applies all dirty properties.
@@ -520,7 +480,7 @@ namespace Eclipse.Configuration
             if (IsDirty)
             {
                 Try.WithLog(() => OnBeforeApplyChanges?.Invoke());
-                foreach (var parameter in m_Parameters.Values)
+                foreach (var parameter in ParameterManager.Parameters)
                 {
                     parameter.ApplyChanges();
                 }
@@ -530,13 +490,13 @@ namespace Eclipse.Configuration
         }
 
         /// <summary>
-        /// Applies all properties and fires related callbacks (e.g. <see cref="AbstractParameter{TValue}.OnValueApplied"/>)
+        /// Applies all properties and fires related callbacks (e.g. <see cref="Parameter{TValue}.OnValueApplied"/>)
         /// regardless of whether parameter actually changed.
         /// </summary>
         public void ApplyForceCallbacks()
         {
             Try.WithLog(() => OnBeforeApplyChanges?.Invoke());
-            foreach (var parameter in m_Parameters.Values)
+            foreach (var parameter in ParameterManager.Parameters)
             {
                 parameter.ApplyChangesForceFireCallbacks();
             }
@@ -552,7 +512,7 @@ namespace Eclipse.Configuration
             if (IsDirty)
             {
                 Try.WithLog(() => OnBeforeRevertChanges?.Invoke());
-                foreach (var parameter in m_Parameters.Values)
+                foreach (var parameter in ParameterManager.Parameters)
                 {
                     parameter.RevertChanges();
                 }
@@ -569,7 +529,7 @@ namespace Eclipse.Configuration
         public void RevertForceCallbacks()
         {
             Try.WithLog(() => OnBeforeRevertChanges?.Invoke());
-            foreach (var parameter in m_Parameters.Values)
+            foreach (var parameter in ParameterManager.Parameters)
             {
                 parameter.RevertChanges();
             }
@@ -587,7 +547,7 @@ namespace Eclipse.Configuration
         public void Save<T>(T data) where T : GameState, new()
         {
             m_GameStates[typeof(T)] = data;
-
+            // ...
         }
 
         /// <summary>
@@ -705,7 +665,10 @@ namespace Eclipse.Configuration
         /// </remarks>
         /// <typeparam name="T"><see cref="EngineConfiguration"/> to use.</typeparam>
         /// <returns>Configuration file (existing or default) of a given type.</returns>
-        public T GetOrNew<T>() where T : EngineConfiguration => m_EngineConfigurations.GetValueOrDefault(typeof(T)) as T ?? ScriptableObject.CreateInstance<T>();
+        public T GetOrNew<T>() where T : EngineConfiguration
+        {
+            return m_EngineConfigurations.GetValueOrDefault(typeof(T)) as T ?? ScriptableObject.CreateInstance<T>();
+        }
 
 
 
@@ -715,50 +678,6 @@ namespace Eclipse.Configuration
         /// .                                               Private Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private void LoadResources()
-        {
-            // TODO: Allow overwriting engine configurations at runtime, if needed.
-            m_EngineConfigurations.Clear();
-            EngineConfiguration[] configurations = Resources.LoadAll<EngineConfiguration>(string.Empty);
-            foreach (var configuration in configurations)
-            {
-                Type key = configuration.GetType();
-#if DEBUG
-                if (m_EngineConfigurations.ContainsKey(key))
-                {
-                    Debug.LogWarning($"Found additional instance of {key.Name}. Using new one.");
-                }
-#endif
-
-                m_EngineConfigurations[key] = configuration;
-            }
-        }
-
-        /// <summary>
-        /// Forcefully loads-in all data about registered parameters.
-        /// </summary>
-        private void LoadInternal()
-        {
-            foreach (var parameters in m_Parameters.Values)
-            {
-                Storage.Load(parameters);
-            }
-        }
-
-        /// <summary>
-        /// Forcefully saves a save file data about all registered parameters.
-        /// </summary>
-        /// <remarks>
-        /// Will not check for <see cref="IsDirty"/>.
-        /// </remarks>
-        private void SaveInternal()
-        {
-            foreach (var parameter in m_Parameters.Values)
-            {
-                Storage.Save(parameter);
-            }
-        }
-
         private async UniTask WaitForCompletion()
         {
             // TODO: Make more optimized with completion sources.
@@ -790,7 +709,7 @@ namespace Eclipse.Configuration
             if (exceptions > 0)
             {
                 Debug.LogError(
-                    $"{LogNameBraced} ({exceptions}) {(exceptions == 1 ? "Exception" : "Exceptions")} appeared while trying to serialize services. Look above for more info.");
+                    $"{LogPrefix} ({exceptions}) {(exceptions == 1 ? "Exception" : "Exceptions")} appeared while trying to serialize services. Look above for more info.");
             }
 
             ExecutesServiceSerialization = false;
@@ -818,7 +737,7 @@ namespace Eclipse.Configuration
             if (exceptions > 0)
             {
                 Debug.LogError(
-                    $"{LogNameBraced} ({exceptions}) {(exceptions == 1 ? "Exception" : "Exceptions")} appeared while trying to serialize services. Look above for more info.");
+                    $"{LogPrefix} ({exceptions}) {(exceptions == 1 ? "Exception" : "Exceptions")} appeared while trying to serialize services. Look above for more info.");
             }
 
             ExecutesGameStateSaving = false;
@@ -846,7 +765,7 @@ namespace Eclipse.Configuration
             if (exceptions > 0)
             {
                 Debug.LogError(
-                    $"{LogNameBraced} ({exceptions}) {(exceptions == 1 ? "Exception" : "Exceptions")} appeared while trying to serialize services. Look above for more info.");
+                    $"{LogPrefix} ({exceptions}) {(exceptions == 1 ? "Exception" : "Exceptions")} appeared while trying to serialize services. Look above for more info.");
             }
 
             ExecutesParameterSaving = false;

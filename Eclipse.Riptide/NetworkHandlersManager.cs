@@ -114,19 +114,23 @@ namespace Eclipse.Riptide
         /// .                                               Private Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private Client.MessageHandler[] FetchClientHandlers()
+        private static Client.MessageHandler[] FetchClientHandlers()
         {
-
+            throw new NotImplementedException();
         }
 
-        private Server.MessageHandler[] FetchServerHandlers()
+        private static Server.MessageHandler[] FetchServerHandlers()
         {
-
+            throw new NotImplementedException();
         }
 
-        private T[] FetchHandlers<T>() where T : Delegate
+        private static T[] FetchHandlers<T>() where T : Delegate
         {
             List<Delegate> handlers = new();
+
+            // ...
+
+            return (T[])handlers.ToArray();
         }
     }
 }

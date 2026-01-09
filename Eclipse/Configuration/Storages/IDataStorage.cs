@@ -43,16 +43,6 @@ namespace Eclipse.Configuration.Storages
         /// <param name="parameter">Parameter to be updated.</param>
         public void Load(AbstractParameter parameter);
 
-        public void Load(string key, out short data);
-        public void Load(string key, out int data);
-        public void Load(string key, out uint data);
-        public void Load(string key, out long data);
-        public void Load(string key, out float data);
-        public void Load(string key, out double data);
-        public void Load(string key, out ulong data);
-        public void Load(string key, out float data);
-        public void Load(string key, out double data);
-
         /// <summary>
         /// Calls <see cref="AbstractParameter.Serialize"/> method and stores a return value 
         /// </summary>

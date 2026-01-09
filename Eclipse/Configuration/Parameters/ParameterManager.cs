@@ -1,6 +1,6 @@
-﻿using Eclipse.Structs;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Eclipse.Configuration.Parameters
 {
@@ -24,6 +24,16 @@ namespace Eclipse.Configuration.Parameters
 
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
+        /// .                                              Public Properties
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        public static IReadOnlyCollection<AbstractParameter> Parameters => m_Parameters.Values;
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
         /// .                                               Static Fields
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
@@ -41,15 +51,15 @@ namespace Eclipse.Configuration.Parameters
         /// Registers an parameter in a parameter list.
         /// </summary>
         /// <remarks>
-        /// Does not overwrite parameters under the same name.
+        /// Does not overwrite parameters under the same name - throws instead.
         /// </remarks>
-        public static void Register(FullName name, AbstractParameter parameter)
+        public static void Register(AbstractParameter parameter)
         {
             lock (m_Parameters)
             {
-                if (!m_Parameters.TryAdd(name, parameter))
+                if (!m_Parameters.TryAdd(parameter.ID, parameter))
                 {
-                    throw new Exception($"{LogPrefix} ");
+                    throw new Exception($"{LogPrefix} Parameter with the same ID ({parameter.ID}) was already defined.");
                 }
             }
         }
@@ -59,107 +69,118 @@ namespace Eclipse.Configuration.Parameters
         /// </summary>
         /// <typeparam name="TParameter">Type of the parameter to look for.</typeparam>
         /// <typeparam name="TValue">Value of a given parameter.</typeparam>
-        /// <param name="name">Full identifier of the <typeparamref name="TParameter"/>.</param>
-        /// <param name="def">Default value parameter should get.</param>
-        /// <returns>Parameter</returns>
-        public static TParameter GetOrNew<TParameter, TValue>(FullName name, TValue def = default!)
+        /// <param name="id">Full identifier of the expected <typeparamref name="TParameter"/>.</param>
+        /// <param name="constructor">Constructor to create new parameter if one with given <paramref name="id"/> doesn't exist yet.</param>
+        /// <returns>Either new or already existing parameter.</returns>
+        public static TParameter GetOrNew<TParameter, TValue>(string id, Func<string, TParameter> constructor)
             where TParameter : AbstractParameter
             where TValue : IEquatable<TValue>
         {
-            return GetOrNew<TParameter, TValue>(name.Full, def);
-        }
+            if (constructor is null) throw new ArgumentNullException(nameof(constructor));
 
-        /// <summary>
-        /// Retrieves an existing parameter of a given <typeparamref name="TParameter"/> type, or creates new one.
-        /// </summary>
-        /// <typeparam name="TParameter">Type of the parameter to look for.</typeparam>
-        /// <typeparam name="TValue">Value of a given parameter.</typeparam>
-        /// <param name="name">Full identifier of the <typeparamref name="TParameter"/>.</param>
-        /// <param name="def">Default value parameter should get.</param>
-        /// <returns>Parameter</returns>
-        public static TParameter GetOrNew<TParameter, TValue>(FullName name, Func<TValue> def)
-            where TParameter : AbstractParameter
-            where TValue : IEquatable<TValue>
-        {
-            return GetOrNew<TParameter, TValue>(name.Full, def);
-        }
-
-        /// <summary>
-        /// Retrieves an existing parameter of a given <typeparamref name="TParameter"/> type, or creates new one.
-        /// </summary>
-        /// <typeparam name="TParameter">Type of the parameter to look for.</typeparam>
-        /// <typeparam name="TValue">Value of a given parameter.</typeparam>
-        /// <param name="id">Full identifier of the <typeparamref name="TParameter"/>.</param>
-        /// <param name="def">Default value parameter should get.</param>
-        /// <returns>Parameter</returns>
-        public static TParameter GetOrNew<TParameter, TValue>(string id, TValue def = default!)
-            where TParameter : AbstractParameter
-            where TValue : IEquatable<TValue>
-        {
+            // Quick locking to micro-optimize multi-threaded method access.
+            // TODO: Use it all around the Engine, this is an amazing pattern)
+            AbstractParameter result;
             lock (m_Parameters)
             {
-                if (m_Parameters.TryGetValue(id, out AbstractParameter result))
+                if (!m_Parameters.TryGetValue(id, out result))
                 {
-                    if (result is TParameter parameter)
-                    {
-                        return parameter;
-                    }
-                    else
-                    {
-                        throw new Exception($"{LogPrefix} Cannot retrieve parameter ({id}) of a type ({typeof(TParameter).Name}) - Parameter of a type ({result.GetType().Name}) already exist under the same ID.\nHave you forgot to provide a mod name in your parameter ID?");
-                    }
+                    // Creates new parameter if it doesn't exist yet.
+                    return (TParameter)(m_Parameters[id] = constructor(id));
                 }
-                else
-                {
-                    m_Parameters[id] = 
-                }
+            }
+
+            if (result is TParameter parameter)
+            {
+                return parameter;
+            }
+            else
+            {
+                throw new Exception($"{LogPrefix} Cannot retrieve parameter ({id}) of a type ({typeof(TParameter).Name}) - Parameter of a type ({result.GetType().Name}) already exist under the same ID.\nHave you forgot to provide a mod name in your parameter ID?");
             }
         }
 
         /// <summary>
-        /// Retrieves an existing parameter of a given <typeparamref name="TParameter"/> type, or creates new one.
+        /// Retrieves an existing parameter of a given <typeparamref name="TParameter"/> type. Throws if type of the parameter doesn't match or it doesn't exist.
         /// </summary>
-        /// <typeparam name="TParameter">Type of the parameter to look for.</typeparam>
-        /// <typeparam name="TValue">Value of a given parameter.</typeparam>
-        /// <param name="id">Full identifier of the <typeparamref name="TParameter"/>.</param>
-        /// <param name="def">Default value parameter should get.</param>
-        /// <returns>Parameter</returns>
-        public static TParameter GetOrNew<TParameter, TValue>(string id, Func<TValue> def)
+        /// <param name="id">Full identifier of the expected <typeparamref name="TParameter"/>.</param>
+        /// <exception cref="KeyNotFoundException">Thrown if there is no parameter with given <paramref name="id"/> (yet, or at all).</exception>
+        /// <exception cref="InvalidCastException">Thrown if parameter was found, but its type is not <typeparamref name="TParameter"/>.</exception>
+        /// <returns>Existing parameter of a type <typeparamref name="TParameter"/>.</returns>
+        public static TParameter Get<TParameter>(string id) where TParameter : AbstractParameter
         {
-
+            return (TParameter)m_Parameters[id];
         }
 
         /// <summary>
-        /// 
+        /// Attempts to retrieve <typeparamref name="TParameter"/> under given <paramref name="id"/>.
+        /// Will fail if it doesn't exist, or if type is different than provided type.
+        /// (Currently, there is no way to differentiate those two outcomes other than try-catch blocks on <see cref="Get{TParameter}(string)"/> method.)
+        /// (TODO: introduce such method.)
         /// </summary>
-        public static TParameter Get<TParameter>(FullName name) where TParameter : AbstractParameter
+        /// <typeparam name="TParameter">Type of parameter to look for.</typeparam>
+        /// <param name="id">Full identifier of the expected <typeparamref name="TParameter"/>.</param>
+        /// <param name="parameter">Result of the search. Set to <c>null</c> if search failed.</param>
+        /// <returns><c>true</c> if parameter was found and <paramref name="parameter"/> variable was set. <c>false</c> otherwise.</returns>
+        public static bool TryGet<TParameter>(string id, [NotNullWhen(true)] out TParameter? parameter) where TParameter : AbstractParameter
         {
+            // Quick locking to micro-optimize multi-threaded method access.
+            // TODO: Use it all around the Engine, this is an amazing pattern)
+            bool exist;
+            AbstractParameter result;
+            lock (m_Parameters)
+            {
+                exist = m_Parameters.TryGetValue(id, out result);
+            }
 
+            if (exist && result is TParameter cast)
+            {
+                parameter = cast;
+                return true;
+            }
+            else
+            {
+                parameter = default;
+                return false;
+            }
         }
 
         /// <summary>
-        /// Attempts to retrieve an existing parameter of any type.
+        /// Retrieves an existing <see cref="AbstractParameter"/>. Throws if type of the parameter doesn't exist.
         /// </summary>
-        /// <param name="name">Name of the parameter.</param>
-        /// <returns></returns>
-        public static AbstractParameter Get(FullName name)
-        {
+        /// <param name="id">Full identifier of the expected <see cref="AbstractParameter"/>.</param>
+        /// <exception cref="KeyNotFoundException">Thrown if there is no parameter with given <paramref name="id"/> (yet, or at all).</exception>
+        /// <returns>Existing <see cref="AbstractParameter"/>.</returns>
+        public static AbstractParameter GetAbstract(string id) => m_Parameters[id];
 
+        /// <summary>
+        /// Attempts to retrieve <see cref="AbstractParameter"/> under given <paramref name="id"/>.
+        /// Will fail if it doesn't exist, or if type is different than provided type.
+        /// (Currently, there is no way to differentiate those two outcomes other than try-catch blocks on <see cref="Get{TParameter}(string)"/> method.)
+        /// (TODO: introduce such method.)
+        /// </summary>
+        /// <param name="id">Full identifier of the <see cref="AbstractParameter"/>.</param>
+        /// <param name="parameter">Result of the search. Set to <c>null</c> if search failed.</param>
+        /// <returns><c>true</c> if parameter was found and <paramref name="parameter"/> variable was set. <c>false</c> otherwise.</returns>
+        public static bool TryGetAbstract(string id, [NotNullWhen(true)] out AbstractParameter? parameter)
+        {
+            lock (m_Parameters)
+            {
+                return m_Parameters.TryGetValue(id, out parameter);
+            }
         }
 
-        public static bool TryGet<TParameter>(FullName name, out TParameter parameter) where TParameter : AbstractParameter
+        /// <summary>
+        /// Checks if <see cref="AbstractParameter"/> under given <paramref name="id"/> exist.
+        /// </summary>
+        /// <param name="id">Parameter ID to check.</param>
+        /// <returns><c>true</c> if parameter under given <paramref name="id"/> was found. <c>false</c> otherwise.</returns>
+        public static bool Has(string id)
         {
-
-        }
-
-        public static bool TryGet(FullName name, out AbstractParameter parameter)
-        {
-
-        }
-
-        public static bool Has(FullName name)
-        {
-
+            lock (m_Parameters)
+            {
+                return m_Parameters.ContainsKey(id);
+            }
         }
     }
 }
