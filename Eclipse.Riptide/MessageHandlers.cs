@@ -32,7 +32,7 @@ namespace Eclipse.Riptide
         { 
             get
             {
-                NetworkHandlersManager.Initialize();
+                NetworkHandlers.Initialize();
                 // This will throw anyway.
                 // if (id > m_Handlers.Length) throw new ArgumentOutOfRangeException(nameof(id));
                 return m_Handlers[id];
@@ -59,13 +59,13 @@ namespace Eclipse.Riptide
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         public bool Has(ushort id)
         {
-            NetworkHandlersManager.Initialize();
+            NetworkHandlers.Initialize();
             return m_Handlers[id] is not null;
         }
 
         public bool TryGet(ushort id, out THandler hander)
         {
-            NetworkHandlersManager.Initialize();
+            NetworkHandlers.Initialize();
             hander = m_Handlers[id];
             return hander is not null;
         }

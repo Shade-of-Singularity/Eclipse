@@ -9,7 +9,8 @@ namespace Eclipse.Riptide
     /// Non-strict implementation makes it impossible to play games with different networking mods installed.
     /// Mods also has to be initialized in one set order, but it should be handled by <see cref="Engine"/> automatically anyway.
     /// </remarks>
-    public sealed class EclipseMessageHandlerAttribute
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
+    public sealed class EclipseMessageAttribute : Attribute
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -17,9 +18,14 @@ namespace Eclipse.Riptide
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
+        /// Internal ID of the message to be used for networking.
+        /// </summary>
+        public readonly Func<ushort> ID;
+
+        /// <summary>
         /// Network messages Group ID, used to identify which collection of message handlers should be used right now for networking.
         /// </summary>
-        public readonly byte GroupID;
+        public readonly Func<byte> GroupID;
 
 
 
@@ -29,6 +35,10 @@ namespace Eclipse.Riptide
         /// .                                                Constructors
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public EclipseMessageHandlerAttribute(byte groupID = 0) => GroupID = groupID;
+        public EclipseMessageAttribute(Func<ushort> id, Func<byte> groupID)
+        {
+            ID = id;
+            GroupID = groupID;
+        }
     }
 }

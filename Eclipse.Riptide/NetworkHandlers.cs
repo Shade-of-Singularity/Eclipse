@@ -2,7 +2,7 @@
 
 namespace Eclipse.Riptide
 {
-    public static class NetworkHandlersManager
+    public static class NetworkHandlers
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -12,7 +12,12 @@ namespace Eclipse.Riptide
         /// <summary>
         /// How many groups can be procedurally generated.
         /// </summary>
-        public const ushort GroupLimit = byte.MaxValue + 1;
+        public const ushort GroupAmountLimit = byte.MaxValue + 1;
+
+        /// <summary>
+        /// How many messages one group can hold.
+        /// </summary>
+        public const int MessageIDAmountLimit = ushort.MaxValue + 1;
 
 
 
@@ -35,8 +40,9 @@ namespace Eclipse.Riptide
         /// .                                               Private Fields
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private static readonly ClientHandlers[] m_ClientHandlers = new ClientHandlers[256];
-        private static readonly ServerHandlers[] m_ServerHandlers = new ServerHandlers[256];
+        private static readonly ClientHandlers[] m_ClientHandlers = new ClientHandlers[GroupAmountLimit];
+        private static readonly ServerHandlers[] m_ServerHandlers = new ServerHandlers[GroupAmountLimit];
+        private static readonly int[] m_NextMessageIDs = new int[GroupAmountLimit];
         private static volatile bool m_IsInitialized;
         private static readonly object _lock = new();
         private static ushort m_NextGroupID = 0;
@@ -49,7 +55,7 @@ namespace Eclipse.Riptide
         /// .                                                Constructors
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        static NetworkHandlersManager()
+        static NetworkHandlers()
         {
             ClientHandlers[] client = m_ClientHandlers;
             for (int i = 0; i < client.Length; i++)
@@ -105,6 +111,31 @@ namespace Eclipse.Riptide
         /// <param name="group">Group ID of a collection of server-side message handlers.</param>
         /// <returns>Collection of server-side message handlers.</returns>
         public static ServerHandlers ServerHandlers(byte group = 0) => m_ServerHandlers[group];
+
+        /// <summary>
+        /// Retrieves next group ID for networking with <see cref="Riptide"/>.
+        /// </summary>
+        public static byte NextGroupID()
+        {
+            // We use '>=' because ID is 0-based value, and Limit is 1-based value.
+            if (m_NextGroupID >= GroupAmountLimit)
+            {
+                throw new Exception("Exhausted all network groups for Riptide networking.");
+            }
+
+            return (byte)(++m_NextGroupID);
+        }
+
+        public static ushort NextID(byte groupID)
+        {
+            // We use '>=' because ID is 0-based value, and Limit is 1-based value.
+            if (m_NextMessageIDs[groupID] >= GroupAmountLimit)
+            {
+                throw new Exception("Exhausted all network groups for Riptide networking.");
+            }
+
+            return (byte)(++m_NextMessageIDs[groupID]);
+        }
 
 
 

@@ -18,7 +18,7 @@
 
         /// <summary>
         /// Message handler used to compare whether all message handlers have the same IDs or not.
-        /// Used by <see cref="NetworkHandlersManager"/>.
+        /// Used by <see cref="NetworkHandlers"/>.
         /// </summary>
         /// <remarks>
         /// Amount of handlers usually different only if two clients, or client and server has different networking mods installed.
