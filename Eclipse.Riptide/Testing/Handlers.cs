@@ -24,7 +24,7 @@ namespace Eclipse.Riptide.Testing
         /// .                                                Server-side
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        [EclipseMessage(() => MainGroup.SendWorldData, MainGroup.Group)]
+        //[EclipseMessage(() => MainGroup.SendWorldData, MainGroup.Group)]
         public static void ValidateWorldData(ushort clientID, Message message) { }
     }
 }
