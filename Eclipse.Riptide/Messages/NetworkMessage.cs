@@ -31,7 +31,7 @@ namespace Eclipse.Riptide.Messages
         /// <inheritdoc/>
         /// </summary>
         /// <remarks>
-        /// Since this instance has <see cref="LoadProfile"/> set to <see cref="S0"/> - it guarantees that instance will always be collected by GC.
+        /// Since this instance has <see cref="StorageProfile"/> set to <see cref="S0"/> - it guarantees that instance will always be collected by GC.
         /// Because of that, this method is empty. You can still override it, but outside of internal callback you will gain nothing from it.
         /// </remarks>
         protected override void Dispose() { }

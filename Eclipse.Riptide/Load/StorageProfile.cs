@@ -18,7 +18,7 @@ namespace Eclipse.Riptide.Load
     /// <inheritdoc/>
     /// </summary>
     /// <typeparam name="TProfile">Class that inherited this <see cref="StorageProfile{T}"/>.</typeparam>
-    public abstract class StorageProfile<TProfile> : LoadProfile where TProfile : StorageProfile<TProfile>, new()
+    public abstract class StorageProfile<TProfile> : StorageProfile where TProfile : StorageProfile<TProfile>, new()
     {
         public static readonly TProfile Instance = new TProfile();
     }
@@ -26,7 +26,7 @@ namespace Eclipse.Riptide.Load
     /// <summary>
     /// Controls how much storage in internal pools in allocated to each type.
     /// </summary>
-    public abstract class LoadProfile
+    public abstract class StorageProfile
     {
         /// <summary>
         /// Storage amount this load profile demands.
