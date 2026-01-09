@@ -5,7 +5,13 @@ namespace Eclipse.Riptide
 {
     /// <summary>
     /// Replacement for <see cref="MessageHandlerAttribute"/>s with non-strict Message ID.
-    /// To use it, provide message type. It is mandatory that specified message inherits <see cref="Messages.INetworkMessage{TMessage, TGroup}"/>.
+    /// All you need to do is attach it to a static method with a right <see cref="global::Riptide"/> message signature.
+    /// After that, provide message type in attribute.
+    /// It is mandatory that specified message inherits <see cref="Messages.INetworkMessage{TMessage, TGroup}"/>.
+    /// <para>
+    /// Alternatively, you can simply replace <see cref="Message"/> with your <see cref="Messages.INetworkMessage{TMessage, TGroup}"/> implementation.
+    /// It will automatically read-out the message and send <see cref="Messages.INetworkMessage{TMessage, TGroup}"/> as method parameter.
+    /// </para>
     /// </summary>
     /// <remarks>
     /// Non-strict implementation makes it impossible to play games with different networking mods installed.
@@ -20,9 +26,9 @@ namespace Eclipse.Riptide
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Type of the message. Must inherit <see cref="Messages.INetworkMessage{T}"/>.
+        /// Type of the message. Must inherit <see cref="Messages.INetworkMessage{TMessage, TGroup}"/>.
         /// </summary>
-        public readonly Type MessageType;
+        public readonly Type? MessageType;
 
 
 
@@ -35,8 +41,10 @@ namespace Eclipse.Riptide
         /// <summary>
         /// Default constructor for the attribute.
         /// </summary>
-        /// <param name="messageType">Type of the message this attribute employs. Target type must inherit <see cref="Messages.INetworkMessage{T}"/>.</param>
-        public EclipseMessageAttribute(Type messageType)
+        /// <param name="messageType">
+        /// Type of the message this attribute employs. Target type must inherit <see cref="Messages.INetworkMessage{TMessage, TGroup}"/>.
+        /// </param>
+        public EclipseMessageAttribute(Type? messageType = null)
         {
             MessageType = messageType;
         }

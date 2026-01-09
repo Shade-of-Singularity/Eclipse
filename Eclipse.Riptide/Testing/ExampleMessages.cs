@@ -30,9 +30,39 @@ namespace Eclipse.Riptide.Testing
 
     public struct ValidateChunk : INetworkMessage<ValidateChunk, MainGroup>
     {
+        public int x, y;
         public ulong ChunkHash;
 
-        public void Read(Message message) => ChunkHash = message.GetULong();
-        public readonly void Write(Message message) => message.AddULong(ChunkHash);
+        public void Read(Message message)
+        {
+            x = message.GetInt();
+            y = message.GetInt();
+            ChunkHash = message.GetULong();
+        }
+
+        public readonly void Write(Message message)
+        {
+            message.AddInt(x);
+            message.AddInt(y);
+            message.AddULong(ChunkHash);
+        }
+    }
+
+    public struct ReceiveInventory : INetworkMessage<ReceiveInventory, MainGroup>
+    {
+        public uint[] ids;
+        public uint[] amounts;
+
+        public void Read(Message message)
+        {
+            ids = message.GetUInts();
+            amounts = message.GetUInts();
+        }
+
+        public readonly void Write(Message message)
+        {
+            message.AddUInts(ids);
+            message.AddUInts(amounts);
+        }
     }
 }

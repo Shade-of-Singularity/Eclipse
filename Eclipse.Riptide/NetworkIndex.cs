@@ -1,6 +1,9 @@
-﻿using Eclipse.Riptide.Messages;
+﻿using Eclipse.Riptide.Handlers;
+using Eclipse.Riptide.Messages;
+using Riptide;
 using System;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace Eclipse.Riptide
@@ -160,6 +163,11 @@ namespace Eclipse.Riptide
         {
             try
             {
+                // Resets all handlers first.
+                // Note: All managed handlers will be locked at this point, so mutation is safe, even in multi-threaded context (untested though)
+                Array.ForEach(m_ClientHandlers, Handlers.ClientHandlers.Unsafe.Clear);
+                Array.ForEach(m_ServerHandlers, Handlers.ServerHandlers.Unsafe.Clear);
+
                 foreach (var classes in typeof(NetworkIndex).Assembly.GetTypes())
                 {
                     foreach (var method in classes.GetMethods(BindingFlags.Static | BindingFlags.InvokeMethod))
@@ -182,35 +190,59 @@ namespace Eclipse.Riptide
 
             // Differentiates client-side and server-side message handlers by the parameter types they specify.
             ParameterInfo[] parameters = method.GetParameters();
+            Type messageType, dataType;
+            byte groupID; ushort messageID;
             switch (parameters.Length)
             {
                 // Likely client-side method - they only have the INetworkMessage in parameters.
                 case 1:
-                    if (typeof(INetworkMessage).IsAssignableFrom(parameters[0].ParameterType))
+                    dataType = parameters[0].ParameterType;
+                    if (attribute.MessageType != null)
                     {
-                        Debug.Log($"Client message handler ({method.Name}) with message type {parameters[0].ParameterType.Name} was found!");
+                        messageType = attribute.MessageType;
+                    }
+                    else if (typeof(INetworkMessage).IsAssignableFrom(dataType))
+                    {
+                        messageType = dataType;
                     }
                     else
                     {
-                        throw new Exception($"Message handler ({method.Name}) is likely client-side, but doesn't have {nameof(INetworkMessage)} in args.");
+                        throw new Exception($"Message handler ({method.Name}) is likely client-side, but has unsupported parameter ({parameters[0].ParameterType}). Make sure that parameter is either {nameof(Riptide)}.{nameof(Message)} or {nameof(INetworkMessage)}.");
                     }
+
+                    groupID = (byte)messageType.GetField(INetworkGroup.GroupIDFieldName, BindingFlags.Static).GetValue(null);
+                    messageID = (ushort)messageType.GetField(INetworkMessage.MessageIDFieldName, BindingFlags.Static).GetValue(null);
+                    ClientHandlers.HandlerInfo clientHandler = new ClientHandlers.HandlerInfo(method, dataType);
+                    Handlers.ClientHandlers.Unsafe.Put(m_ClientHandlers[groupID], messageID, clientHandler);
+                    Debug.Log($"Client message handler ({method.Name}) with message type {messageType.Name} was found and it is valid!");
                     break;
 
                 // Likely server-side method - they have UserID and INetworkMessage in parameters.
                 case 2:
                     if (parameters[0].ParameterType != typeof(ushort))
                     {
-                        throw new Exception($"Message handler ({method.Name}) is likely client-side, but doesn't have ClientID as first parameter.");
+                        throw new Exception($"Message handler ({method.Name}) is likely server-side, but doesn't have ClientID (ushort) as first parameter.");
                     }
 
-                    if (typeof(INetworkMessage).IsAssignableFrom(parameters[1].ParameterType))
+                    dataType = parameters[0].ParameterType;
+                    if (attribute.MessageType != null)
                     {
-                        Debug.Log($"Server message handler ({method.Name}) with message type {parameters[1].ParameterType.Name} was found!");
+                        messageType = attribute.MessageType;
+                    }
+                    else if (typeof(INetworkMessage).IsAssignableFrom(dataType))
+                    {
+                        messageType = dataType;
                     }
                     else
                     {
-                        throw new Exception($"Message handler ({method.Name}) is likely client-side, but doesn't have {nameof(INetworkMessage)} in args.");
+                        throw new Exception($"Message handler ({method.Name}) is likely client-side, but has unsupported parameter ({parameters[0].ParameterType}). Make sure that parameter is either {nameof(Riptide)}.{nameof(Message)} or {nameof(INetworkMessage)}.");
                     }
+
+                    groupID = (byte)messageType.GetField(INetworkGroup.GroupIDFieldName, BindingFlags.Static).GetValue(null);
+                    messageID = (ushort)messageType.GetField(INetworkMessage.MessageIDFieldName, BindingFlags.Static).GetValue(null);
+                    ServerHandlers.HandlerInfo serverHandler = new ServerHandlers.HandlerInfo(method, dataType);
+                    Handlers.ServerHandlers.Unsafe.Put(m_ServerHandlers[groupID], messageID, serverHandler);
+                    Debug.Log($"Client message handler ({method.Name}) with message type {messageType.Name} was found and it is valid!");
                     break;
 
                 // Any other kind of signature is not supported at the moment.

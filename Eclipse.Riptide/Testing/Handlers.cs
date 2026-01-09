@@ -9,7 +9,17 @@ namespace Eclipse.Riptide.Testing
         /// .                                                Client-side
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        [EclipseMessage]
+        public static void SendChunkHandler(SendChunk chunk)
+        {
 
+        }
+
+        [EclipseMessage]
+        public static void ValidateChunkHandler(ValidateChunk chunk)
+        {
+
+        }
 
 
 
@@ -19,8 +29,14 @@ namespace Eclipse.Riptide.Testing
         /// .                                                Server-side
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        [EclipseMessage(typeof(SendChunk))]
-        public static void ValidateWorldData(ushort clientID, SendChunk chunk)
+        [EclipseMessage]
+        public static void SendChunkHandler(ushort clientID, SendChunk chunk)
+        {
+
+        }
+
+        [EclipseMessage]
+        public static void ValidateChunkHandler(ushort clientID, ValidateChunk chunk)
         {
 
         }
