@@ -5,12 +5,13 @@ namespace Eclipse.Riptide
 {
     /// <summary>
     /// Replacement for <see cref="MessageHandlerAttribute"/>s with non-strict Message ID.
+    /// To use it, provide message type. It is mandatory that specified message inherits <see cref="Messages.INetworkMessage{TMessage, TGroup}"/>.
     /// </summary>
     /// <remarks>
     /// Non-strict implementation makes it impossible to play games with different networking mods installed.
     /// Mods also has to be initialized in one set order, but it should be handled by <see cref="Engine"/> automatically anyway.
     /// </remarks>
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     public sealed class EclipseMessageAttribute : Attribute
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -19,14 +20,9 @@ namespace Eclipse.Riptide
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Internal ID of the message to be used for networking.
+        /// Type of the message. Must inherit <see cref="Messages.INetworkMessage{T}"/>.
         /// </summary>
-        public readonly Func<ushort> ID;
-
-        /// <summary>
-        /// Network messages Group ID, used to identify which collection of message handlers should be used right now for networking.
-        /// </summary>
-        public readonly Func<byte> GroupID;
+        public readonly Type MessageType;
 
 
 
@@ -36,10 +32,13 @@ namespace Eclipse.Riptide
         /// .                                                Constructors
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public EclipseMessageAttribute(Func<ushort> id, Func<byte> groupID)
+        /// <summary>
+        /// Default constructor for the attribute.
+        /// </summary>
+        /// <param name="messageType">Type of the message this attribute employs. Target type must inherit <see cref="Messages.INetworkMessage{T}"/>.</param>
+        public EclipseMessageAttribute(Type messageType)
         {
-            ID = id;
-            GroupID = groupID;
+            MessageType = messageType;
         }
     }
 }

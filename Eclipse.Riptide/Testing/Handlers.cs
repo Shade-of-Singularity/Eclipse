@@ -1,9 +1,4 @@
 ﻿using Riptide;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Eclipse.Riptide.Testing
 {
@@ -24,7 +19,10 @@ namespace Eclipse.Riptide.Testing
         /// .                                                Server-side
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        //[EclipseMessage(() => MainGroup.SendWorldData, MainGroup.Group)]
-        public static void ValidateWorldData(ushort clientID, Message message) { }
+        [EclipseMessage(typeof(SendChunk))]
+        public static void ValidateWorldData(ushort clientID, SendChunk chunk)
+        {
+
+        }
     }
 }
