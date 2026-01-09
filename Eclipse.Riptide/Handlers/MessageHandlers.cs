@@ -13,6 +13,7 @@
 /// ]]>
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Eclipse.Riptide.Handlers
 {
@@ -52,12 +53,19 @@ namespace Eclipse.Riptide.Handlers
         public bool Has(ushort id)
         {
             NetworkIndex.Initialize();
+            if (id > m_Handlers.Length) return false;
             return m_Handlers[id] != null;
         }
 
-        public bool TryGet(ushort id, out THandler hander)
+        public bool TryGet(ushort id, [NotNullWhen(true)] out THandler hander)
         {
             NetworkIndex.Initialize();
+            if (id > m_Handlers.Length)
+            {
+                hander = default!;
+                return false;
+            }
+
             hander = m_Handlers[id];
             return hander != null;
         }
