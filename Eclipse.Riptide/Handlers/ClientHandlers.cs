@@ -56,16 +56,6 @@ namespace Eclipse.Riptide.Handlers
 
 
 
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                               Private Fields
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private static readonly object[] args = new object[1]; // TODO: Parallelize, be it with garbage generation, if needed.
-        private static readonly object _lock = new object();
-
-
-
 
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -88,7 +78,7 @@ namespace Eclipse.Riptide.Handlers
 
             return false;
         }
-        
+
         /// <summary>
         /// Fires handler with specified ID client-side.
         /// </summary>
@@ -100,24 +90,20 @@ namespace Eclipse.Riptide.Handlers
         public void Fire(ushort id, Message message)
         {
             HandlerInfo info = Get(id);
+            object[] args = new object[1];
+
             if (info.MessageType == typeof(Message))
             {
-                lock (_lock)
-                {
-                    args[0] = message;
-                    info.Method.Invoke(null, args);
-                }
+                args[0] = message;
             }
             else
             {
-                INetworkMessage container = (INetworkMessage)Activator.CreateInstance(info.MessageType);
+                NetworkMessage container = (NetworkMessage)Activator.CreateInstance(info.MessageType);
                 container.Read(message);
-                lock (_lock)
-                {
-                    args[0] = container;
-                    info.Method.Invoke(null, args);
-                }
+                args[0] = container;
             }
+
+            info.Method.Invoke(null, args);
         }
     }
 }

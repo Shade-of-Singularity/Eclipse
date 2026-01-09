@@ -25,7 +25,7 @@ namespace Eclipse.Riptide.Testing
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         [EclipseMessage]
-        public static void SendChunkHandler(SendChunk chunk)
+        public static void SendChunkHandler(ChunkContainer chunk)
         {
             Debug.Log($"Client-side {nameof(SendChunkHandler)} was fired with data: {chunk}");
         }
@@ -53,7 +53,7 @@ namespace Eclipse.Riptide.Testing
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         [EclipseMessage]
-        public static void SendChunkHandler(ushort clientID, SendChunk chunk)
+        public static void SendChunkHandler(ushort clientID, ChunkContainer chunk)
         {
             Debug.Log($"Server-side {nameof(SendChunkHandler)} was fired with data from client ({clientID}): {chunk}");
         }

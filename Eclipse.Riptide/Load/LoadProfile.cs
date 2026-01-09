@@ -12,27 +12,25 @@
 /// 
 /// ]]>
 
-namespace Eclipse.Riptide.Messages
+namespace Eclipse.Riptide.Load
 {
     /// <summary>
-    /// Interface for custom network groups.
+    /// <inheritdoc/>
     /// </summary>
-    /// <typeparam name="T">Type that implemented custom group.</typeparam>
-    public interface INetworkGroup<T> : INetworkGroup where T : INetworkGroup<T>
+    /// <typeparam name="TProfile">Class that inherited this <see cref="StorageProfile{T}"/>.</typeparam>
+    public abstract class StorageProfile<TProfile> : LoadProfile where TProfile : StorageProfile<TProfile>, new()
     {
-        public static readonly byte GroupID = NetworkIndex.NextGroupID();
-        public static byte GetGroupID() => GroupID;
+        public static readonly TProfile Instance = new TProfile();
     }
 
     /// <summary>
-    /// Unused at the moment, but might be used to identify generic <see cref="INetworkGroup{T}"/> interfaces.
+    /// Controls how much storage in internal pools in allocated to each type.
     /// </summary>
-    public interface INetworkGroup
+    public abstract class LoadProfile
     {
         /// <summary>
-        /// Name of the readonly GroupID field in a generic interface above.
-        /// Used in reflections by <see cref="NetworkIndex"/> class.
+        /// Storage amount this load profile demands.
         /// </summary>
-        public const string GroupIDFieldName = "GroupID";
+        public abstract int Storage { get; }
     }
 }

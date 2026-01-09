@@ -207,24 +207,25 @@ namespace Eclipse.Riptide
             byte groupID; ushort messageID;
             switch (parameters.Length)
             {
-                // Likely client-side method - they only have the INetworkMessage in parameters.
+                // Likely client-side method - they only have the NetworkMessage in parameters.
                 case 1:
                     dataType = parameters[0].ParameterType;
                     if (attribute.MessageType != null)
                     {
                         messageType = attribute.MessageType;
                     }
-                    else if (typeof(INetworkMessage).IsAssignableFrom(dataType))
+                    else if (typeof(NetworkMessage).IsAssignableFrom(dataType))
                     {
                         messageType = dataType;
                     }
                     else
                     {
-                        throw new Exception($"Message handler ({method.Name}) is likely client-side, but has unsupported parameter ({parameters[0].ParameterType}). Make sure that parameter is either {nameof(Riptide)}.{nameof(Message)} or {nameof(INetworkMessage)}.");
+                        throw new Exception($"Message handler ({method.Name}) is likely client-side, but has unsupported parameter {parameters[0].Name} ({dataType.Name}). Make sure that parameter is either {nameof(Riptide)}.{nameof(Message)} or {nameof(Messages)}.{nameof(NetworkMessage)}.");
                     }
 
-                    groupID = (byte)messageType.GetField(INetworkGroup.GroupIDFieldName, BindingFlags.Static).GetValue(null);
-                    messageID = (ushort)messageType.GetField(INetworkMessage.MessageIDFieldName, BindingFlags.Static).GetValue(null);
+                    // Note: GroupID is **property** and MessageID is **field**. Keep that in mind.
+                    groupID = (byte)messageType.GetProperty(nameof(ReflectionMessage.GroupID), BindingFlags.Static).GetValue(null);
+                    messageID = (ushort)messageType.GetField(nameof(ReflectionMessage.MessageID), BindingFlags.Static).GetValue(null);
                     ClientHandlers.HandlerInfo clientHandler = new ClientHandlers.HandlerInfo(method, dataType);
                     Handlers.ClientHandlers.Unsafe.Put(m_ClientHandlers[groupID], messageID, clientHandler);
                     Debug.Log($"Client message handler ({method.Name}) with message type {messageType.Name} was found and it is valid!");
@@ -237,22 +238,23 @@ namespace Eclipse.Riptide
                         throw new Exception($"Message handler ({method.Name}) is likely server-side, but doesn't have ClientID (ushort) as first parameter.");
                     }
 
-                    dataType = parameters[0].ParameterType;
+                    dataType = parameters[1].ParameterType;
                     if (attribute.MessageType != null)
                     {
                         messageType = attribute.MessageType;
                     }
-                    else if (typeof(INetworkMessage).IsAssignableFrom(dataType))
+                    else if (typeof(NetworkMessage).IsAssignableFrom(dataType))
                     {
                         messageType = dataType;
                     }
                     else
                     {
-                        throw new Exception($"Message handler ({method.Name}) is likely client-side, but has unsupported parameter ({parameters[0].ParameterType}). Make sure that parameter is either {nameof(Riptide)}.{nameof(Message)} or {nameof(INetworkMessage)}.");
+                        throw new Exception($"Message handler ({method.Name}) is likely client-side, but has unsupported parameter {parameters[1].Name} ({dataType.Name}). Make sure that parameter is either {nameof(Riptide)}.{nameof(Message)} or {nameof(Messages)}.{nameof(NetworkMessage)}.");
                     }
 
-                    groupID = (byte)messageType.GetField(INetworkGroup.GroupIDFieldName, BindingFlags.Static).GetValue(null);
-                    messageID = (ushort)messageType.GetField(INetworkMessage.MessageIDFieldName, BindingFlags.Static).GetValue(null);
+                    // Note: GroupID is **property** and MessageID is **field**. Keep that in mind.
+                    groupID = (byte)messageType.GetProperty(nameof(ReflectionMessage.GroupID), BindingFlags.Static).GetValue(null);
+                    messageID = (ushort)messageType.GetField(nameof(ReflectionMessage.MessageID), BindingFlags.Static).GetValue(null);
                     ServerHandlers.HandlerInfo serverHandler = new ServerHandlers.HandlerInfo(method, dataType);
                     Handlers.ServerHandlers.Unsafe.Put(m_ServerHandlers[groupID], messageID, serverHandler);
                     Debug.Log($"Client message handler ({method.Name}) with message type {messageType.Name} was found and it is valid!");

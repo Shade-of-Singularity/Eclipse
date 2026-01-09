@@ -32,6 +32,7 @@ namespace Eclipse.Riptide
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         private ServerHandlers? m_MessageHandlers;
+        private bool m_BroadcastToHandlers;
 
 
 
@@ -55,9 +56,6 @@ namespace Eclipse.Riptide
         /// <param name="logName">The name to use when logging messages via <see cref="RiptideLogger"/>.</param>
         public EclipseServer(IServer transport, string logName = "SERVER") : base(transport, logName)
         {
-            // We use custom handling method, so built-in one should be disabled.
-            useMessageHandlers = false;
-
             // We also cannot override built-in handling method without breaking the message, so we just route message manually via callback.
             MessageReceived += ServerBroadcastMessage;
         }
@@ -71,6 +69,21 @@ namespace Eclipse.Riptide
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         protected override void CreateMessageHandlersDictionary(byte groupID) => m_MessageHandlers = NetworkIndex.ServerHandlers(groupID);
+        protected override void OnMessageReceived(Message message, Connection fromConnection)
+        {
+            bool flag = useMessageHandlers;
+
+            // We use custom handling method, so we need silence built-in handling as a result.
+            useMessageHandlers = false;
+            m_BroadcastToHandlers = flag;
+
+            // This will fire MessageReceived callback, no matter the handler flag.
+            base.OnMessageReceived(message, fromConnection);
+
+            // Restores previous state.
+            m_BroadcastToHandlers = false;
+            useMessageHandlers = flag;
+        }
 
 
 
@@ -82,6 +95,7 @@ namespace Eclipse.Riptide
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         private void ServerBroadcastMessage(object sender, MessageReceivedEventArgs args)
         {
+            if (!m_BroadcastToHandlers) return;
             if (m_MessageHandlers?.TryFire(args.MessageId, args.FromConnection.Id, args.Message) != true)
             {
                 Debug.LogWarning($"No message handler method found for message ID ({args.MessageId})!");

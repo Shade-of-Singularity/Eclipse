@@ -12,13 +12,20 @@
 /// 
 /// ]]>
 
-using Eclipse.Riptide.Messages;
-
-namespace Eclipse.Riptide
+namespace Eclipse.Riptide.Messages
 {
     /// <summary>
-    /// Group for all default messages.
-    /// Can always be used unless you want introduce more than one group.
+    /// Base class for custom groups.
     /// </summary>
-    public sealed class DefaultGroup : NetworkGroup<DefaultGroup> { }
+    /// <typeparam name="TGroup">Class that inherited this class.</typeparam>
+    /// TODO: Add non-generic listing if needed.
+    public abstract class NetworkGroup<TGroup> : NetworkGroup where TGroup : NetworkGroup<TGroup>
+    {
+        public static readonly byte GroupID = NetworkIndex.NextGroupID();
+    }
+
+    /// <summary>
+    /// Non-generic type for <see cref="NetworkGroup{TGroup}"/>. Exist to make reflections easier.
+    /// </summary>
+    public abstract class NetworkGroup { }
 }

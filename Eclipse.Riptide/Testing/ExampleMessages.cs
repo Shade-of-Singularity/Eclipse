@@ -17,7 +17,7 @@ using Riptide;
 
 namespace Eclipse.Riptide.Testing
 {
-    public struct SendChunk : INetworkMessage<SendChunk, ExampleGroup>
+    public sealed class ChunkContainer : NetworkMessage<ChunkContainer, ExampleGroup>
     {
         public const int ChunkSize = 16;
         public const int ChunkHeight = 128;
@@ -25,58 +25,64 @@ namespace Eclipse.Riptide.Testing
         public const int ChunkVolume = ChunkArea * ChunkHeight;
 
         public int x, y;
-        public uint[] blocks;
+        public uint[]? blocks;
 
-        public void Read(Message message)
+        public override Message Read(Message message)
         {
             x = message.GetInt();
             y = message.GetInt();
             blocks = message.GetUInts(ChunkVolume);
+            return message;
         }
 
-        public readonly void Write(Message message)
+        public override Message Write(Message message)
         {
             message.AddInt(x);
             message.AddInt(y);
             message.AddUInts(blocks);
+            return message;
         }
     }
 
-    public struct ValidateChunk : INetworkMessage<ValidateChunk, ExampleGroup>
+    public sealed class ValidateChunk : NetworkMessage<ValidateChunk, ExampleGroup>
     {
         public int x, y;
-        public ulong ChunkHash;
+        public ulong hash;
 
-        public void Read(Message message)
+        public override Message Read(Message message)
         {
             x = message.GetInt();
             y = message.GetInt();
-            ChunkHash = message.GetULong();
+            hash = message.GetULong();
+            return message;
         }
 
-        public readonly void Write(Message message)
+        public override Message Write(Message message)
         {
             message.AddInt(x);
             message.AddInt(y);
-            message.AddULong(ChunkHash);
+            message.AddULong(hash);
+            return message;
         }
     }
 
-    public struct ReceiveInventory : INetworkMessage<ReceiveInventory, ExampleGroup>
+    public sealed class ReceiveInventory : NetworkMessage<ReceiveInventory, ExampleGroup>
     {
-        public uint[] ids;
-        public uint[] amounts;
+        public uint[]? ids;
+        public uint[]? amounts;
 
-        public void Read(Message message)
+        public override Message Read(Message message)
         {
             ids = message.GetUInts();
             amounts = message.GetUInts();
+            return message;
         }
 
-        public readonly void Write(Message message)
+        public override Message Write(Message message)
         {
             message.AddUInts(ids);
             message.AddUInts(amounts);
+            return message;
         }
     }
 }

@@ -52,22 +52,7 @@ namespace Eclipse.Riptide.Handlers
                 Method = method;
                 MessageType = dataType;
             }
-
-            public static implicit operator HandlerInfo(ClientHandlers.HandlerInfo v)
-            {
-                throw new NotImplementedException();
-            }
         }
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                               Private Fields
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private static readonly object[] args = new object[2]; // TODO: Parallelize, be it with garbage generation, if needed.
-        private static readonly object _lock = new object();
 
 
 
@@ -104,26 +89,21 @@ namespace Eclipse.Riptide.Handlers
         public void Fire(ushort id, ushort clientID, Message message)
         {
             HandlerInfo info = Get(id);
+            object[] args = new object[2];
+            args[0] = clientID;
+
             if (info.MessageType == typeof(Message))
             {
-                lock (_lock)
-                {
-                    args[0] = clientID;
-                    args[1] = message;
-                    info.Method.Invoke(null, args);
-                }
+                args[1] = message;
             }
             else
             {
-                INetworkMessage container = (INetworkMessage)Activator.CreateInstance(info.MessageType);
+                NetworkMessage container = (NetworkMessage)Activator.CreateInstance(info.MessageType);
                 container.Read(message);
-                lock (_lock)
-                {
-                    args[0] = clientID;
-                    args[1] = container;
-                    info.Method.Invoke(null, args);
-                }
+                args[1] = container;
             }
+
+            info.Method.Invoke(null, args);
         }
     }
 }

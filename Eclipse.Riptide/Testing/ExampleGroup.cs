@@ -20,8 +20,5 @@ namespace Eclipse.Riptide.Testing
     /// Group for all example messages.
     /// I would usually create something like "Default Group" to use all around in prototype.
     /// </summary>
-    public readonly struct ExampleGroup : INetworkGroup<ExampleGroup>
-    {
-        //public static readonly byte GroupID = INetworkGroup<ExampleGroup>.GroupID;
-    }
+    public sealed class ExampleGroup : NetworkGroup<ExampleGroup> { }
 }
