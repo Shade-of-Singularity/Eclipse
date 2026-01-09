@@ -21,6 +21,7 @@ namespace Eclipse.Riptide.Messages
     public interface INetworkGroup<T> : INetworkGroup where T : INetworkGroup<T>
     {
         public static readonly byte GroupID = NetworkIndex.NextGroupID();
+        public static byte GetGroupID() => GroupID;
     }
 
     /// <summary>

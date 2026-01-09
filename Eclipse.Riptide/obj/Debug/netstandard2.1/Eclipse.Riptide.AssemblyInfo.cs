@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Eclipse.Riptide")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+acdf5a3248960da59bdf3580ac0eb1cbae143f9b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+aedb9633bfa5e0e6b0d09d7eed2fb9498e71b349")]
 [assembly: System.Reflection.AssemblyProductAttribute("Eclipse.Riptide")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Eclipse.Riptide")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

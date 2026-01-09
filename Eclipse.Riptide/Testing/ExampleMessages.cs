@@ -17,7 +17,7 @@ using Riptide;
 
 namespace Eclipse.Riptide.Testing
 {
-    public struct SendChunk : INetworkMessage<SendChunk, MainGroup>
+    public struct SendChunk : INetworkMessage<SendChunk, ExampleGroup>
     {
         public const int ChunkSize = 16;
         public const int ChunkHeight = 128;
@@ -42,7 +42,7 @@ namespace Eclipse.Riptide.Testing
         }
     }
 
-    public struct ValidateChunk : INetworkMessage<ValidateChunk, MainGroup>
+    public struct ValidateChunk : INetworkMessage<ValidateChunk, ExampleGroup>
     {
         public int x, y;
         public ulong ChunkHash;
@@ -62,7 +62,7 @@ namespace Eclipse.Riptide.Testing
         }
     }
 
-    public struct ReceiveInventory : INetworkMessage<ReceiveInventory, MainGroup>
+    public struct ReceiveInventory : INetworkMessage<ReceiveInventory, ExampleGroup>
     {
         public uint[] ids;
         public uint[] amounts;

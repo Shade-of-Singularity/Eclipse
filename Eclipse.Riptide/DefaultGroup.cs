@@ -14,10 +14,14 @@
 
 using Eclipse.Riptide.Messages;
 
-namespace Eclipse.Riptide.Testing
+namespace Eclipse.Riptide
 {
     /// <summary>
-    /// Group for all default messages.
+    /// Group for all example messages.
+    /// I would usually create something like "Default Group" to use all around in prototype.
     /// </summary>
-    public readonly struct MainGroup : INetworkGroup<MainGroup> { }
+    public readonly struct DefaultGroup : INetworkGroup<DefaultGroup>
+    {
+        public static readonly byte GroupID = INetworkGroup<DefaultGroup>.GroupID;
+    }
 }

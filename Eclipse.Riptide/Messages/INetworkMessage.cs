@@ -14,6 +14,19 @@
 
 namespace Eclipse.Riptide.Messages
 {
+    //public abstract class NetworkGroup<T> where T : NetworkGroup<T>
+    //{
+    //    public static readonly byte GroupID = NetworkIndex.NextGroupID();
+    //}
+
+    //public abstract class NetworkMessage<TMessage, TGroup>
+    //    where TGroup : NetworkGroup<TGroup>
+    //    where 
+    //{
+    //    public static readonly ushort MessageID = NetworkIndex.NextMessageID(GroupID);
+    //    public static readonly byte GroupID = NetworkIndex.NextGroupID();
+    //}
+
     /// <summary>
     /// Interface for custom messages.
     /// </summary>
@@ -24,6 +37,7 @@ namespace Eclipse.Riptide.Messages
         where TGroup : INetworkGroup<TGroup>
     {
         public static readonly ushort MessageID = NetworkIndex.NextMessageID(GroupID);
+        public static ushort GetMessageID() => MessageID;
     }
 
     /// <summary>

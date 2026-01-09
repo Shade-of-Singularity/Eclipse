@@ -10,7 +10,8 @@
       "Eclipse.Riptide/1.0.0": {
         "dependencies": {
           "Eclipse": "1.0.0",
-          "RiptideNetworking": "2.2.0.0"
+          "RiptideNetworking": "2.2.0.0",
+          "UnityEngine": "0.0.0.0"
         },
         "runtime": {
           "Eclipse.Riptide.dll": {}

@@ -13,10 +13,11 @@
 /// ]]>
 
 using Riptide;
+using UnityEngine;
 
 namespace Eclipse.Riptide.Testing
 {
-    public static class Handlers
+    public static class TestHandlers
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -26,13 +27,21 @@ namespace Eclipse.Riptide.Testing
         [EclipseMessage]
         public static void SendChunkHandler(SendChunk chunk)
         {
-
+            Debug.Log($"Client-side {nameof(SendChunkHandler)} was fired with data: {chunk}");
         }
 
         [EclipseMessage]
         public static void ValidateChunkHandler(ValidateChunk chunk)
         {
+            Debug.Log($"Client-side {nameof(SendChunkHandler)} was fired with data: {chunk}");
+        }
 
+        [EclipseMessage(typeof(ReceiveInventory))] // We need to specify type if we put raw message in method parameters.
+        public static void ReceiveInventoryHandler(Message message)
+        {
+            var container = new ReceiveInventory();
+            container.Read(message);
+            Debug.Log($"Client-side {nameof(ReceiveInventoryHandler)} was fired with data: {container}");
         }
 
 
@@ -46,13 +55,21 @@ namespace Eclipse.Riptide.Testing
         [EclipseMessage]
         public static void SendChunkHandler(ushort clientID, SendChunk chunk)
         {
-
+            Debug.Log($"Server-side {nameof(SendChunkHandler)} was fired with data from client ({clientID}): {chunk}");
         }
 
         [EclipseMessage]
         public static void ValidateChunkHandler(ushort clientID, ValidateChunk chunk)
         {
+            Debug.Log($"Server-side {nameof(SendChunkHandler)} was fired with data from client ({clientID}): {chunk}");
+        }
 
+        [EclipseMessage(typeof(ReceiveInventory))] // We need to specify type if we put raw message in method parameters.
+        public static void ReceiveInventoryHandler(ushort clientID, Message message)
+        {
+            var container = new ReceiveInventory();
+            container.Read(message);
+            Debug.Log($"Client-side {nameof(ReceiveInventoryHandler)} was fired with data from client ({clientID}): {container}");
         }
     }
 }
