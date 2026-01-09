@@ -6,19 +6,19 @@ namespace Eclipse.Riptide.Messages
     /// <inheritdoc cref="NetworkMessage{TMessage, TGroup, TProfile}"/>
     /// <remarks>
     /// <para>Implements <see cref="DefaultGroup"/> as <see cref="NetworkGroup{TGroup}"/> by default.</para>
-    /// <para>Implements <see cref="S0"/> as <see cref="StorageProfile{TProfile}"/> by default.</para>
+    /// <para>Implements <see cref="S1"/> as <see cref="StorageProfile{TProfile}"/> by default.</para>
     /// </remarks>
     /// TODO: Add message pooling based on load.
-    public abstract class NetworkMessage<TMessage> : NetworkMessage<TMessage, DefaultGroup, S0>
-        where TMessage : NetworkMessage<TMessage, DefaultGroup, S0>, new()
+    public abstract class NetworkMessage<TMessage> : NetworkMessage<TMessage, DefaultGroup, S1>
+        where TMessage : NetworkMessage<TMessage, DefaultGroup, S1>, new()
     { } // This instance doesn't override default behaviour.
 
     /// <inheritdoc cref="NetworkMessage{TMessage, TGroup, TProfile}"/>
     /// <remarks>
-    /// Implements <see cref="S0"/> as <see cref="StorageProfile{TProfile}"/> by default.
+    /// Implements <see cref="S1"/> as <see cref="StorageProfile{TProfile}"/> by default.
     /// </remarks>
-    public abstract class NetworkMessage<TMessage, TGroup> : NetworkMessage<TMessage, TGroup, S0>
-        where TMessage : NetworkMessage<TMessage, TGroup, S0>, new()
+    public abstract class NetworkMessage<TMessage, TGroup> : NetworkMessage<TMessage, TGroup, S1>
+        where TMessage : NetworkMessage<TMessage, TGroup, S1>, new()
         where TGroup : NetworkGroup<TGroup>
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -39,7 +39,7 @@ namespace Eclipse.Riptide.Messages
     /// <summary>
     /// Base class for custom messages.
     /// </summary>
-    /// <typeparam name="TMessage">Class that inherited this <see cref="NetworkMessage{TMessage, TGroup}"/></typeparam>
+    /// <typeparam name="TMessage">Class that inherited this <see cref="NetworkMessage{TMessage, TGroup, TProfile}"/></typeparam>
     /// <typeparam name="TGroup">Group this message should belong to.</typeparam>
     /// <typeparam name="TProfile"><see cref="StorageProfile{TProfile}"/> of this network message. Will pool some of the message instances based on it.</typeparam>
     public abstract class NetworkMessage<TMessage, TGroup, TProfile> : NetworkMessage
