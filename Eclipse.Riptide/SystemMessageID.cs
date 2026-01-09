@@ -24,7 +24,7 @@ namespace Eclipse.Riptide
         /// This range will be reserved in handler lists and never employed by regular networking messages.
         /// </summary>
         Range = 0b1111, // First 8 IDs are reserved.
-        
+
         /// <summary>
         /// Amount of Message IDs reserved for system messages.
         /// </summary>

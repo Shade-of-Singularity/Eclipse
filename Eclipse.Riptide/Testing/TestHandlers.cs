@@ -13,7 +13,6 @@
 /// ]]>
 
 using Riptide;
-using System.ComponentModel;
 using UnityEngine;
 
 namespace Eclipse.Riptide.Testing
