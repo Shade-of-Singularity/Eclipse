@@ -1,6 +1,5 @@
 ﻿using Eclipse.Configuration;
 using Eclipse.Configuration.Parameters;
-using Eclipse.Modding;
 
 namespace Eclipse
 {
@@ -17,7 +16,7 @@ namespace Eclipse
             /// <remarks>
             /// (TODO) Forcefully set to 'true' if <see cref="Flags"/> contains <see cref="Flags.StreamerModeFlag"/>.
             /// </remarks>
-            public static readonly Parameter<bool> StreamerMode = new Parameter<bool>(nameof(StreamerMode), Flags.StreamerMode);
+            public static readonly Parameter<bool> StreamerMode = Parameter<bool>.Get(nameof(StreamerMode), false);
 
 
 

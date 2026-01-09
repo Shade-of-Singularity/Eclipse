@@ -18,13 +18,13 @@ namespace Eclipse.Extensions
         /// <summary>
         /// Used as separator between mod name and an identifier in localization keys.
         /// </summary>
-        public static string Separator = ".";
+        public const string Separator = ".";
 
         /// <summary>
         /// Used as prefix in special parameters, like so:
         /// <![CDATA[@eclipse.field-of-view]]>
         /// </summary>
-        public static string SettingPrefix = "@";
+        public const string SettingPrefix = "@";
 
 
 

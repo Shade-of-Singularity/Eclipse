@@ -14,8 +14,6 @@
 /// 
 /// ]]>
 
-using System;
-
 namespace Eclipse.Localization
 {
     /// <inheritdoc/>
@@ -27,15 +25,9 @@ namespace Eclipse.Localization
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <inheritdoc/>
-        protected override void Initialize()
-        {
-            throw new NotImplementedException();
-        }
+        protected override void Initialize() { }
 
         /// <inheritdoc/>
-        protected override void Unload()
-        {
-            throw new NotImplementedException();
-        }
+        protected override void Unload() { }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Riptide;
+using System;
 
 namespace Eclipse.Riptide
 {
@@ -60,14 +61,14 @@ namespace Eclipse.Riptide
         public bool Has(ushort id)
         {
             NetworkHandlers.Initialize();
-            return m_Handlers[id] is not null;
+            return m_Handlers[id] != null;
         }
 
         public bool TryGet(ushort id, out THandler hander)
         {
             NetworkHandlers.Initialize();
             hander = m_Handlers[id];
-            return hander is not null;
+            return hander != null;
         }
 
 

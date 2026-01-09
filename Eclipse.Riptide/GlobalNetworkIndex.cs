@@ -1,10 +1,7 @@
-﻿namespace Eclipse.Riptide
+﻿using System;
+
+namespace Eclipse.Riptide
 {
-    public static class Testing
-    {
-
-    }
-
     public sealed class TestingMod : Mod<TestingMod>
     {
 
@@ -12,8 +9,8 @@
 
     public abstract class Mod<T> where T : Mod<T>, new()
     {
-        public static readonly T Instance = new();
-        public static readonly NetworkIndex Net = new();
+        public static readonly T Instance = new T();
+        public static readonly NetworkIndex Net = new NetworkIndex();
     }
 
     public static class ServerMessage<T> where T : Enum

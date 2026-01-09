@@ -1,4 +1,6 @@
 ﻿using Riptide;
+using System;
+using System.Collections.Generic;
 
 namespace Eclipse.Riptide
 {
@@ -44,7 +46,7 @@ namespace Eclipse.Riptide
         private static readonly ServerHandlers[] m_ServerHandlers = new ServerHandlers[GroupAmountLimit];
         private static readonly int[] m_NextMessageIDs = new int[GroupAmountLimit];
         private static volatile bool m_IsInitialized;
-        private static readonly object _lock = new();
+        private static readonly object _lock = new object();
         private static ushort m_NextGroupID = 0;
 
 
@@ -157,7 +159,7 @@ namespace Eclipse.Riptide
 
         private static T[] FetchHandlers<T>() where T : Delegate
         {
-            List<Delegate> handlers = new();
+            List<Delegate> handlers = new List<Delegate>();
 
             // ...
 

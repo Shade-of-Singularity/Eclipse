@@ -52,15 +52,9 @@ namespace Eclipse.Configuration
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <inheritdoc/>
-        protected override void Initialize()
-        {
-            throw new System.NotImplementedException();
-        }
+        protected override void Initialize() { }
 
         /// <inheritdoc/>
-        protected override void Unload()
-        {
-            throw new System.NotImplementedException();
-        }
+        protected override void Unload() { }
     }
 }
