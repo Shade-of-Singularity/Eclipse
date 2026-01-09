@@ -35,6 +35,7 @@ namespace Eclipse.Riptide.Messages
 
     /// <summary>
     /// Custom message which doesn't implement any <see cref="Read(Message)"/> and <see cref="Write(Message)"/> functionality.
+    /// Can be used for simple indications and events without data, like "MakeGlobalDataCheck", "MakeTimeCheck" or something like that.
     /// </summary>
     /// <typeparam name="TMessage">Class that inherited this <see cref="FlagMessage{TMessage, TGroup, TProfile}"/></typeparam>
     /// <typeparam name="TGroup">Group this message should belong to.</typeparam>
