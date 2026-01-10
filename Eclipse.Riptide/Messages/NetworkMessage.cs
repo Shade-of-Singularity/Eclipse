@@ -177,9 +177,22 @@ namespace Eclipse.Riptide.Messages
         /// <summary>
         /// Packs <see cref="NetworkMessage{TMessage, TGroup, TProfile}"/> into a message, including its <see cref="MessageID"/> in the data.
         /// </summary>
-        /// <param name="mode"><see cref="global::Riptide"/> Send mode of the <see cref="Message"/>.</param>
-        /// <returns>Fully prepared <see cref="Message"/>, ready to be sent to another party.</returns>
+        /// <param name="mode"><see cref="global::Riptide"/> Send mode of the <see cref="global::Riptide.Message"/>.</param>
+        /// <returns>Fully prepared <see cref="global::Riptide.Message"/>, ready to be sent to another party.</returns>
         public Message Pack(MessageSendMode mode) => Write(global::Riptide.Message.Create(mode, MessageID));
+
+        /// <summary>
+        /// Packs <see cref="NetworkMessage{TMessage, TGroup, TProfile}"/> into a message, including its <see cref="MessageID"/> in the data,
+        /// and immediately <see cref="Release()"/>s it afterwards.
+        /// </summary>
+        /// <param name="mode"><see cref="global::Riptide"/> Send mode of the <see cref="global::Riptide.Message"/>.</param>
+        /// <returns>Fully prepared <see cref="global::Riptide.Message"/>, ready to be sent to another party.</returns>
+        public Message PackRelease(MessageSendMode mode)
+        {
+            Message result = Pack(mode);
+            Release(this);
+            return result;
+        }
 
         /// <summary>
         /// Unpacks given message by overwriting values of this <see cref="NetworkMessage{TMessage, TGroup, TProfile}"/> instance.

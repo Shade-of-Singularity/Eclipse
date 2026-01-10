@@ -1,0 +1,7 @@
+F:\Unity\Support\Eclipse\Eclipse.Riptide\bin\Release\netstandard2.1\publish\Eclipse.Riptide.dll
+F:\Unity\Support\Eclipse\Eclipse.Riptide\bin\Release\netstandard2.1\publish\Eclipse.Riptide.deps.json
+F:\Unity\Support\Eclipse\Eclipse.Riptide\bin\Release\netstandard2.1\publish\Eclipse.Riptide.pdb
+F:\Unity\Support\Eclipse\Eclipse.Riptide\bin\Release\netstandard2.1\publish\RiptideNetworking.dll
+F:\Unity\Support\Eclipse\Eclipse.Riptide\bin\Release\netstandard2.1\publish\UnityEngine.dll
+F:\Unity\Support\Eclipse\Eclipse.Riptide\bin\Release\netstandard2.1\publish\RiptideNetworking.xml
+F:\Unity\Support\Eclipse\Eclipse.Riptide\bin\Release\netstandard2.1\publish\UnityEngine.xml

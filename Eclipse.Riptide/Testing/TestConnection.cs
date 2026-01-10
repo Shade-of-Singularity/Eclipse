@@ -156,10 +156,10 @@ namespace Eclipse.Riptide.Testing
                 yield return Update();
                 Client.Send(validate.Pack(mode: MessageSendMode.Reliable));
                 yield return Update();
-                Server.SendToAll(validate.Pack(mode: MessageSendMode.Reliable));
-                yield return Update();
 
-                validate.Release();
+                // Notice that we use PackRelease here, to immediately release container.
+                Server.SendToAll(validate.PackRelease(mode: MessageSendMode.Reliable));
+                yield return Update();
             }
 
             IEnumerator SendReceiveInventoryMessage()
@@ -196,10 +196,8 @@ namespace Eclipse.Riptide.Testing
                 yield return Update();
                 Client.Send(signal.Pack(mode: MessageSendMode.Reliable));
                 yield return Update();
-                Server.SendToAll(signal.Pack(mode: MessageSendMode.Reliable));
+                Server.SendToAll(signal.PackRelease(mode: MessageSendMode.Reliable));
                 yield return Update();
-
-                signal.Release();
             }
         }
 
