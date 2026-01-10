@@ -20,19 +20,19 @@ namespace Eclipse.Riptide.Messages
     /// <inheritdoc cref="NetworkMessage{TMessage, TGroup, TProfile}"/>
     /// <remarks>
     /// <para>Implements <see cref="DefaultGroup"/> as <see cref="NetworkGroup{TGroup}"/> by default.</para>
-    /// <para>Implements <see cref="S1"/> as <see cref="StorageProfile{TProfile}"/> by default.</para>
+    /// <para>Implements <see cref="S0"/> as <see cref="StorageProfile{TProfile}"/> by default.</para>
     /// </remarks>
     /// TODO: Add message pooling based on load.
-    public abstract class NetworkMessage<TMessage> : NetworkMessage<TMessage, DefaultGroup, S1>
-        where TMessage : NetworkMessage<TMessage, DefaultGroup, S1>, new()
+    public abstract class NetworkMessage<TMessage> : NetworkMessage<TMessage, DefaultGroup, S0>
+        where TMessage : NetworkMessage<TMessage, DefaultGroup, S0>, new()
     { } // This instance doesn't override default behaviour.
 
     /// <inheritdoc cref="NetworkMessage{TMessage, TGroup, TProfile}"/>
     /// <remarks>
-    /// Implements <see cref="S1"/> as <see cref="StorageProfile{TProfile}"/> by default.
+    /// Implements <see cref="S0"/> as <see cref="StorageProfile{TProfile}"/> by default.
     /// </remarks>
-    public abstract class NetworkMessage<TMessage, TGroup> : NetworkMessage<TMessage, TGroup, S1>
-        where TMessage : NetworkMessage<TMessage, TGroup, S1>, new()
+    public abstract class NetworkMessage<TMessage, TGroup> : NetworkMessage<TMessage, TGroup, S0>
+        where TMessage : NetworkMessage<TMessage, TGroup, S0>, new()
         where TGroup : NetworkGroup<TGroup>
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -46,6 +46,7 @@ namespace Eclipse.Riptide.Messages
         /// <remarks>
         /// Since this instance has <see cref="StorageProfile"/> set to <see cref="S0"/> - it guarantees that instance will always be collected by GC.
         /// Because of that, this method is empty. You can still override it, but outside of internal callback you will gain nothing from it.
+        /// So better to inherit <see cref="NetworkMessage{TMessage, TGroup, TProfile}"/> and change <see cref="S0"/> to at least <see cref="S1"/> storage.
         /// </remarks>
         protected override void Dispose() { }
     }
@@ -150,6 +151,16 @@ namespace Eclipse.Riptide.Messages
             }
         }
 
+        /// <summary>
+        /// Creates new message with ID of this <see cref="NetworkMessage{TMessage, TGroup, TProfile}"/>.
+        /// </summary>
+        /// <param name="mode">Message sending mode. Needed for message factory method - <see cref="Message.Create(MessageSendMode, ushort)"/></param>
+        /// <returns>Newly created message.</returns>
+        public static Message Message(MessageSendMode mode)
+        {
+            return global::Riptide.Message.Create(mode, MessageID);
+        }
+
 
 
 
@@ -168,7 +179,7 @@ namespace Eclipse.Riptide.Messages
         /// </summary>
         /// <param name="mode"><see cref="global::Riptide"/> Send mode of the <see cref="Message"/>.</param>
         /// <returns>Fully prepared <see cref="Message"/>, ready to be sent to another party.</returns>
-        public Message Pack(MessageSendMode mode) => Write(Message.Create(mode, MessageID));
+        public Message Pack(MessageSendMode mode) => Write(global::Riptide.Message.Create(mode, MessageID));
 
         /// <summary>
         /// Unpacks given message by overwriting values of this <see cref="NetworkMessage{TMessage, TGroup, TProfile}"/> instance.

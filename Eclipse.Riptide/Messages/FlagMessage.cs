@@ -22,8 +22,8 @@ namespace Eclipse.Riptide.Messages
     /// <para>Implements <see cref="DefaultGroup"/> as <see cref="NetworkGroup{TGroup}"/> by default.</para>
     /// <para>Implements <see cref="S1"/> as <see cref="StorageProfile{TProfile}"/> by default.</para>
     /// </remarks>
-    public abstract class FlagMessage<TMessage> : NetworkMessage<TMessage>
-        where TMessage : NetworkMessage<TMessage, DefaultGroup, S1>, new()
+    public abstract class FlagMessage<TMessage> : FlagMessage<TMessage, DefaultGroup, S1>
+        where TMessage : FlagMessage<TMessage, DefaultGroup, S1>, new()
     {
         /// <inheritdoc/>
         public override Message Read(Message message) => message;
@@ -36,8 +36,8 @@ namespace Eclipse.Riptide.Messages
     /// <remarks>
     /// Implements <see cref="S1"/> as <see cref="StorageProfile{TProfile}"/> by default.
     /// </remarks>
-    public abstract class FlagMessage<TMessage, TGroup> : NetworkMessage<TMessage, TGroup>
-        where TMessage : NetworkMessage<TMessage, TGroup, S1>, new()
+    public abstract class FlagMessage<TMessage, TGroup> : FlagMessage<TMessage, TGroup, S1>
+        where TMessage : FlagMessage<TMessage, TGroup, S1>, new()
         where TGroup : NetworkGroup<TGroup>
     {
         /// <inheritdoc/>
