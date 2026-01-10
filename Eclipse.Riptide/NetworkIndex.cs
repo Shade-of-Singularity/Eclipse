@@ -182,13 +182,40 @@ namespace Eclipse.Riptide
                 Array.ForEach(m_ClientHandlers, Handlers.ClientHandlers.Unsafe.Clear);
                 Array.ForEach(m_ServerHandlers, Handlers.ServerHandlers.Unsafe.Clear);
 
-                // TODO: Use better assembly handling methods.
-                foreach (var classes in typeof(NetworkIndex).Assembly.GetTypes())
+                // Fetches own assembly first.
+                Assembly current = Assembly.GetExecutingAssembly();
+                FetchHandlers(current);
+
+                // Seeks other assemblies which rely on this one to function.
+                string extension = current.FullName;
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
                 {
-                    MethodInfo[] methods = classes.GetMethods();
-                    foreach (var method in methods)
+                    // Ignores current assembly, as it is initialized first anyway.
+                    if (assembly == current)
                     {
-                        RegisterHandlers(method);
+                        continue;
+                    }
+
+                    foreach (var reference in assembly.GetReferencedAssemblies())
+                    {
+                        // Checks if this extension assembly is referenced by any other assembly.
+                        if (extension.Equals(reference.FullName))
+                        {
+                            FetchHandlers(assembly);
+                            break;
+                        }
+                    }
+                }
+
+                // Simplifications:
+                static void FetchHandlers(Assembly assembly)
+                {
+                    foreach (var type in assembly.GetTypes())
+                    {
+                        foreach (var method in type.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static))
+                        {
+                            RegisterHandlers(method);
+                        }
                     }
                 }
             }
