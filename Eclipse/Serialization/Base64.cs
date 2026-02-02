@@ -1,4 +1,9 @@
-﻿/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
+﻿
+using System;
+using System.Runtime.CompilerServices;
+using UnityEngine;
+
+/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
 /// 
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -19,9 +24,6 @@ namespace Eclipse.Serialization
     /// <summary>
     /// Provides ways to compact any numbers into readable chars - compact Base256.
     /// </summary>
-    /// <remarks>
-    /// A logical continuation of <see cref="Hex"/>, which is Base16.
-    /// </remarks>
     public static class Base64
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -45,7 +47,7 @@ namespace Eclipse.Serialization
         };
 
         // TODO: Test if everything works as expected.
-        private static readonly ushort[] toUInt = new ushort[] {
+        private static readonly uint[] toUInt = new uint[] {
             // 0 - 39:
             // Mostly non-readable characters.
             // -1  -2  -3  -4  -5  -6  -7  -8  -9
@@ -75,6 +77,493 @@ namespace Eclipse.Serialization
             // -1  -2  -3  -4  -5  -6  -7  -8  -9
            33, 34, 35,
         };
+
+
+
+        /// Byte:   8  + 4 = 12
+        /// Short:  16 + 2 = 18
+        /// Int:    32 + 4 = 36
+        /// Long:   64 + 2 = 66
+        /// - - - - - - - - - -
+        /// Total free: 2 bits.
+        /// Total states to encode: 4.
+        /// (+2 bits in Byte and Long)
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                            Advanced bit-packing
+        /// . TODO: Add Stream writing.
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        public enum ValueHeader : byte
+        {
+            /// <summary>
+            /// Encodes <see cref="byte"/> and <see cref="sbyte"/>
+            /// </summary>
+            /// <remarks>
+            /// Has 4 free bits for a header, but only 2 is used.
+            /// </remarks>
+            Byte = 0b00,
+
+            /// <summary>
+            /// Encodes <see cref="ushort"/> and <see cref="short"/>
+            /// </summary>
+            /// <remarks>
+            /// Has 2 free bits for a header.
+            /// </remarks>
+            Short = 0b01,
+
+            /// <summary>
+            /// Encodes <see cref="uint"/> and <see cref="int"/>
+            /// </summary>
+            /// <remarks>
+            /// Has 4 free bits for a header, but only 2 is used.
+            /// </remarks>
+            Int = 0b10,
+
+            /// <summary>
+            /// Encodes <see cref="ulong"/> and <see cref="long"/>
+            /// </summary>
+            /// <remarks>
+            /// Has 2 free bits for a header.
+            /// </remarks>
+            Long = 0b11,
+        }
+
+        /// <summary>
+        /// Stores variables in chunks.
+        /// Uses excess bit you get with Base64 to store if next chunk exist or not.
+        /// </summary>
+        public static string Pack(ulong value)
+        {
+            // Root defines header.
+            byte root = (byte)((value & 0b000000_000000_000000_000000_000000_000000_000000_000000_000000_000000_1111) << 2);
+            byte bit0 = (byte)((value & 0b000000_000000_000000_000000_000000_000000_000000_000000_000000_111111_0000) >> 4);
+            byte bit1 = (byte)((value & 0b000000_000000_000000_000000_000000_000000_000000_000000_111111_000000_0000) >> 10);
+            byte bit2 = (byte)((value & 0b000000_000000_000000_000000_000000_000000_000000_111111_000000_000000_0000) >> 16);
+            byte bit3 = (byte)((value & 0b000000_000000_000000_000000_000000_000000_111111_000000_000000_000000_0000) >> 22);
+            byte bit4 = (byte)((value & 0b000000_000000_000000_000000_000000_111111_000000_000000_000000_000000_0000) >> 28);
+            byte bit5 = (byte)((value & 0b000000_000000_000000_000000_111111_000000_000000_000000_000000_000000_0000) >> 34);
+            byte bit6 = (byte)((value & 0b000000_000000_000000_111111_000000_000000_000000_000000_000000_000000_0000) >> 40);
+            byte bit7 = (byte)((value & 0b000000_000000_111111_000000_000000_000000_000000_000000_000000_000000_0000) >> 46);
+            byte bit8 = (byte)((value & 0b000000_111111_000000_000000_000000_000000_000000_000000_000000_000000_0000) >> 52);
+            byte bit9 = (byte)((value & 0b111111_000000_000000_000000_000000_000000_000000_000000_000000_000000_0000) >> 58);
+
+            Span<char> span = stackalloc char[11];
+            root |= (byte)ValueHeader.Long;
+
+            span[0] = toBase[root];
+            span[1] = toBase[bit0];
+            span[2] = toBase[bit1];
+            span[3] = toBase[bit2];
+            span[4] = toBase[bit3];
+            span[5] = toBase[bit4];
+            span[6] = toBase[bit5];
+            span[7] = toBase[bit6];
+            span[8] = toBase[bit7];
+            span[9] = toBase[bit8];
+            span[10] = toBase[bit9];
+            return new string(span);
+        }
+
+        /// <inheritdoc cref="Pack(ulong)"/>
+        public static string Pack(long value)
+        {
+            // Root defines header.
+            byte root = (byte)((value & 0b000000_000000_000000_000000_000000_000000_000000_000000_000000_000000_1111) << 2);
+            byte bit0 = (byte)((value & 0b000000_000000_000000_000000_000000_000000_000000_000000_000000_111111_0000) >> 4);
+            byte bit1 = (byte)((value & 0b000000_000000_000000_000000_000000_000000_000000_000000_111111_000000_0000) >> 10);
+            byte bit2 = (byte)((value & 0b000000_000000_000000_000000_000000_000000_000000_111111_000000_000000_0000) >> 16);
+            byte bit3 = (byte)((value & 0b000000_000000_000000_000000_000000_000000_111111_000000_000000_000000_0000) >> 22);
+            byte bit4 = (byte)((value & 0b000000_000000_000000_000000_000000_111111_000000_000000_000000_000000_0000) >> 28);
+            byte bit5 = (byte)((value & 0b000000_000000_000000_000000_111111_000000_000000_000000_000000_000000_0000) >> 34);
+            byte bit6 = (byte)((value & 0b000000_000000_000000_111111_000000_000000_000000_000000_000000_000000_0000) >> 40);
+            byte bit7 = (byte)((value & 0b000000_000000_111111_000000_000000_000000_000000_000000_000000_000000_0000) >> 46);
+            byte bit8 = (byte)((value & 0b000000_111111_000000_000000_000000_000000_000000_000000_000000_000000_0000) >> 52);
+            byte bit9 = (byte)((value & -0b11111_000000_000000_000000_000000_000000_000000_000000_000000_000000_0000) >> 58);
+
+            Span<char> span = stackalloc char[11];
+            root |= (byte)ValueHeader.Long;
+
+            span[0] = toBase[root];
+            span[1] = toBase[bit0];
+            span[2] = toBase[bit1];
+            span[3] = toBase[bit2];
+            span[4] = toBase[bit3];
+            span[5] = toBase[bit4];
+            span[6] = toBase[bit5];
+            span[7] = toBase[bit6];
+            span[8] = toBase[bit7];
+            span[9] = toBase[bit8];
+            span[10] = toBase[bit9];
+            return new string(span);
+        }
+
+        /// <inheritdoc cref="Pack(ulong)"/>
+        public static string Pack(uint value)
+        {
+            // Root defines header.
+            byte root = (byte)((value & 0b0000_000000_000000_000000_000000_1111) << 2);
+            byte bit0 = (byte)((value & 0b0000_000000_000000_000000_111111_0000) >> 4);
+            byte bit1 = (byte)((value & 0b0000_000000_000000_111111_000000_0000) >> 10);
+            byte bit2 = (byte)((value & 0b0000_000000_111111_000000_000000_0000) >> 16);
+            byte bit3 = (byte)((value & 0b0000_111111_000000_000000_000000_0000) >> 22);
+            byte bit4 = (byte)((value & 0b1111_000000_000000_000000_000000_0000) >> 28);
+
+            Span<char> span = stackalloc char[6];
+            root |= (byte)ValueHeader.Int;
+
+            span[0] = toBase[root];
+            span[1] = toBase[bit0];
+            span[2] = toBase[bit1];
+            span[3] = toBase[bit2];
+            span[4] = toBase[bit3];
+            span[5] = toBase[bit4];
+            return new string(span);
+        }
+
+        /// <inheritdoc cref="Pack(ulong)"/>
+        public static string Pack(int value)
+        {
+            // Root defines header.
+            byte root = (byte)((value & 0b0000_000000_000000_000000_000000_1111) << 2);
+            byte bit0 = (byte)((value & 0b0000_000000_000000_000000_111111_0000) >> 4);
+            byte bit1 = (byte)((value & 0b0000_000000_000000_111111_000000_0000) >> 10);
+            byte bit2 = (byte)((value & 0b0000_000000_111111_000000_000000_0000) >> 16);
+            byte bit3 = (byte)((value & 0b0000_111111_000000_000000_000000_0000) >> 22);
+            byte bit4 = (byte)((value & -0b111_000000_000000_000000_000000_0000) >> 28);
+
+            Span<char> span = stackalloc char[6];
+            root |= (byte)ValueHeader.Int;
+
+            span[0] = toBase[root];
+            span[1] = toBase[bit0];
+            span[2] = toBase[bit1];
+            span[3] = toBase[bit2];
+            span[4] = toBase[bit3];
+            span[5] = toBase[bit4];
+            return new string(span);
+        }
+
+        /// <inheritdoc cref="Pack(ulong)"/>
+        public static string Pack(ushort value)
+        {
+            // Root defines header.
+            byte root = (byte)((value & 0b000000_000000_1111) << 2);
+            byte bit0 = (byte)((value & 0b000000_111111_0000) >> 4);
+            byte bit1 = (byte)((value & 0b111111_000000_0000) >> 10);
+
+            Span<char> span = stackalloc char[3];
+            root |= (byte)ValueHeader.Int;
+
+            span[0] = toBase[root];
+            span[1] = toBase[bit0];
+            span[2] = toBase[bit1];
+            return new string(span);
+        }
+
+        /// <inheritdoc cref="Pack(ulong)"/>
+        public static string Pack(short value)
+        {
+            // Root defines header.
+            byte root = (byte)((value & 0b000000_000000_1111) << 2);
+            byte bit0 = (byte)((value & 0b000000_111111_0000) >> 4);
+            byte bit1 = (byte)((value & 0b111111_000000_0000) >> 10); // No negative sign, because it uses &(int, int) operator.
+
+            Span<char> span = stackalloc char[3];
+            root |= (byte)ValueHeader.Int;
+
+            span[0] = toBase[root];
+            span[1] = toBase[bit0];
+            span[2] = toBase[bit1];
+            return new string(span);
+        }
+
+        /// <inheritdoc cref="Pack(ulong)"/>
+        public static string Pack(byte value)
+        {
+            // Root defines header.
+            byte root = (byte)((value & 0b0000_1111) << 2);
+            byte bit0 = (byte)((value & 0b1111_0000) >> 4);
+
+            Span<char> span = stackalloc char[2];
+            root |= (byte)ValueHeader.Int;
+
+            span[0] = toBase[root];
+            span[1] = toBase[bit0];
+            return new string(span);
+        }
+
+        /// <inheritdoc cref="Pack(ulong)"/>
+        public static string Pack(sbyte value)
+        {
+            // Root defines header.
+            byte root = (byte)((value & 0b0000_1111) << 2);
+            byte bit0 = (byte)((value & 0b1111_0000) >> 4); // No negative sign, because it uses &(int, int) operator.
+
+            Span<char> span = stackalloc char[2];
+            root |= (byte)ValueHeader.Int;
+
+            span[0] = toBase[root];
+            span[1] = toBase[bit0];
+            return new string(span);
+        }
+
+        /// <summary>
+        /// Unpacks long (or lower) value from <paramref name="str"/>.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long UnpackLong(string str) => unchecked((long)Unpack(str));
+
+        /// <summary>
+        /// Unpacks ulong (or lower) value from <paramref name="str"/>.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ulong UnpackULong(string str) => unchecked(Unpack(str));
+
+        /// <summary>
+        /// Unpacks any type of value with any <see cref="ValueHeader"/>, but returns it as ulong.
+        /// </summary>
+        public static ulong Unpack(string str)
+        {
+            int length = str.Length;
+            switch (length)
+            {
+                case 0: return 0;
+                case 1: return toUInt[str[0]] >> 2;
+            }
+
+            // str here has at least 2 chars.
+            ReadOnlySpan<char> span;
+            uint root = toUInt[str[0]];
+            uint bit0, bit1, bit2, bit3, bit4;
+            ulong bit5, bit6, bit7, bit8, bit9;
+            ValueHeader header = (ValueHeader)(root & 0b11);
+
+            // Note: Maybe instead read header and call method based on it instead?
+            // Then specific methods can be made more raw - requiring additional checks.
+            root >>= 2;
+            switch (header)
+            {
+                case ValueHeader.Byte: return (ushort)(root | (toUInt[str[1]] << 4));
+
+                case ValueHeader.Short:
+                    if (length < 3)
+                    {
+                        // Has only [2] chars.
+                        goto case ValueHeader.Byte;
+                    }
+
+                    span = str.AsSpan(1, 2);
+                    bit0 = toUInt[span[0]] << 4;
+                    bit1 = toUInt[span[1]] << 10;
+                    return root | bit0 | bit1;
+
+                case ValueHeader.Int:
+                    if (length < 6)
+                    {
+                        // Has only [2-5] chars.
+                        span = str.AsSpan(0, length);
+                        int offset = 4;
+                        int i = 1;
+                        while (i < length)
+                        {
+                            root |= toUInt[span[i++]] << offset;
+                            offset += 6;
+                        }
+
+                        return root;
+                    }
+
+                    span = str.AsSpan(1, 5);
+                    bit0 = toUInt[span[0]] << 4;
+                    bit1 = toUInt[span[1]] << 10;
+                    bit2 = toUInt[span[2]] << 16;
+                    bit3 = toUInt[span[3]] << 22;
+                    bit4 = toUInt[span[4]] << 28;
+                    return root | bit0 | bit1 | bit2 | bit3 | bit4;
+
+                default:
+                case ValueHeader.Long:
+                    if (length < 11)
+                    {
+                        // Has only [2-10] chars.
+                        span = str.AsSpan(0, length);
+                        int offset = 4;
+                        int i = 1;
+                        bit5 = root;
+                        while (i < length)
+                        {
+                            bit5 |= toUInt[span[i++]] << offset;
+                            offset += 6;
+                        }
+
+                        return bit5;
+                    }
+
+                    span = str.AsSpan(1, 10);
+                    bit0 = toUInt[span[0]] << 4;
+                    bit1 = toUInt[span[1]] << 10;
+                    bit2 = toUInt[span[2]] << 16;
+                    bit3 = toUInt[span[3]] << 22;
+                    bit4 = toUInt[span[4]] << 28;
+                    root |= bit0 | bit1 | bit2 | bit3 | bit4;
+                    bit5 = toUInt[span[5]] << 34;
+                    bit6 = toUInt[span[6]] << 40;
+                    bit7 = toUInt[span[7]] << 46;
+                    bit8 = toUInt[span[8]] << 52;
+                    bit9 = toUInt[span[9]] << 58;
+                    bit5 |= bit6 | bit7 | bit8 | bit9;
+                    return root | bit5;
+            }
+        }
+
+        /// <summary>
+        /// Unpacks int (or lower) value from <paramref name="str"/>.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int UnpackInt(string str) => unchecked((int)UnpackUInt(str));
+
+        /// <summary>
+        /// Unpacks uint (or lower) value from <paramref name="str"/>.
+        /// </summary>
+        public static uint UnpackUInt(string str)
+        {
+            int length = str.Length;
+            switch (length)
+            {
+                case 0: return 0;
+                case 1: return toUInt[str[0]] >> 2;
+            }
+
+            // str here has at least 2 chars.
+            ReadOnlySpan<char> span;
+            uint root = toUInt[str[0]];
+            uint bit0, bit1, bit2, bit3, bit4;
+            ValueHeader header = (ValueHeader)(root & 0b11);
+
+            root >>= 2;
+            switch (header)
+            {
+                case ValueHeader.Byte: return (ushort)(root | (toUInt[str[1]] << 4));
+
+                case ValueHeader.Short:
+                    if (length < 3)
+                    {
+                        // Has only [2] chars.
+                        goto case ValueHeader.Byte;
+                    }
+
+                    span = str.AsSpan(1, 2);
+                    bit0 = toUInt[span[0]] << 4;
+                    bit1 = toUInt[span[1]] << 10;
+                    return root | bit0 | bit1;
+
+                default:
+                case ValueHeader.Int:
+                    if (length < 6)
+                    {
+                        // Has only [2-5] chars.
+                        span = str.AsSpan(0, length);
+                        int offset = 4;
+                        int i = 1;
+                        while (i < length)
+                        {
+                            root |= toUInt[span[i++]] << offset;
+                            offset += 6;
+                        }
+
+                        return root;
+                    }
+
+                    span = str.AsSpan(1, 5);
+                    bit0 = toUInt[span[0]] << 4;
+                    bit1 = toUInt[span[1]] << 10;
+                    bit2 = toUInt[span[2]] << 16;
+                    bit3 = toUInt[span[3]] << 22;
+                    bit4 = toUInt[span[4]] << 28;
+                    return root | bit0 | bit1 | bit2 | bit3 | bit4;
+
+                case ValueHeader.Long: throw new FormatException($"Base64 header is {ValueHeader.Long}, but was expected (u)int by {nameof(UnpackUInt)}.");
+            }
+        }
+
+        /// <summary>
+        /// Unpacks short (or lower) value from <paramref name="str"/>.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static short UnpackShort(string str) => unchecked((short)UnpackUShort(str));
+
+        /// <summary>
+        /// Unpacks ushort (or lower) value from <paramref name="str"/>.
+        /// </summary>
+        public static ushort UnpackUShort(string str)
+        {
+            int length = str.Length;
+            switch (length)
+            {
+                case 0: return 0;
+                case 1: return (ushort)(toUInt[str[0]] >> 2);
+            }
+
+            // str here has at least 2 chars.
+            ReadOnlySpan<char> span;
+            uint root = toUInt[str[0]];
+            uint bit0, bit1;
+            ValueHeader header = (ValueHeader)(root & 0b11);
+
+            root >>= 2;
+            switch (header)
+            {
+                case ValueHeader.Byte: return (ushort)(root | (toUInt[str[1]] << 4));
+
+                default:
+                case ValueHeader.Short:
+                    if (length < 3)
+                    {
+                        // Has only [2] chars.
+                        goto case ValueHeader.Byte;
+                    }
+
+                    span = str.AsSpan(1, 2);
+                    bit0 = toUInt[span[0]] << 4;
+                    bit1 = toUInt[span[1]] << 10;
+                    return (ushort)(root | bit0 | bit1);
+
+                case ValueHeader.Int: throw new FormatException($"Base64 header is {ValueHeader.Int}, but was expected (u)short by {nameof(UnpackUShort)}.");
+                case ValueHeader.Long: throw new FormatException($"Base64 header is {ValueHeader.Long}, but was expected (u)short by {nameof(UnpackUShort)}.");
+            }
+        }
+
+        /// <summary>
+        /// Unpacks sbyte value from <paramref name="str"/>.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static sbyte UnpackSByte(string str) => unchecked((sbyte)UnpackByte(str));
+
+        /// <summary>
+        /// Unpacks byte value from <paramref name="str"/>.
+        /// </summary>
+        public static byte UnpackByte(string str)
+        {
+            switch (str.Length)
+            {
+                case 0: return 0;
+                case 1: return (byte)(toUInt[str[0]] >> 2);
+            }
+
+            // str here has at least 2 chars.
+            uint root = toUInt[str[0]];
+            return (ValueHeader)(root & 0b11) switch
+            {
+                ValueHeader.Short => throw new FormatException($"Base64 header is {ValueHeader.Short}, but was expected (s)byte by {nameof(UnpackByte)}."),
+                ValueHeader.Int => throw new FormatException($"Base64 header is {ValueHeader.Int}, but was expected (s)byte by {nameof(UnpackByte)}."),
+                ValueHeader.Long => throw new FormatException($"Base64 header is {ValueHeader.Long}, but was expected (s)byte by {nameof(UnpackByte)}."),
+                _ => (byte)((root >> 2) | (toUInt[str[1]] << 4)),
+            };
+        }
 
 
 

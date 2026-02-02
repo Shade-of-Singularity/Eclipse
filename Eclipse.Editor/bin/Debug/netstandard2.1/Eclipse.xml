@@ -2678,9 +2678,6 @@
             <summary>
             Provides ways to compact any numbers into readable chars - compact Base256.
             </summary>
-            <remarks>
-            A logical continuation of <see cref="!:Hex"/>, which is Base16.
-            </remarks>
         </member>
         <member name="F:Eclipse.Serialization.Base64.toBase">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -2688,6 +2685,126 @@
             .                                               Private Fields
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:Eclipse.Serialization.Base64.ValueHeader">
+            Byte:   8  + 4 = 12
+            Short:  16 + 2 = 18
+            Int:    32 + 4 = 36
+            Long:   64 + 2 = 66
+            - - - - - - - - - -
+            Total free: 2 bits.
+            Total states to encode: 4.
+            (+2 bits in Byte and Long)
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                            Advanced bit-packing
+            . TODO: Add Stream writing.
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="F:Eclipse.Serialization.Base64.ValueHeader.Byte">
+            <summary>
+            Encodes <see cref="T:System.Byte"/> and <see cref="T:System.SByte"/>
+            </summary>
+            <remarks>
+            Has 4 free bits for a header, but only 2 is used.
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Serialization.Base64.ValueHeader.Short">
+            <summary>
+            Encodes <see cref="T:System.UInt16"/> and <see cref="T:System.Int16"/>
+            </summary>
+            <remarks>
+            Has 2 free bits for a header.
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Serialization.Base64.ValueHeader.Int">
+            <summary>
+            Encodes <see cref="T:System.UInt32"/> and <see cref="T:System.Int32"/>
+            </summary>
+            <remarks>
+            Has 4 free bits for a header, but only 2 is used.
+            </remarks>
+        </member>
+        <member name="F:Eclipse.Serialization.Base64.ValueHeader.Long">
+            <summary>
+            Encodes <see cref="T:System.UInt64"/> and <see cref="T:System.Int64"/>
+            </summary>
+            <remarks>
+            Has 2 free bits for a header.
+            </remarks>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.Pack(System.UInt64)">
+            <summary>
+            Stores variables in chunks.
+            Uses excess bit you get with Base64 to store if next chunk exist or not.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.Pack(System.Int64)">
+            <inheritdoc cref="M:Eclipse.Serialization.Base64.Pack(System.UInt64)"/>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.Pack(System.UInt32)">
+            <inheritdoc cref="M:Eclipse.Serialization.Base64.Pack(System.UInt64)"/>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.Pack(System.Int32)">
+            <inheritdoc cref="M:Eclipse.Serialization.Base64.Pack(System.UInt64)"/>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.Pack(System.UInt16)">
+            <inheritdoc cref="M:Eclipse.Serialization.Base64.Pack(System.UInt64)"/>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.Pack(System.Int16)">
+            <inheritdoc cref="M:Eclipse.Serialization.Base64.Pack(System.UInt64)"/>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.Pack(System.Byte)">
+            <inheritdoc cref="M:Eclipse.Serialization.Base64.Pack(System.UInt64)"/>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.Pack(System.SByte)">
+            <inheritdoc cref="M:Eclipse.Serialization.Base64.Pack(System.UInt64)"/>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.UnpackLong(System.String)">
+            <summary>
+            Unpacks long (or lower) value from <paramref name="str"/>.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.UnpackULong(System.String)">
+            <summary>
+            Unpacks ulong (or lower) value from <paramref name="str"/>.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.Unpack(System.String)">
+            <summary>
+            Unpacks any type of value with any <see cref="T:Eclipse.Serialization.Base64.ValueHeader"/>, but returns it as ulong.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.UnpackInt(System.String)">
+            <summary>
+            Unpacks int (or lower) value from <paramref name="str"/>.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.UnpackUInt(System.String)">
+            <summary>
+            Unpacks uint (or lower) value from <paramref name="str"/>.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.UnpackShort(System.String)">
+            <summary>
+            Unpacks short (or lower) value from <paramref name="str"/>.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.UnpackUShort(System.String)">
+            <summary>
+            Unpacks ushort (or lower) value from <paramref name="str"/>.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.UnpackSByte(System.String)">
+            <summary>
+            Unpacks sbyte value from <paramref name="str"/>.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Serialization.Base64.UnpackByte(System.String)">
+            <summary>
+            Unpacks byte value from <paramref name="str"/>.
+            </summary>
         </member>
         <member name="M:Eclipse.Serialization.Base64.SByte(System.SByte)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[

@@ -648,6 +648,21 @@
         <para>Vulkan API version.</para>
       </summary>
     </member>
+    <member name="T:UnityEditor.AndroidDisplayOptions">
+      <summary>
+        <para>Options to configure how your application renders on Android devices.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.AndroidDisplayOptions.DetectPresentationDisplay">
+      <summary>
+        <para>The Unity Player automatically renders the camera output on a secondary screen.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.AndroidDisplayOptions.None">
+      <summary>
+        <para>Disables any configurations for rendering the application.</para>
+      </summary>
+    </member>
     <member name="T:UnityEditor.AndroidETC2Fallback">
       <summary>
         <para>This enumeration has values for different qualities to decompress ETC2 textures on Android devices that don't support the ETC2 texture format.</para>
@@ -35377,7 +35392,7 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
     </member>
     <member name="T:UnityEngine.LightTransport.BakeProgressState">
       <summary>
-        <para>Interface for progress reporting.</para>
+        <para>Provides progress reporting and cancellation support for asynchronous light baking operations.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.LightTransport.BakeProgressState.Cancel">
@@ -35411,7 +35426,7 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
     </member>
     <member name="M:UnityEngine.LightTransport.BakeProgressState.SetTotalWorkSteps(System.UInt64)">
       <summary>
-        <para>Sets the total amount of work steps for the progress state. Increase the completed work steps using BakeProgressState.IncrementCompletedWorkSteps.</para>
+        <para>Sets the total amount of work steps for the progress state. Increase the completed work steps using IncrementCompletedWorkSteps.</para>
       </summary>
       <param name="total">Total amount of work steps.</param>
     </member>
@@ -35425,7 +35440,7 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
     </member>
     <member name="T:UnityEngine.LightTransport.BufferID">
       <summary>
-        <para>Abstraction layer for memory buffers.</para>
+        <para>Unique identifier to a memory buffer in device.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.LightTransport.BufferID.#ctor(System.UInt64)">
@@ -35438,19 +35453,19 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
       <summary>
         <para>Constructs a typed slice from the BufferID.</para>
       </summary>
-      <param name="offset">The offset to use for the slice, measured in elements of the passed the type.</param>
+      <param name="offset">The offset to use for the slice, measured in elements of the specified type.</param>
       <returns>
         <para>A typed slice aliasing the BufferID.</para>
       </returns>
     </member>
     <member name="F:UnityEngine.LightTransport.BufferID.Value">
       <summary>
-        <para>Value.</para>
+        <para>The underlying buffer identifier value.</para>
       </summary>
     </member>
     <member name="T:UnityEngine.LightTransport.BufferSlice`1">
       <summary>
-        <para>Unity uses the BufferSlice struct to split one large buffer allocation into one or more smaller buffers, each with explicit types.</para>
+        <para>Represents a typed view into a portion of a device buffer, enabling efficient memory management and type-safe buffer operations.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.LightTransport.BufferSlice_1.#ctor(UnityEngine.LightTransport.BufferID,System.UInt64)">
@@ -35458,7 +35473,7 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
         <para>Construct a new BufferSlice struct by defining an offset from the beginning of a buffer. The buffer is defined by the BufferID.</para>
       </summary>
       <param name="id">ID of the buffer.</param>
-      <param name="offset">Offset from the beginning of the buffer.</param>
+      <param name="offset">Offset from the beginning of the buffer, measured in elements of type T.</param>
     </member>
     <member name="F:UnityEngine.LightTransport.BufferSlice_1.Id">
       <summary>
@@ -35488,7 +35503,7 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
     </member>
     <member name="T:UnityEngine.LightTransport.EventID">
       <summary>
-        <para>The EventID is used to keep track of asynchronous operations executing on a context. The ID describes the unique identifier of an event.</para>
+        <para>Unique identifier for tracking asynchronous operations executing on a device context.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.LightTransport.EventID.#ctor(System.UInt64)">
@@ -35499,30 +35514,30 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
     </member>
     <member name="F:UnityEngine.LightTransport.EventID.Value">
       <summary>
-        <para>The value is used by the implementation and can be interpreted as a memory pointer or other implementation-specific data.</para>
+        <para>The underlying event identifier value.</para>
       </summary>
     </member>
     <member name="?:UnityEngine.LightTransport.IDeviceContext">
       <summary>
-        <para>Interface for a device.</para>
+        <para>Provides an abstraction layer for memory management, synchronization, and compute operations across different devices.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.LightTransport.IDeviceContext.CreateBuffer(System.UInt64,System.UInt64)">
       <summary>
-        <para>Create a new buffer for a number of elements with a given stride.</para>
+        <para>Allocates a new buffer on the device with the specified element count and stride.</para>
       </summary>
       <param name="count">Number of elements in the buffer.</param>
-      <param name="stride">Stride of the buffer in bytes.</param>
+      <param name="stride">Size of each element in bytes.</param>
       <returns>
-        <para>ID of the newly created buffer.</para>
+        <para>Unique identifier for the newly created buffer.</para>
       </returns>
     </member>
     <member name="M:UnityEngine.LightTransport.IDeviceContext.CreateEvent">
       <summary>
-        <para>Creates a new event.</para>
+        <para>Creates a synchronization event for tracking asynchronous operations.</para>
       </summary>
       <returns>
-        <para>ID of newly created event.</para>
+        <para>Unique identifier for the newly created event.</para>
       </returns>
     </member>
     <member name="M:UnityEngine.LightTransport.IDeviceContext.DestroyBuffer(UnityEngine.LightTransport.BufferID)">
@@ -35539,10 +35554,10 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
     </member>
     <member name="M:UnityEngine.LightTransport.IDeviceContext.Flush">
       <summary>
-        <para>Flush the device context.</para>
+        <para>Initiates execution of all enqueued operations on the device.</para>
       </summary>
       <returns>
-        <para>True if the flush was successful.</para>
+        <para>True if the flush operation was successful.</para>
       </returns>
     </member>
     <member name="M:UnityEngine.LightTransport.IDeviceContext.Initialize">
@@ -35564,19 +35579,19 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
     </member>
     <member name="M:UnityEngine.LightTransport.IDeviceContext.ReadBuffer(UnityEngine.LightTransport.BufferSlice`1&lt;T&gt;,Unity.Collections.NativeArray`1&lt;T&gt;)">
       <summary>
-        <para>Read contents of a buffer from the context.</para>
+        <para>Asynchronously copies data from a device buffer to host memory.</para>
       </summary>
-      <param name="src">The buffer slice to read from.</param>
-      <param name="dst">The array in the CPU memory that the contents of the buffer should be written to. The array must remain valid until the read operation is complete. Related content: LightTransport.IDeviceContext.Wait.</param>
-      <param name="id">The ID of the event to use to track completion of the read.</param>
+      <param name="src">The buffer slice specifying the source data on the device.</param>
+      <param name="dst">The destination array in CPU memory. Must remain valid until the operation completes.</param>
+      <param name="id">Optional event ID to track completion of the read operation.</param>
     </member>
     <member name="M:UnityEngine.LightTransport.IDeviceContext.ReadBuffer(UnityEngine.LightTransport.BufferSlice`1&lt;T&gt;,Unity.Collections.NativeArray`1&lt;T&gt;,UnityEngine.LightTransport.EventID)">
       <summary>
-        <para>Read contents of a buffer from the context.</para>
+        <para>Asynchronously copies data from a device buffer to host memory.</para>
       </summary>
-      <param name="src">The buffer slice to read from.</param>
-      <param name="dst">The array in the CPU memory that the contents of the buffer should be written to. The array must remain valid until the read operation is complete. Related content: LightTransport.IDeviceContext.Wait.</param>
-      <param name="id">The ID of the event to use to track completion of the read.</param>
+      <param name="src">The buffer slice specifying the source data on the device.</param>
+      <param name="dst">The destination array in CPU memory. Must remain valid until the operation completes.</param>
+      <param name="id">Optional event ID to track completion of the read operation.</param>
     </member>
     <member name="M:UnityEngine.LightTransport.IDeviceContext.Wait(UnityEngine.LightTransport.EventID)">
       <summary>
@@ -35589,75 +35604,75 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
     </member>
     <member name="M:UnityEngine.LightTransport.IDeviceContext.WriteBuffer(UnityEngine.LightTransport.BufferSlice`1&lt;T&gt;,Unity.Collections.NativeArray`1&lt;T&gt;)">
       <summary>
-        <para>Write data into the memory buffer allocated by the context.</para>
+        <para>Asynchronously copies data from host memory to a device buffer.</para>
       </summary>
-      <param name="dst">The buffer slice to write to.</param>
-      <param name="src">The array in the CPU memory that should be written to the buffer. The array must remain valid until the write operation is complete.</param>
-      <param name="id">The ID of the event to use to track completion of the write.</param>
+      <param name="dst">The buffer slice specifying the destination on the device.</param>
+      <param name="src">The source array in CPU memory. Must remain valid until the operation completes.</param>
+      <param name="id">Optional event ID to track completion of the write operation.</param>
     </member>
     <member name="M:UnityEngine.LightTransport.IDeviceContext.WriteBuffer(UnityEngine.LightTransport.BufferSlice`1&lt;T&gt;,Unity.Collections.NativeArray`1&lt;T&gt;,UnityEngine.LightTransport.EventID)">
       <summary>
-        <para>Write data into the memory buffer allocated by the context.</para>
+        <para>Asynchronously copies data from host memory to a device buffer.</para>
       </summary>
-      <param name="dst">The buffer slice to write to.</param>
-      <param name="src">The array in the CPU memory that should be written to the buffer. The array must remain valid until the write operation is complete.</param>
-      <param name="id">The ID of the event to use to track completion of the write.</param>
+      <param name="dst">The buffer slice specifying the destination on the device.</param>
+      <param name="src">The source array in CPU memory. Must remain valid until the operation completes.</param>
+      <param name="id">Optional event ID to track completion of the write operation.</param>
     </member>
     <member name="T:UnityEngine.LightTransport.InputExtraction">
       <summary>
-        <para>Class used when extracting BakeInput from the set of open scenes.</para>
+        <para>Provides methods for extracting scene data and populating integration worlds for use in light transport calculations.</para>
       </summary>
     </member>
     <member name="T:UnityEngine.LightTransport.InputExtraction.BakeInput">
       <summary>
-        <para>Bake input object.</para>
+        <para>Container for scene data to be used for light transport calculations.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.LightTransport.InputExtraction.ComputeOcclusionLightIndicesFromBakeInput(UnityEngine.LightTransport.InputExtraction/BakeInput,UnityEngine.Vector3[],System.UInt32)">
       <summary>
-        <para>For each probe position, computes the indices of the brightest lights from the probe position's point of view. The function uses the information about lights stored in an existing BakeInput. This function is intended to be used with IProbeIntegrator.IntegrateOcclusion.</para>
+        <para>Determines the most influential lights for occlusion calculations at each probe position.</para>
       </summary>
-      <param name="bakeInput">The BakeInput to use to find the brightest lights.</param>
-      <param name="probePositions">The positions from which to calculate the indices of the brightest lights.</param>
-      <param name="maxLightsPerProbe">The amount of light indices to calculate per probe. Defaults to 4.</param>
+      <param name="bakeInput">The BakeInput containing light source information.</param>
+      <param name="probePositions">Array of world-space positions where occlusion should be computed.</param>
+      <param name="maxLightsPerProbe">Maximum number of lights to select per probe (typically 4 for shadowmask compatibility).</param>
       <returns>
-        <para>The indices of the brightest lights from each probe position. The returned array will have a length equal to the length of the probePositions array multiplied by maxLightsPerProbe.</para>
+        <para>Flattened array of light indices where each consecutive group of maxLightsPerProbe indices corresponds to one probe position.</para>
       </returns>
     </member>
     <member name="M:UnityEngine.LightTransport.InputExtraction.ExtractFromScene(UnityEngine.LightTransport.InputExtraction/BakeInput&amp;)">
       <summary>
-        <para>Extract BakeInput from the set of open scenes.</para>
+        <para>Extracts all relevant scene data for light transport calculations from the currently open scenes.</para>
       </summary>
-      <param name="bakeInput">The bake input generated by the this method (output variable).</param>
+      <param name="bakeInput">Output parameter that receives the extracted scene data.</param>
       <returns>
-        <para>True if the extraction was successful.</para>
+        <para>True if extraction completed successfully, false if errors occurred.</para>
       </returns>
     </member>
     <member name="M:UnityEngine.LightTransport.InputExtraction.GetShadowmaskChannelsFromLightIndices(UnityEngine.LightTransport.InputExtraction/BakeInput,System.Int32[])">
       <summary>
-        <para>Get's the associated baked shadowmask channels of the mixed lights with the specified indices. Use this together with LightTransport.InputExtraction.ComputeOcclusionLightIndicesFromBakeInput.</para>
+        <para>Retrieves the shadowmask channel assignments for specified mixed lights.</para>
       </summary>
-      <param name="bakeInput">The BakeInput which the passed light indices belong to.</param>
-      <param name="lightIndices">The light indices of the lights to get the shadowmask channels of.</param>
+      <param name="bakeInput">The BakeInput containing light configuration data.</param>
+      <param name="lightIndices">Array of light indices to query for shadowmask channels.</param>
       <returns>
-        <para>An array containing the shadowmask channel of each input light.</para>
+        <para>Array of shadowmask channel indices (0-3 for RGBA, or -1 for no channel) corresponding to each input light index.</para>
       </returns>
     </member>
     <member name="M:UnityEngine.LightTransport.InputExtraction.PopulateWorld(UnityEngine.LightTransport.InputExtraction/BakeInput,UnityEngine.LightTransport.BakeProgressState,UnityEngine.LightTransport.IDeviceContext,UnityEngine.LightTransport.IWorld)">
       <summary>
-        <para>Populate the given world from a bake input.</para>
+        <para>Converts extracted scene data into optimized data structures for light transport calculations.</para>
       </summary>
-      <param name="bakeInput">The bake input to use.</param>
-      <param name="progress">Progress tracker.</param>
-      <param name="context">Device context.</param>
-      <param name="world">The world to populate with the contents of the bake input.</param>
+      <param name="bakeInput">Scene data extracted using ExtractFromScene.</param>
+      <param name="progress">Progress tracking object for monitoring world population status.</param>
+      <param name="context">Device context that will be used for light transport calculations.</param>
+      <param name="world">World object to populate with the processed scene data.</param>
       <returns>
-        <para>True if the world was populated successfully.</para>
+        <para>True if world population completed successfully, false if errors occurred.</para>
       </returns>
     </member>
     <member name="T:UnityEngine.LightTransport.IntegrationContext">
       <summary>
-        <para>Interface for integration-specific data.</para>
+        <para>Container for integration-specific data and state shared across multiple light transport calculations.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.LightTransport.IntegrationContext.#ctor">
@@ -35679,74 +35694,74 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
     </member>
     <member name="?:UnityEngine.LightTransport.IProbeIntegrator">
       <summary>
-        <para>Light Probe integrator interface.</para>
+        <para>Interface for light probe integration operations, typically used for global illumination baking.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.LightTransport.IProbeIntegrator.IntegrateDirectRadiance">
       <summary>
-        <para>Integrate direct radiance.</para>
+        <para>Computes direct lighting contribution at probe positions using spherical sampling.</para>
       </summary>
-      <param name="context">Device context.</param>
-      <param name="positionOffset">Offset measured from the beginning of the probe position buffer.</param>
-      <param name="positionCount">Number of probes to integrate.</param>
-      <param name="sampleCount">Number of samples to take.</param>
-      <param name="ignoreEnvironment">Ignore environment lighting when computing direct contribution.</param>
-      <param name="radianceEstimateOut">Buffer slice to write the radiance estimate into.</param>
+      <param name="context">Device context for computation and memory operations.</param>
+      <param name="positionOffset">Starting index in the probe position buffer.</param>
+      <param name="positionCount">Number of probe positions to process.</param>
+      <param name="sampleCount">Number of samples to take per probe.</param>
+      <param name="ignoreEnvironment">If true, excludes environment lighting from the direct contribution calculation.</param>
+      <param name="radianceEstimateOut">Output buffer slice that the direct radiance estimate is written into, encoded as spherical harmonics coefficients.</param>
       <returns>
-        <para>Return code.</para>
+        <para>Result indicating success or failure with detailed error information.</para>
       </returns>
     </member>
     <member name="M:UnityEngine.LightTransport.IProbeIntegrator.IntegrateIndirectRadiance">
       <summary>
-        <para>Integrate indirect radiance.</para>
+        <para>Computes indirect lighting contribution at probe positions using spherical sampling and path tracing.</para>
       </summary>
-      <param name="sampleCount">Number of samples to take.</param>
-      <param name="ignoreEnvironment">Ignore environment lighting when computing indirect contribution.</param>
-      <param name="context">Device context.</param>
-      <param name="radianceEstimateOut">Buffer slice to write the radiance estimate into.</param>
-      <param name="positionOffset">Offset measured from the beginning of the probe position buffer.</param>
-      <param name="positionCount">Number of probes to integrate.</param>
+      <param name="context">Device context for computation and memory operations.</param>
+      <param name="positionOffset">Starting index in the probe position buffer.</param>
+      <param name="positionCount">Number of probe positions to process.</param>
+      <param name="sampleCount">Number of samples to take per probe.</param>
+      <param name="ignoreEnvironment">If true, excludes environment lighting from the indirect contribution calculation.</param>
+      <param name="radianceEstimateOut">Output buffer slice that the indirect radiance estimate is written into, encoded as spherical harmonics coefficients.</param>
       <returns>
-        <para>Return code.</para>
+        <para>Result indicating success or failure with detailed error information.</para>
       </returns>
     </member>
     <member name="M:UnityEngine.LightTransport.IProbeIntegrator.IntegrateOcclusion(UnityEngine.LightTransport.IDeviceContext,System.Int32,System.Int32,System.Int32,System.Int32,UnityEngine.LightTransport.BufferSlice`1&lt;System.Int32&gt;,UnityEngine.LightTransport.BufferSlice`1&lt;System.Single&gt;)">
       <summary>
-        <para>Integrate occlusion.</para>
+        <para>Computes occlusion values for mixed lighting scenarios with shadowmask support.</para>
       </summary>
-      <param name="context">Device context.</param>
-      <param name="positionOffset">Offset measured from the beginning of the probe position buffer.</param>
-      <param name="positionCount">Number of probes to integrate.</param>
-      <param name="sampleCount">Number of samples to take.</param>
-      <param name="maxLightsPerProbe">Maximum number of lights per probe. The default value is 4.</param>
-      <param name="perProbeLightIndices">Buffer slice containing per probe Light indices.</param>
-      <param name="probeOcclusionEstimateOut">Buffer slice to write the probe occlusion estimate into. The size of the buffer in bytes should be maxLightsPerProbe * sizeof(float).</param>
+      <param name="context">Device context for computation and memory operations.</param>
+      <param name="positionOffset">Starting index in the probe position buffer.</param>
+      <param name="positionCount">Number of probe positions to process.</param>
+      <param name="sampleCount">Number of directional samples to take per probe.</param>
+      <param name="maxLightsPerProbe">Maximum number of lights to compute occlusion for per probe (typically 4).</param>
+      <param name="perProbeLightIndices">Buffer containing light indices for each probe, computed using InputExtraction.ComputeOcclusionLightIndicesFromBakeInput.</param>
+      <param name="probeOcclusionEstimateOut">Output buffer for occlusion values. Size must be positionCount × maxLightsPerProbe × sizeof(float).</param>
       <returns>
-        <para>Return code.</para>
+        <para>Result indicating success or failure with detailed error information.</para>
       </returns>
     </member>
     <member name="M:UnityEngine.LightTransport.IProbeIntegrator.IntegrateValidity(UnityEngine.LightTransport.IDeviceContext,System.Int32,System.Int32,System.Int32,UnityEngine.LightTransport.BufferSlice`1&lt;System.Single&gt;)">
       <summary>
-        <para>Integrate validity.</para>
+        <para>Computes validity factors indicating the reliability of each probe position.</para>
       </summary>
-      <param name="sampleCount">Number of samples to take.</param>
-      <param name="context">Device context.</param>
-      <param name="validityEstimateOut">Buffer slice to write the validity estimate into.</param>
-      <param name="positionOffset">Offset measured from the beginning of the probe position buffer.</param>
-      <param name="positionCount">Number of probes to integrate.</param>
+      <param name="context">Device context for computation and memory operations.</param>
+      <param name="positionOffset">Starting index in the probe position buffer.</param>
+      <param name="positionCount">Number of probe positions to process.</param>
+      <param name="sampleCount">Number of directional samples to take per probe.</param>
+      <param name="validityEstimateOut">Output buffer for validity values (one float per probe).</param>
       <returns>
-        <para>Return code.</para>
+        <para>Result indicating success or failure with detailed error information.</para>
       </returns>
     </member>
     <member name="M:UnityEngine.LightTransport.IProbeIntegrator.Prepare(UnityEngine.LightTransport.IDeviceContext,UnityEngine.LightTransport.IWorld,UnityEngine.LightTransport.BufferSlice`1&lt;UnityEngine.Vector3&gt;,System.Single,System.Int32)">
       <summary>
-        <para>Prepare the integrator.</para>
+        <para>Initializes the probe integrator with scene data and integration parameters.</para>
       </summary>
-      <param name="world">World.</param>
-      <param name="positions">BufferSlice containing the probe positions to integrate.</param>
-      <param name="pushoff">The offset to add to the rays traced from each probe position. You can use this parameter to prevent self-intersections when 32 bit floating point precision is an issue, for instance when integrating a large open world.</param>
-      <param name="bounceCount">Number of light bounces.</param>
-      <param name="context"></param>
+      <param name="context">Device context for computation and memory operations.</param>
+      <param name="world">World object containing the scene geometry and other input data.</param>
+      <param name="positions">Buffer slice containing the 3D positions of the light probes to be integrated.</param>
+      <param name="pushoff">Distance to offset rays from probe positions to avoid self-intersection artifacts.</param>
+      <param name="bounceCount">Maximum number of light bounces for indirect lighting calculations.</param>
     </member>
     <member name="T:UnityEngine.LightTransport.IProbeIntegrator.Result">
       <summary>
@@ -35825,13 +35840,13 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
     </member>
     <member name="M:UnityEngine.LightTransport.IProbeIntegrator.SetProgressReporter(UnityEngine.LightTransport.BakeProgressState)">
       <summary>
-        <para>Set progress tracker.</para>
+        <para>Configures progress tracking for integration operations.</para>
       </summary>
-      <param name="progress">BakeProgressState tracker to set on the probe integrator.</param>
+      <param name="progress">Progress state object that will receive updates during integration.</param>
     </member>
     <member name="?:UnityEngine.LightTransport.IWorld">
       <summary>
-        <para>Interface for the integration world.</para>
+        <para>Interface for integration world data structures used by light transport calculations.</para>
       </summary>
     </member>
     <member name="?:UnityEngine.LightTransport.PostProcessing.IProbePostProcessor">
@@ -35841,7 +35856,7 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
     </member>
     <member name="M:UnityEngine.LightTransport.PostProcessing.IProbePostProcessor.AddSphericalHarmonicsL2(UnityEngine.LightTransport.IDeviceContext,UnityEngine.LightTransport.BufferSlice`1&lt;UnityEngine.Rendering.SphericalHarmonicsL2&gt;,UnityEngine.LightTransport.BufferSlice`1&lt;UnityEngine.Rendering.SphericalHarmonicsL2&gt;,UnityEngine.LightTransport.BufferSlice`1&lt;UnityEngine.Rendering.SphericalHarmonicsL2&gt;,System.Int32)">
       <summary>
-        <para>Add two arrays of SphericalHarmonicsL2 together.</para>
+        <para>Perform the sum of two arrays of SphericalHarmonicsL2.</para>
       </summary>
       <param name="context">Device context.</param>
       <param name="A">Source buffer A.</param>
@@ -35899,7 +35914,7 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
     </member>
     <member name="M:UnityEngine.LightTransport.PostProcessing.IProbePostProcessor.ScaleSphericalHarmonicsL2(UnityEngine.LightTransport.IDeviceContext,UnityEngine.LightTransport.BufferSlice`1&lt;UnityEngine.Rendering.SphericalHarmonicsL2&gt;,UnityEngine.LightTransport.BufferSlice`1&lt;UnityEngine.Rendering.SphericalHarmonicsL2&gt;,System.Int32,System.Single)">
       <summary>
-        <para>Scale an array of SphericalHarmonicsL2 probes.</para>
+        <para>Scale an array of SphericalHarmonicsL2 probes elementwise.</para>
       </summary>
       <param name="context">Device context.</param>
       <param name="shIn">Source buffer of SphericalHarmonicsL2 probes to scale.</param>
@@ -35924,20 +35939,18 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
     </member>
     <member name="T:UnityEngine.LightTransport.PostProcessing.RadeonRaysProbePostProcessor">
       <summary>
-        <para>RadeonRaysProbePostProcessor.</para>
+        <para>RadeonRaysProbePostProcessor is a post processor for light probes. It provides common operations for light probes encoded as SphericalHarmonicsL2. Operations include radiance to irradiance conversion, conversion to the format expected by Unity for rendering (refer to IProbePostProcessor.ConvertToUnityFormat), addition, and scaling.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.LightTransport.PostProcessing.RadeonRaysProbePostProcessor.AddSphericalHarmonicsL2(UnityEngine.LightTransport.IDeviceContext,UnityEngine.LightTransport.BufferSlice`1&lt;UnityEngine.Rendering.SphericalHarmonicsL2&gt;,UnityEngine.LightTransport.BufferSlice`1&lt;UnityEngine.Rendering.SphericalHarmonicsL2&gt;,UnityEngine.LightTransport.BufferSlice`1&lt;UnityEngine.Rendering.SphericalHarmonicsL2&gt;,System.Int32)">
       <summary>
-        <para>Add two arrays of SphericalHarmonicsL2 together.</para>
+        <para>Perform the sum of two arrays of SphericalHarmonicsL2.</para>
       </summary>
       <param name="context">Device context.</param>
-      <param name="A">Source buffer A.</param>
-      <param name="B">Source buffer B.</param>
       <param name="sum">Destination buffer where the sum of A and B is written.</param>
       <param name="probeCount">Number of SphericalHarmonicsL2 probes to add.</param>
-      <param name="a"></param>
-      <param name="b"></param>
+      <param name="a">Source buffer A.</param>
+      <param name="b">Source buffer B.</param>
       <returns>
         <para>True if the operation is successfully added to the command queue in the context.</para>
       </returns>
@@ -35948,7 +35961,7 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
       </summary>
       <param name="context">Device context.</param>
       <param name="irradianceIn">Buffer containing input irradiance.</param>
-      <param name="irradianceOut">Output buffer containing the irradiance array after the conversion to the  format compatible with a Unity renderer.</param>
+      <param name="irradianceOut">Output buffer containing the irradiance array after the conversion to the format compatible with a Unity renderer.</param>
       <param name="probeCount">Number of SphericalHarmonicsL2 probes to convert.</param>
       <returns>
         <para>True if the operation was successfully added to the command queue on the context.</para>
@@ -35999,7 +36012,7 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
     </member>
     <member name="M:UnityEngine.LightTransport.PostProcessing.RadeonRaysProbePostProcessor.ScaleSphericalHarmonicsL2(UnityEngine.LightTransport.IDeviceContext,UnityEngine.LightTransport.BufferSlice`1&lt;UnityEngine.Rendering.SphericalHarmonicsL2&gt;,UnityEngine.LightTransport.BufferSlice`1&lt;UnityEngine.Rendering.SphericalHarmonicsL2&gt;,System.Int32,System.Single)">
       <summary>
-        <para>Scale an array of SphericalHarmonicsL2 probes.</para>
+        <para>Scale an array of SphericalHarmonicsL2 probes elementwise.</para>
       </summary>
       <param name="context">Device context.</param>
       <param name="shIn">Source buffer of SphericalHarmonicsL2 probes to scale.</param>
@@ -36024,20 +36037,18 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
     </member>
     <member name="T:UnityEngine.LightTransport.PostProcessing.ReferenceProbePostProcessor">
       <summary>
-        <para>The ReferenceProbePostProcessor implements the IProbePostProcessor interface.</para>
+        <para>ReferenceProbePostProcessor is a post processor for light probes. The ReferenceProbePostProcessor implements the IProbePostProcessor interface.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.LightTransport.PostProcessing.ReferenceProbePostProcessor.AddSphericalHarmonicsL2(UnityEngine.LightTransport.IDeviceContext,UnityEngine.LightTransport.BufferSlice`1&lt;UnityEngine.Rendering.SphericalHarmonicsL2&gt;,UnityEngine.LightTransport.BufferSlice`1&lt;UnityEngine.Rendering.SphericalHarmonicsL2&gt;,UnityEngine.LightTransport.BufferSlice`1&lt;UnityEngine.Rendering.SphericalHarmonicsL2&gt;,System.Int32)">
       <summary>
-        <para>Add two arrays of SphericalHarmonicsL2 together.</para>
+        <para>Perform the sum of two arrays of SphericalHarmonicsL2.</para>
       </summary>
       <param name="context">Device context.</param>
-      <param name="A">Source buffer A.</param>
-      <param name="B">Source buffer B.</param>
       <param name="sum">Destination buffer where the sum of A and B is written.</param>
       <param name="probeCount">Number of SphericalHarmonicsL2 probes to add.</param>
-      <param name="a"></param>
-      <param name="b"></param>
+      <param name="a">Source buffer A.</param>
+      <param name="b">Source buffer B.</param>
       <returns>
         <para>True if the operation is successfully added to the command queue in the context.</para>
       </returns>
@@ -36048,7 +36059,7 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
       </summary>
       <param name="context">Device context.</param>
       <param name="irradianceIn">Buffer containing input irradiance.</param>
-      <param name="irradianceOut">Output buffer containing the irradiance array after the conversion to the  format compatible with a Unity renderer.</param>
+      <param name="irradianceOut">Output buffer containing the irradiance array after the conversion to the format compatible with a Unity renderer.</param>
       <param name="probeCount">Number of SphericalHarmonicsL2 probes to convert.</param>
       <returns>
         <para>True if the operation was successfully added to the command queue on the context.</para>
@@ -36124,7 +36135,7 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
     </member>
     <member name="T:UnityEngine.LightTransport.RadeonRaysContext">
       <summary>
-        <para>RadeonRaysContext implements the IDeviceContext interface. It uses the RadeonRays SDK for intersection testing and the OpenCL 1.2 API for compute.</para>
+        <para>RadeonRaysContext implements the IDeviceContext interface. It uses the RadeonRays SDK for ray-triangle intersection testing and the OpenCL 1.2 API for computations.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.LightTransport.RadeonRaysContext.CreateBuffer(System.UInt64,System.UInt64)">
@@ -36319,7 +36330,7 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
       <param name="positions">BufferSlice containing the probe positions to integrate.</param>
       <param name="pushoff">The offset to add to the rays traced from each probe position. You can use this parameter to prevent self-intersections when 32 bit floating point precision is an issue, for instance when integrating a large open world.</param>
       <param name="bounceCount">Number of light bounces.</param>
-      <param name="context"></param>
+      <param name="context">Device context.</param>
     </member>
     <member name="M:UnityEngine.LightTransport.RadeonRaysProbeIntegrator.SetProgressReporter(UnityEngine.LightTransport.BakeProgressState)">
       <summary>
@@ -44122,6 +44133,11 @@ Note: You can specify multiple application entries for development purposes, thi
         <para>Disable Depth and Stencil Buffers.</para>
       </summary>
     </member>
+    <member name="P:UnityEditor.PlayerSettings.Android.displayOptions">
+      <summary>
+        <para>Defines Android display settings that determine how your application renders on the Android devices at runtime.</para>
+      </summary>
+    </member>
     <member name="P:UnityEditor.PlayerSettings.Android.enableArmv9SecurityFeatures">
       <summary>
         <para>Enable Armv9 security features, including Pointer Authentication (PAuth, PAC) and Branch Target Identification (BTI) for Arm64 builds.</para>
@@ -47259,7 +47275,7 @@ Additional resources: PauseState, EditorApplication.playModeStateChanged, Editor
     </member>
     <member name="M:UnityEditor.PrefabUtility.GetCorrespondingObjectFromSource(TObject)">
       <summary>
-        <para>Retrieves the corresponding asset object of source, or null if it can't be found.</para>
+        <para>Retrieves the corresponding source prefab asset object of a given GameObject or component, or null if it can't be found.</para>
       </summary>
       <param name="componentOrGameObject">The object to find the corresponding object from.</param>
       <returns>
@@ -47381,17 +47397,7 @@ Additional resources: PauseState, EditorApplication.playModeStateChanged, Editor
     </member>
     <member name="M:UnityEditor.PrefabUtility.GetPropertyModifications(UnityEngine.Object)">
       <summary>
-        <para>Returns all modifications that have been applied to a particular Prefab instance in a Scene or modifications for a Prefab instance in an Asset.
-
-See PrefabUtility.SetPropertyModifications|SetPropertyModifications for details about the fields of the returned PropertyModification|PropertyModification objects.
-
-An alternative approach to getting property overrides information for a Prefab instance is to use the PrefabUtility.GetObjectOverrides|GetObjectOverrides API which also has Apply and Revert functionality.
-
-When using GetPropertyModifications bear in mind that:
-
-- it will return both default and non-default overrides
-- It can return overrides for all child GameObjects and their Components
-- it can return overrides that are no longer valid.</para>
+        <para>Returns all modifications that have been applied to a particular prefab instance in a scene or modifications for a prefab instance in an asset.</para>
       </summary>
       <param name="targetPrefab">Can be a Prefab instance in the scene or a Prefab instance in an Prefab Asset (e.g a Variant asset).</param>
     </member>
@@ -47450,6 +47456,16 @@ When using GetPropertyModifications bear in mind that:
       </returns>
     </member>
     <member name="M:UnityEditor.PrefabUtility.InstantiatePrefab(UnityEngine.Object,UnityEngine.SceneManagement.Scene)">
+      <summary>
+        <para>Instantiates the given Prefab in a given Scene.</para>
+      </summary>
+      <param name="assetComponentOrGameObject">Prefab Asset to instantiate.</param>
+      <param name="destinationScene">Scene to instantiate the Prefab in.</param>
+      <returns>
+        <para>The GameObject at the root of the Prefab.</para>
+      </returns>
+    </member>
+    <member name="M:UnityEditor.PrefabUtility.InstantiatePrefab">
       <summary>
         <para>Instantiates the given Prefab in a given Scene.</para>
       </summary>
@@ -47614,7 +47630,14 @@ When using GetPropertyModifications bear in mind that:
     </member>
     <member name="M:UnityEditor.PrefabUtility.LoadPrefabContentsIntoPreviewScene(System.String,UnityEngine.SceneManagement.Scene)">
       <summary>
-        <para>Loads a Prefab Asset at a given path into a given preview Scene and returns the root GameObject of the Prefab.</para>
+        <para>Loads a Prefab Asset at a given path into a given preview scene.</para>
+      </summary>
+      <param name="scene">The Scene to load the contents into.</param>
+      <param name="prefabPath">The path of the Prefab Asset to load the contents of.</param>
+    </member>
+    <member name="M:UnityEditor.PrefabUtility.LoadPrefabContentsIntoPreviewScene">
+      <summary>
+        <para>Loads a Prefab Asset at a given path into a given preview scene.</para>
       </summary>
       <param name="scene">The Scene to load the contents into.</param>
       <param name="prefabPath">The path of the Prefab Asset to load the contents of.</param>

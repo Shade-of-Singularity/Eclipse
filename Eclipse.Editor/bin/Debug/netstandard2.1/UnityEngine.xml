@@ -1374,7 +1374,7 @@ The newly built NavMeshData, or null if the NavMeshData was empty or an error oc
     </member>
     <member name="M:UnityEngine.AI.NavMeshBuilder.CollectSources(UnityEngine.Bounds,System.Int32,UnityEngine.AI.NavMeshCollectGeometry,System.Int32,System.Collections.Generic.List`1&lt;UnityEngine.AI.NavMeshBuildMarkup&gt;,System.Collections.Generic.List`1&lt;UnityEngine.AI.NavMeshBuildSource&gt;)">
       <summary>
-        <para>Collects renderers or physics colliders, and terrains within a volume.</para>
+        <para>Collects renderers or physics colliders, and terrains within a volume. This function might not collect some MeshColliders that are at a distance greater than 1E7 from the origin.</para>
       </summary>
       <param name="includedWorldBounds">The queried objects must overlap these bounds to be included in the results.</param>
       <param name="includedLayerMask">Specifies which layers are included in the query.</param>
@@ -1385,7 +1385,7 @@ The newly built NavMeshData, or null if the NavMeshData was empty or an error oc
     </member>
     <member name="M:UnityEngine.AI.NavMeshBuilder.CollectSources(UnityEngine.Bounds,System.Int32,UnityEngine.AI.NavMeshCollectGeometry,System.Int32,System.Boolean,System.Collections.Generic.List`1&lt;UnityEngine.AI.NavMeshBuildMarkup&gt;,System.Boolean,System.Collections.Generic.List`1&lt;UnityEngine.AI.NavMeshBuildSource&gt;)">
       <summary>
-        <para>Collects renderers or physics colliders, and terrains within a volume.</para>
+        <para>Collects renderers or physics colliders, and terrains within a volume. This function might not collect some MeshColliders that are a distance greater than 1E7 from the origin.</para>
       </summary>
       <param name="includedWorldBounds">The queried objects must overlap these bounds to be included in the results.</param>
       <param name="includedLayerMask">Specifies which layers are included in the query.</param>
@@ -42283,6 +42283,21 @@ Additional resources: Debug.CheckIntegrity</para>
         <para>iPhone 16 Pro Max.</para>
       </summary>
     </member>
+    <member name="F:UnityEngine.iOS.DeviceGeneration.iPhone17">
+      <summary>
+        <para>iPhone 17.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.iOS.DeviceGeneration.iPhone17Pro">
+      <summary>
+        <para>iPhone 17 Pro.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.iOS.DeviceGeneration.iPhone17ProMax">
+      <summary>
+        <para>iPhone 17 Pro Max.</para>
+      </summary>
+    </member>
     <member name="F:UnityEngine.iOS.DeviceGeneration.iPhone3G">
       <summary>
         <para>iPhone, second generation.</para>
@@ -42356,6 +42371,11 @@ Additional resources: Debug.CheckIntegrity</para>
     <member name="F:UnityEngine.iOS.DeviceGeneration.iPhone8Plus">
       <summary>
         <para>iPhone 8 Plus.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.iOS.DeviceGeneration.iPhoneAir">
+      <summary>
+        <para>iPhone Air.</para>
       </summary>
     </member>
     <member name="F:UnityEngine.iOS.DeviceGeneration.iPhoneSE1Gen">
@@ -43242,7 +43262,7 @@ JobHandle.CombineDependencies. Use dependencies to ensure that two jobs that rea
     </member>
     <member name="T:UnityEngine.JsonUtility">
       <summary>
-        <para>Utility functions for working with JSON data.</para>
+        <para>Provides functions for converting between objects and JSON data.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.JsonUtility.FromJson(System.String)">
@@ -53090,11 +53110,11 @@ Use false when you want to use the existing bounding box and reduce the CPU cost
     </member>
     <member name="M:UnityEngine.MonoBehaviour.InvokeRepeating(System.String,System.Single,System.Single)">
       <summary>
-        <para>Invokes the method methodName in time seconds, then repeatedly every repeatRate seconds.</para>
+        <para>Invokes the specified method after a specified delay, then repeatedly at the specified rate.</para>
       </summary>
       <param name="methodName">The name of a method to invoke.</param>
-      <param name="time">Start invoking after n seconds.</param>
-      <param name="repeatRate">Repeat every n seconds.</param>
+      <param name="time">Time to wait in seconds before the first invocation.</param>
+      <param name="repeatRate">Interval in seconds between method invocations.</param>
     </member>
     <member name="M:UnityEngine.MonoBehaviour.IsInvoking(System.String)">
       <summary>
@@ -55554,28 +55574,28 @@ You can yield until it continues, register an event handler with AsyncOperation.
     </member>
     <member name="M:UnityEngine.Object.Destroy(UnityEngine.Object)">
       <summary>
-        <para>Removes a GameObject, component or asset.</para>
+        <para>Removes a GameObject, component, or asset.</para>
       </summary>
       <param name="obj">The object to destroy.</param>
       <param name="t">The optional amount of time to delay before destroying the object.</param>
     </member>
     <member name="M:UnityEngine.Object.Destroy(UnityEngine.Object,System.Single)">
       <summary>
-        <para>Removes a GameObject, component or asset.</para>
+        <para>Removes a GameObject, component, or asset.</para>
       </summary>
       <param name="obj">The object to destroy.</param>
       <param name="t">The optional amount of time to delay before destroying the object.</param>
     </member>
     <member name="M:UnityEngine.Object.DestroyImmediate(UnityEngine.Object)">
       <summary>
-        <para>Destroys the object obj immediately. You are strongly recommended to use Destroy instead.</para>
+        <para>Destroys the specified object immediately. Use with caution and in Edit mode only.</para>
       </summary>
       <param name="obj">Object to be destroyed.</param>
       <param name="allowDestroyingAssets">Set to true to allow assets to be destroyed.</param>
     </member>
     <member name="M:UnityEngine.Object.DestroyImmediate(UnityEngine.Object,System.Boolean)">
       <summary>
-        <para>Destroys the object obj immediately. You are strongly recommended to use Destroy instead.</para>
+        <para>Destroys the specified object immediately. Use with caution and in Edit mode only.</para>
       </summary>
       <param name="obj">Object to be destroyed.</param>
       <param name="allowDestroyingAssets">Set to true to allow assets to be destroyed.</param>
@@ -55671,7 +55691,7 @@ You can yield until it continues, register an event handler with AsyncOperation.
         <para>Returns the first active loaded object of Type type.</para>
       </summary>
       <param name="type">The type of object to find.</param>
-      <param name="includeInactive"></param>
+      <param name="includeInactive">Whether to include components attached to inactive GameObjects. If you don't specify this parameter, this function doesn't include inactive objects in the results.</param>
       <returns>
         <para>Object The first active loaded object that matches the specified type. It returns null if no Object matches the type.</para>
       </returns>
@@ -55681,7 +55701,7 @@ You can yield until it continues, register an event handler with AsyncOperation.
         <para>Returns the first active loaded object of Type type.</para>
       </summary>
       <param name="type">The type of object to find.</param>
-      <param name="includeInactive"></param>
+      <param name="includeInactive">Whether to include components attached to inactive GameObjects. If you don't specify this parameter, this function doesn't include inactive objects in the results.</param>
       <returns>
         <para>Object The first active loaded object that matches the specified type. It returns null if no Object matches the type.</para>
       </returns>
@@ -55691,7 +55711,7 @@ You can yield until it continues, register an event handler with AsyncOperation.
         <para>Returns the first active loaded object of Type type.</para>
       </summary>
       <param name="type">The type of object to find.</param>
-      <param name="includeInactive"></param>
+      <param name="includeInactive">Whether to include components attached to inactive GameObjects. If you don't specify this parameter, this function doesn't include inactive objects in the results.</param>
       <returns>
         <para>Object The first active loaded object that matches the specified type. It returns null if no Object matches the type.</para>
       </returns>
@@ -55701,7 +55721,7 @@ You can yield until it continues, register an event handler with AsyncOperation.
         <para>Returns the first active loaded object of Type type.</para>
       </summary>
       <param name="type">The type of object to find.</param>
-      <param name="includeInactive"></param>
+      <param name="includeInactive">Whether to include components attached to inactive GameObjects. If you don't specify this parameter, this function doesn't include inactive objects in the results.</param>
       <returns>
         <para>Object The first active loaded object that matches the specified type. It returns null if no Object matches the type.</para>
       </returns>
@@ -55710,9 +55730,9 @@ You can yield until it continues, register an event handler with AsyncOperation.
       <summary>
         <para>Retrieves a list of all loaded objects of Type type.</para>
       </summary>
-      <param name="type">The type of object to find.</param>
+      <param name="type">The type of object to find. Must be a reference type derived from UnityEngine.Object.</param>
       <param name="findObjectsInactive">Whether to include components attached to inactive GameObjects. If you don't specify this parameter, this function doesn't include inactive objects in the results.</param>
-      <param name="sortMode">Whether and how to sort the returned array. Not sorting the array makes this function run significantly faster.</param>
+      <param name="sortMode">Whether and how to sort the returned array. Not sorting saves time, which can be significant if the search returns many objects.</param>
       <returns>
         <para>The array of objects found matching the type specified.</para>
       </returns>
@@ -55721,9 +55741,9 @@ You can yield until it continues, register an event handler with AsyncOperation.
       <summary>
         <para>Retrieves a list of all loaded objects of Type type.</para>
       </summary>
-      <param name="type">The type of object to find.</param>
+      <param name="type">The type of object to find. Must be a reference type derived from UnityEngine.Object.</param>
       <param name="findObjectsInactive">Whether to include components attached to inactive GameObjects. If you don't specify this parameter, this function doesn't include inactive objects in the results.</param>
-      <param name="sortMode">Whether and how to sort the returned array. Not sorting the array makes this function run significantly faster.</param>
+      <param name="sortMode">Whether and how to sort the returned array. Not sorting saves time, which can be significant if the search returns many objects.</param>
       <returns>
         <para>The array of objects found matching the type specified.</para>
       </returns>
@@ -55732,9 +55752,9 @@ You can yield until it continues, register an event handler with AsyncOperation.
       <summary>
         <para>Retrieves a list of all loaded objects of Type type.</para>
       </summary>
-      <param name="type">The type of object to find.</param>
+      <param name="type">The type of object to find. Must be a reference type derived from UnityEngine.Object.</param>
       <param name="findObjectsInactive">Whether to include components attached to inactive GameObjects. If you don't specify this parameter, this function doesn't include inactive objects in the results.</param>
-      <param name="sortMode">Whether and how to sort the returned array. Not sorting the array makes this function run significantly faster.</param>
+      <param name="sortMode">Whether and how to sort the returned array. Not sorting saves time, which can be significant if the search returns many objects.</param>
       <returns>
         <para>The array of objects found matching the type specified.</para>
       </returns>
@@ -55743,9 +55763,9 @@ You can yield until it continues, register an event handler with AsyncOperation.
       <summary>
         <para>Retrieves a list of all loaded objects of Type type.</para>
       </summary>
-      <param name="type">The type of object to find.</param>
+      <param name="type">The type of object to find. Must be a reference type derived from UnityEngine.Object.</param>
       <param name="findObjectsInactive">Whether to include components attached to inactive GameObjects. If you don't specify this parameter, this function doesn't include inactive objects in the results.</param>
-      <param name="sortMode">Whether and how to sort the returned array. Not sorting the array makes this function run significantly faster.</param>
+      <param name="sortMode">Whether and how to sort the returned array. Not sorting saves time, which can be significant if the search returns many objects.</param>
       <returns>
         <para>The array of objects found matching the type specified.</para>
       </returns>
@@ -60186,7 +60206,9 @@ Additional resources: Trails, SetTrails, GetPlaybackState.</para>
     </member>
     <member name="F:UnityEngine.ParticleSystemCullingMode.PauseAndCatchup">
       <summary>
-        <para>Pause the Particle System simulation when it is offscreen, and perform an extra simulation when the system comes back onscreen, creating the impression that it was never paused.</para>
+        <para>Pause the Particle System simulation when it is offscreen, and perform an extra simulation when the system comes back onscreen, creating the impression that it was never paused.
+                
+Use ParticleSystemCullingMode.AlwaysSimulate instead if the particle system moves, especially if the **Simulation Space** is set to **World**. Otherwise the bounds Unity uses for culling might not be accurate.</para>
       </summary>
     </member>
     <member name="T:UnityEngine.ParticleSystemCurveMode">
@@ -67215,6 +67237,11 @@ Note that there is a special case when the two overlapping colliders have physic
         <para>A native engine system that the native player loop updates.</para>
       </summary>
     </member>
+    <member name="T:UnityEngine.PlayerLoop.EarlyUpdate.TilemapRendererEarlyUpdate">
+      <summary>
+        <para>A native engine system that the native player loop updates.</para>
+      </summary>
+    </member>
     <member name="T:UnityEngine.PlayerLoop.EarlyUpdate.UnityWebRequestUpdate">
       <summary>
         <para>A native engine system that the native player loop updates.</para>
@@ -70053,13 +70080,34 @@ Returns "UnityEngine.PropertyName" in the player.</para>
       <param name="a"></param>
       <param name="b"></param>
     </member>
+    <member name="M:UnityEngine.Quaternion.Equals(System.Object)">
+      <summary>
+        <para>Performs exact binary comparison of each Quaternion component (x, y, z, w).</para>
+      </summary>
+      <param name="other">The quaternion to compare with.</param>
+      <returns>
+        <para>true if the quaternion components (x, y, z, w) are exactly equal.</para>
+      </returns>
+    </member>
+    <member name="M:UnityEngine.Quaternion.Equals(UnityEngine.Quaternion)">
+      <summary>
+        <para>Performs exact binary comparison of each Quaternion component (x, y, z, w).</para>
+      </summary>
+      <param name="other">The quaternion to compare with.</param>
+      <returns>
+        <para>true if the quaternion components (x, y, z, w) are exactly equal.</para>
+      </returns>
+    </member>
     <member name="M:UnityEngine.Quaternion.Euler(System.Single,System.Single,System.Single)">
       <summary>
-        <para>Returns a rotation that rotates z degrees around the z axis, x degrees around the x axis, and y degrees around the y axis; applied in that order.</para>
+        <para>Converts an input Euler angle rotation specified as three floats to a Quaternion.</para>
       </summary>
-      <param name="x"></param>
-      <param name="y"></param>
-      <param name="z"></param>
+      <param name="x">Rotation in degrees around the x-axis.</param>
+      <param name="y">Rotation in degrees around the y-axis.</param>
+      <param name="z">Rotation in degrees around the z-axis.</param>
+      <returns>
+        <para>The Euler angle rotation specified by the angles x,y,z converted to a Quaternion. The rotation order is ZXY.</para>
+      </returns>
     </member>
     <member name="M:UnityEngine.Quaternion.Euler(UnityEngine.Vector3)">
       <summary>
@@ -70106,15 +70154,15 @@ Returns "UnityEngine.PropertyName" in the player.</para>
       <summary>
         <para>Creates a rotation with the specified forward and upwards directions.</para>
       </summary>
-      <param name="forward">The direction to look in.</param>
-      <param name="upwards">The vector that defines in which direction up is.</param>
+      <param name="forward">The direction to look in, in world coordinates.</param>
+      <param name="upwards">The vector that defines in which direction up is, in world coordinates.</param>
     </member>
     <member name="M:UnityEngine.Quaternion.LookRotation(UnityEngine.Vector3,UnityEngine.Vector3)">
       <summary>
         <para>Creates a rotation with the specified forward and upwards directions.</para>
       </summary>
-      <param name="forward">The direction to look in.</param>
-      <param name="upwards">The vector that defines in which direction up is.</param>
+      <param name="forward">The direction to look in, in world coordinates.</param>
+      <param name="upwards">The vector that defines in which direction up is, in world coordinates.</param>
     </member>
     <member name="M:UnityEngine.Quaternion.Normalize(UnityEngine.Quaternion)">
       <summary>
@@ -70213,10 +70261,10 @@ Returns "UnityEngine.PropertyName" in the player.</para>
     </member>
     <member name="M:UnityEngine.Quaternion.ToAngleAxis(System.Single&amp;,UnityEngine.Vector3&amp;)">
       <summary>
-        <para>Converts a rotation to angle-axis representation (angles in degrees).</para>
+        <para>Converts a rotation to angle-axis representation.</para>
       </summary>
-      <param name="angle"></param>
-      <param name="axis"></param>
+      <param name="angle">The rotation angle in degrees. The value is in the range [0, 360].</param>
+      <param name="axis">The axis of rotation as a normalized Vector3. If the quaternion represents no rotation, the axis defaults to Vector3.right.</param>
     </member>
     <member name="M:UnityEngine.Quaternion.ToString">
       <summary>
@@ -71396,6 +71444,11 @@ Returns "UnityEngine.PropertyName" in the player.</para>
     <member name="P:UnityEngine.RectTransform.rect">
       <summary>
         <para>The calculated rectangle in the local space of the Transform.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.RectTransform.sendChildDimensionsChange">
+      <summary>
+        <para>Whether the RectTransform notifies components when a child RectTransform changes dimensions.</para>
       </summary>
     </member>
     <member name="P:UnityEngine.RectTransform.sizeDelta">
@@ -89802,9 +89855,29 @@ Additional resources: RenderTexture.useMipMap.</para>
         <para>Obsolete: Use RuntimePlatform.LinuxPlayer instead.</para>
       </summary>
     </member>
+    <member name="F:UnityEngine.RuntimePlatform.EmbeddedLinuxArm64">
+      <summary>
+        <para>In the player on EmbeddedLinuxArm64.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.RuntimePlatform.EmbeddedLinuxX64">
+      <summary>
+        <para>In the player on EmbeddedLinuxX64.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.RuntimePlatform.GameCoreXboxOne">
+      <summary>
+        <para>In the player on GameCoreXboxOne.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.RuntimePlatform.GameCoreXboxSeries">
+      <summary>
+        <para>In the player on GameCoreXboxSeries.</para>
+      </summary>
+    </member>
     <member name="F:UnityEngine.RuntimePlatform.IPhonePlayer">
       <summary>
-        <para>In the player on the iPhone.</para>
+        <para>In the player on iPhone or iPad devices.</para>
       </summary>
     </member>
     <member name="F:UnityEngine.RuntimePlatform.LinuxEditor">
@@ -89857,9 +89930,24 @@ Additional resources: RenderTexture.useMipMap.</para>
         <para>In the player on the Playstation 5.</para>
       </summary>
     </member>
+    <member name="F:UnityEngine.RuntimePlatform.QNXArm64">
+      <summary>
+        <para>In the player on QNXArm64.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.RuntimePlatform.QNXX64">
+      <summary>
+        <para>In the player on QNXX64.</para>
+      </summary>
+    </member>
     <member name="F:UnityEngine.RuntimePlatform.Switch">
       <summary>
         <para>In the player on Nintendo Switch.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.RuntimePlatform.Switch2">
+      <summary>
+        <para>In the player on Nintendo Switch 2.</para>
       </summary>
     </member>
     <member name="F:UnityEngine.RuntimePlatform.VisionOS">
@@ -102714,7 +102802,7 @@ To see a Texture memory value that takes inputs into account, use `desiredTextur
     </member>
     <member name="F:UnityEngine.TouchScreenKeyboardType.Social">
       <summary>
-        <para>Keyboard with symbol keys often used on social media, such as Twitter.</para>
+        <para>Keyboard with keys for social media symbols.</para>
       </summary>
     </member>
     <member name="F:UnityEngine.TouchScreenKeyboardType.URL">
@@ -123089,6 +123177,13 @@ When the style class is present, the field automatically calculates the label wi
  </para>
       </summary>
     </member>
+    <member name="M:UnityEngine.UIElements.TextElement.MarkDirtyText">
+      <summary>
+        <para>
+ Marks that the TextElement forces a layout and repaint.
+ </para>
+      </summary>
+    </member>
     <member name="M:UnityEngine.UIElements.TextElement.MeasureTextSize(System.String,System.Single,UnityEngine.UIElements.VisualElement/MeasureMode,System.Single,UnityEngine.UIElements.VisualElement/MeasureMode)">
       <summary>
         <para>
@@ -123659,6 +123754,13 @@ When the style class is present, the field automatically calculates the label wi
       <param name="delta">A vector used to compute the value change.</param>
       <param name="speed">A multiplier for the value change.</param>
       <param name="startValue">The start value.</param>
+    </member>
+    <member name="M:UnityEngine.UIElements.TextValueField_1.ClearValue">
+      <summary>
+        <para>
+ Clears the input field value, reverting to the default state. Placeholder text will be shown if it is set.
+ </para>
+      </summary>
     </member>
     <member name="M:UnityEngine.UIElements.TextValueField_1.SetValueWithoutNotify(TValueType)">
       <summary>
@@ -126264,6 +126366,15 @@ When the style class is present, the field automatically calculates the label wi
  </para>
       </summary>
       <param name="uxmlName">Provides a custom name for the element.</param>
+    </member>
+    <member name="M:UnityEngine.UIElements.UxmlElementAttribute.#ctor(System.String,System.Type[])">
+      <summary>
+        <para>
+ Declares a custom control with a custom element name and a list of supported child types.
+ </para>
+      </summary>
+      <param name="uxmlName">The name to use for the element in UXML, such as `my-custom-element`.</param>
+      <param name="supportedTypes">An array of supported child element types. This can be passed as individual &lt;c&gt;Type&lt;/c&gt; arguments.</param>
     </member>
     <member name="T:UnityEngine.UIElements.UxmlEnumAttributeDescription`1">
       <summary>
@@ -140916,7 +141027,7 @@ Additional resources: Debug.IsValidationLevelEnabled</para>
     </member>
     <member name="P:UnityEngine.Vector3.normalized">
       <summary>
-        <para>Returns a normalized vector based on the current vector. The normalized vector has a magnitude of 1 and is in the same direction as the current vector. Returns a zero vector If the current vector is too small to be normalized.</para>
+        <para>The unit vector in the direction of the current vector. </para>
       </summary>
     </member>
     <member name="P:UnityEngine.Vector3.one">
@@ -141025,22 +141136,25 @@ Additional resources: Debug.IsValidationLevelEnabled</para>
     </member>
     <member name="M:UnityEngine.Vector3.Lerp(UnityEngine.Vector3,UnityEngine.Vector3,System.Single)">
       <summary>
-        <para>Linearly interpolates between two points.</para>
+        <para>Interpolates linearly between two points.</para>
       </summary>
-      <param name="a">Start value, returned when t = 0.</param>
-      <param name="b">End value, returned when t = 1.</param>
-      <param name="t">Value used to interpolate between a and b.</param>
+      <param name="a">Start value. This value is returned when t = 0.</param>
+      <param name="b">End value. This value is returned when t = 1.</param>
+      <param name="t">Value used to interpolate between a and b. Values greater than one are clamped to 1. Values less than zero are clamped to 0.</param>
       <returns>
-        <para>Interpolated value, equals to a + (b - a) * t.</para>
+        <para>Interpolated value. This value always lies on a line between points a and b.</para>
       </returns>
     </member>
     <member name="M:UnityEngine.Vector3.LerpUnclamped(UnityEngine.Vector3,UnityEngine.Vector3,System.Single)">
       <summary>
-        <para>Linearly interpolates between two vectors.</para>
+        <para>Interpolates linearly between two vectors, allowing extrapolation beyond the end points.</para>
       </summary>
-      <param name="a"></param>
-      <param name="b"></param>
-      <param name="t"></param>
+      <param name="a">Start value. This value is returned when t = 0.</param>
+      <param name="b">End value. This value is returned when t = 1.</param>
+      <param name="t">Value used to interpolate between or beyond a and b.</param>
+      <returns>
+        <para>Interpolated value. This value always lies on a line that passes through points a and b.</para>
+      </returns>
     </member>
     <member name="M:UnityEngine.Vector3.Max(UnityEngine.Vector3,UnityEngine.Vector3)">
       <summary>
@@ -141058,7 +141172,7 @@ Additional resources: Debug.IsValidationLevelEnabled</para>
     </member>
     <member name="M:UnityEngine.Vector3.MoveTowards(UnityEngine.Vector3,UnityEngine.Vector3,System.Single)">
       <summary>
-        <para>Calculate a position between the points specified by current and target, moving no farther than the distance specified by maxDistanceDelta.</para>
+        <para>Moves vector incrementally towards a target point.</para>
       </summary>
       <param name="current">The position to move from.</param>
       <param name="target">The position to move towards.</param>
@@ -141069,12 +141183,12 @@ Additional resources: Debug.IsValidationLevelEnabled</para>
     </member>
     <member name="M:UnityEngine.Vector3.Normalize">
       <summary>
-        <para>Makes this vector have a magnitude of 1.</para>
+        <para>Normalizes the magnitude of the current vector to 1 while maintaining the direction.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.Vector3.Normalize(UnityEngine.Vector3)">
       <summary>
-        <para>Returns a normalized vector based on the given vector. The normalized vector has a magnitude of 1 and is in the same direction as the given vector. Returns a zero vector If the given vector is too small to be normalized.</para>
+        <para>Obtains the normalized version of an input vector.</para>
       </summary>
       <param name="value">The vector to be normalized.</param>
       <returns>
@@ -141155,8 +141269,11 @@ Additional resources: Debug.IsValidationLevelEnabled</para>
       <summary>
         <para>Projects a vector onto another vector.</para>
       </summary>
-      <param name="vector"></param>
-      <param name="onNormal"></param>
+      <param name="vector">The vector to project.</param>
+      <param name="onNormal">The vector to project onto. This vector doesn't need to be normalized.</param>
+      <returns>
+        <para>The vector that results from the projection of vector. This vector points in the same direction as onNormal.</para>
+      </returns>
     </member>
     <member name="M:UnityEngine.Vector3.ProjectOnPlane(UnityEngine.Vector3,UnityEngine.Vector3)">
       <summary>
@@ -141165,15 +141282,15 @@ Additional resources: Debug.IsValidationLevelEnabled</para>
       <param name="vector">The vector to project on the plane.</param>
       <param name="planeNormal">The normal which defines the plane to project on.</param>
       <returns>
-        <para>The orthogonal projection of vector on the plane.</para>
+        <para>The vector that results from projection of vector on the plane.</para>
       </returns>
     </member>
     <member name="M:UnityEngine.Vector3.Reflect(UnityEngine.Vector3,UnityEngine.Vector3)">
       <summary>
-        <para>Reflects a vector off the plane defined by a normal.</para>
+        <para>Reflects a vector off the plane defined by a normal vector.</para>
       </summary>
-      <param name="inDirection">The direction vector towards the plane.</param>
-      <param name="inNormal">The normal vector that defines the plane.</param>
+      <param name="inDirection">The vector to be reflected in the plane.</param>
+      <param name="inNormal">The normal vector that defines the plane of reflection.</param>
     </member>
     <member name="M:UnityEngine.Vector3.RotateTowards(UnityEngine.Vector3,UnityEngine.Vector3,System.Single,System.Single)">
       <summary>
@@ -141210,11 +141327,11 @@ Additional resources: Debug.IsValidationLevelEnabled</para>
     </member>
     <member name="M:UnityEngine.Vector3.SignedAngle(UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Vector3)">
       <summary>
-        <para>Calculates the signed angle between vectors from and to in relation to axis.</para>
+        <para>Calculates the signed angle between two vectors, using a third vector to determine the sign.</para>
       </summary>
       <param name="from">The vector from which the angular difference is measured.</param>
       <param name="to">The vector to which the angular difference is measured.</param>
-      <param name="axis">A vector around which the other vectors are rotated.</param>
+      <param name="axis">The contextual direction for the calculation. </param>
       <returns>
         <para>Returns the signed angle between from and to in degrees.</para>
       </returns>
@@ -141239,34 +141356,34 @@ Additional resources: Debug.IsValidationLevelEnabled</para>
       <summary>
         <para>Gradually changes a vector towards a desired goal over time.</para>
       </summary>
-      <param name="current">The current position.</param>
-      <param name="target">The position we are trying to reach.</param>
-      <param name="currentVelocity">The current velocity, this value is modified by the function every time you call it.</param>
+      <param name="current">The initial position.</param>
+      <param name="target">The position to move towards.</param>
+      <param name="currentVelocity">The initial velocity. This value is modified by the function each time it runs in the Update function. Pass this parameter as a reference value. </param>
       <param name="smoothTime">Approximately the time it will take to reach the target. A smaller value will reach the target faster.</param>
-      <param name="maxSpeed">Optionally allows you to clamp the maximum speed.</param>
-      <param name="deltaTime">The time since the last call to this function. By default Time.deltaTime.</param>
+      <param name="maxSpeed">The maximum speed to reach in the motion. By default, there is no maximum speed. </param>
+      <param name="deltaTime">The time between calls to this function. The default value is Time.deltaTime, such that SmoothDamp is called once per frame.</param>
     </member>
     <member name="M:UnityEngine.Vector3.SmoothDamp(UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Vector3&amp;,System.Single,System.Single)">
       <summary>
         <para>Gradually changes a vector towards a desired goal over time.</para>
       </summary>
-      <param name="current">The current position.</param>
-      <param name="target">The position we are trying to reach.</param>
-      <param name="currentVelocity">The current velocity, this value is modified by the function every time you call it.</param>
+      <param name="current">The initial position.</param>
+      <param name="target">The position to move towards.</param>
+      <param name="currentVelocity">The initial velocity. This value is modified by the function each time it runs in the Update function. Pass this parameter as a reference value. </param>
       <param name="smoothTime">Approximately the time it will take to reach the target. A smaller value will reach the target faster.</param>
-      <param name="maxSpeed">Optionally allows you to clamp the maximum speed.</param>
-      <param name="deltaTime">The time since the last call to this function. By default Time.deltaTime.</param>
+      <param name="maxSpeed">The maximum speed to reach in the motion. By default, there is no maximum speed. </param>
+      <param name="deltaTime">The time between calls to this function. The default value is Time.deltaTime, such that SmoothDamp is called once per frame.</param>
     </member>
     <member name="M:UnityEngine.Vector3.SmoothDamp(UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Vector3&amp;,System.Single,System.Single,System.Single)">
       <summary>
         <para>Gradually changes a vector towards a desired goal over time.</para>
       </summary>
-      <param name="current">The current position.</param>
-      <param name="target">The position we are trying to reach.</param>
-      <param name="currentVelocity">The current velocity, this value is modified by the function every time you call it.</param>
+      <param name="current">The initial position.</param>
+      <param name="target">The position to move towards.</param>
+      <param name="currentVelocity">The initial velocity. This value is modified by the function each time it runs in the Update function. Pass this parameter as a reference value. </param>
       <param name="smoothTime">Approximately the time it will take to reach the target. A smaller value will reach the target faster.</param>
-      <param name="maxSpeed">Optionally allows you to clamp the maximum speed.</param>
-      <param name="deltaTime">The time since the last call to this function. By default Time.deltaTime.</param>
+      <param name="maxSpeed">The maximum speed to reach in the motion. By default, there is no maximum speed. </param>
+      <param name="deltaTime">The time between calls to this function. The default value is Time.deltaTime, such that SmoothDamp is called once per frame.</param>
     </member>
     <member name="P:UnityEngine.Vector3.this">
       <summary>
@@ -141301,7 +141418,7 @@ Additional resources: Debug.IsValidationLevelEnabled</para>
     </member>
     <member name="P:UnityEngine.Vector3Int.back">
       <summary>
-        <para>Shorthand for writing Vector3Int(0, 0, -1).</para>
+        <para>The unit vector in the negative z direction</para>
       </summary>
     </member>
     <member name="P:UnityEngine.Vector3Int.down">
@@ -141407,9 +141524,9 @@ Additional resources: Debug.IsValidationLevelEnabled</para>
     </member>
     <member name="?:UnityEngine.Vector3Int.explop_Vector2Int(Vector3Int)(UnityEngine.Vector3Int)">
       <summary>
-        <para>Converts a Vector3Int to a Vector2Int.</para>
+        <para>Converts an integer three-vector into an integer two-vector.</para>
       </summary>
-      <param name="v">The Vector3Int to convert to a Vector2Int.</param>
+      <param name="v"></param>
     </member>
     <member name="M:UnityEngine.Vector3Int.FloorToInt(UnityEngine.Vector3)">
       <summary>
@@ -141491,8 +141608,11 @@ Additional resources: Debug.IsValidationLevelEnabled</para>
       <summary>
         <para>Adds two vectors.</para>
       </summary>
-      <param name="a"></param>
-      <param name="b"></param>
+      <param name="a">The first vector to add.</param>
+      <param name="b">The second vector to add.</param>
+      <returns>
+        <para>The resulting vector formed from component-wise addition of a and b.</para>
+      </returns>
     </member>
     <member name="M:UnityEngine.Vector3Int.RoundToInt(UnityEngine.Vector3)">
       <summary>

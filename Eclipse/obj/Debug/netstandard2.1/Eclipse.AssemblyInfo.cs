@@ -16,7 +16,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyDescriptionAttribute("Service-based core Unity Engine extension, which work as a basis for your custom " +
     "code.\r\nNatively supports managed C# modding with custom assembly loader.")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0df5458ef91d54952700225f89d5593c0959576d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f96b4f28232c16d71cd1b5eb0762f2ba473d9ff1")]
 [assembly: System.Reflection.AssemblyProductAttribute("Eclipse")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Eclipse")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
