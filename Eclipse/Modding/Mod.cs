@@ -14,6 +14,7 @@
 /// 
 /// ]]>
 
+using Cysharp.Threading.Tasks;
 using System;
 
 namespace Eclipse.Modding
@@ -137,49 +138,59 @@ namespace Eclipse.Modding
         /// .                                               Implementations
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        void IEngineModDirectAccess.EngineInvokeInitializing()
+        UniTask IEngineModDirectAccess.EngineInvokeInitializing()
         {
             if ((m_SkippedCallbacks & IEngineModDirectAccess.Callback.Initializing) == IEngineModDirectAccess.Callback.None)
             {
                 m_SkippedCallbacks |= IEngineModDirectAccess.Callback.Initializing;
-                Initializing();
+                return Initializing();
             }
+
+            return UniTask.CompletedTask;
         }
 
-        void IEngineModDirectAccess.EngineInvokeInitialized()
+        UniTask IEngineModDirectAccess.EngineInvokeInitialized()
         {
             if ((m_SkippedCallbacks & IEngineModDirectAccess.Callback.Initialized) == IEngineModDirectAccess.Callback.None)
             {
                 m_SkippedCallbacks |= IEngineModDirectAccess.Callback.Initialized;
-                Initialized();
+                return Initialized();
             }
+
+            return UniTask.CompletedTask;
         }
 
-        void IEngineModDirectAccess.EngineInvokeGameLoaded()
+        UniTask IEngineModDirectAccess.EngineInvokeGameLoaded()
         {
             if ((m_SkippedCallbacks & IEngineModDirectAccess.Callback.GameLoaded) == IEngineModDirectAccess.Callback.None)
             {
                 m_SkippedCallbacks |= IEngineModDirectAccess.Callback.GameLoaded;
-                GameLoaded();
+                return EngineLoaded();
             }
+
+            return UniTask.CompletedTask;
         }
 
-        void IEngineModDirectAccess.EngineInvokeUnloading()
+        UniTask IEngineModDirectAccess.EngineInvokeUnloading()
         {
             if ((m_SkippedCallbacks & IEngineModDirectAccess.Callback.Unloading) == IEngineModDirectAccess.Callback.None)
             {
                 m_SkippedCallbacks |= IEngineModDirectAccess.Callback.Unloading;
-                Unloading();
+                return Unloading();
             }
+
+            return UniTask.CompletedTask;
         }
 
-        void IEngineModDirectAccess.EngineInvokeUnloaded()
+        UniTask IEngineModDirectAccess.EngineInvokeUnloaded()
         {
             if ((m_SkippedCallbacks & IEngineModDirectAccess.Callback.Unloaded) == IEngineModDirectAccess.Callback.None)
             {
                 m_SkippedCallbacks = IEngineModDirectAccess.Callback.Unloading | IEngineModDirectAccess.Callback.Unloaded;
-                Unloaded();
+                return Unloaded();
             }
+
+            return UniTask.CompletedTask;
         }
 
 
@@ -206,7 +217,7 @@ namespace Eclipse.Modding
         /// <remarks>
         /// Other services might not be available at this point.
         /// </remarks>
-        protected virtual void Initializing() { }
+        protected virtual UniTask Initializing() => UniTask.CompletedTask;
 
         /// <summary>
         /// Called synchronously when all mod data and services were loaded.
@@ -214,12 +225,12 @@ namespace Eclipse.Modding
         /// <remarks>
         /// Services from next mods in a queue will not be accessible at this point.
         /// </remarks>
-        protected virtual void Initialized() { }
+        protected virtual UniTask Initialized() => UniTask.CompletedTask;
 
         /// <summary>
         /// Called synchronously when all mods in the entire game was successfully initialized.
         /// </summary>
-        protected virtual void GameLoaded() { }
+        protected virtual UniTask EngineLoaded() => UniTask.CompletedTask;
 
         /// <summary>
         /// Called synchronously when mod and services is right about to be unloaded. 
@@ -227,7 +238,7 @@ namespace Eclipse.Modding
         /// <remarks>
         /// Unloading order is reversed to the loading order. Do not expect any service to be available at this point.
         /// </remarks>
-        protected virtual void Unloading() { }
+        protected virtual UniTask Unloading() => UniTask.CompletedTask;
 
         /// <summary>
         /// Called synchronously when all mod data and services were unloaded.
@@ -235,7 +246,7 @@ namespace Eclipse.Modding
         /// <remarks>
         /// Unloading order is reversed to the loading order. Do not expect any service to be available at this point.
         /// </remarks>
-        protected virtual void Unloaded() { }
+        protected virtual UniTask Unloaded() => UniTask.CompletedTask;
     }
 
     // TODO: Review important callbacks and when they are called.
@@ -258,7 +269,7 @@ namespace Eclipse.Modding
             /// <summary>
             /// No callbacks were fired yet.
             /// </summary>
-            None = 0b000_0000,
+            None = 0b0000_0000,
 
             /// <summary>
             /// Indicates that <see cref="EngineInvokeInitializing"/> was fired.
@@ -286,19 +297,20 @@ namespace Eclipse.Modding
             Unloaded = 0b0001_0000,
         }
 
+        // Methods don't have cancellation tokens, as even if you stop the engine mid-loading - it should only quit after service loaded/unloaded.
         /// <inheritdoc cref="Mod.Initializing"/>
-        void EngineInvokeInitializing();
+        UniTask EngineInvokeInitializing();
 
         /// <inheritdoc cref="Mod.Initialized"/>
-        void EngineInvokeInitialized();
+        UniTask EngineInvokeInitialized();
 
-        /// <inheritdoc cref="Mod.GameLoaded"/>
-        void EngineInvokeGameLoaded();
+        /// <inheritdoc cref="Mod.EngineLoaded"/>
+        UniTask EngineInvokeGameLoaded();
 
         /// <inheritdoc cref="Mod.Unloading"/>
-        void EngineInvokeUnloading();
+        UniTask EngineInvokeUnloading();
 
         /// <inheritdoc cref="Mod.Unloaded"/>
-        void EngineInvokeUnloaded();
+        UniTask EngineInvokeUnloaded();
     }
 }

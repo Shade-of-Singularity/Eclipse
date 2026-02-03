@@ -20,7 +20,7 @@ using UnityEngine;
 namespace Eclipse
 {
     /// <summary>
-    /// Provides fast, type-safe access to engine-level services registered during initialization.
+    /// Provides fast, type-safe access to game services registered during initialization.
     /// <para>
     /// Can be used in <see cref="EngineService.Initialize"/> method,
     /// but accessing services before their <see cref="ServiceAttribute.InitializationOrder"/> happens will throw.
@@ -31,7 +31,7 @@ namespace Eclipse
     /// Use '<see cref="Engine.TryGet{T}(out T)"/>' or '<see cref="Engine.GetOrDefault{T}(T)"/>' if you need to handle missing services more gracefully.
     /// </remarks>
     /// <typeparam name="T">The type of the service to retrieve. Must inherit from <see cref="EngineService"/>.</typeparam>
-    public static class EngineService<T> where T : EngineService
+    public static class EngineService<T> where T : EngineService // TODO: Replace with IEngineService instead.
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -39,15 +39,53 @@ namespace Eclipse
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Cached instance of the requested service. Throws if the service was not registered.
+        /// Cached instance of the requested service. Null is service is yet to be registered, if is not overwritten by another mod.
         /// </summary>
         /// <remarks>
         /// Use '<see cref="Engine.TryGet{T}(out T)"/>' or '<see cref="Engine.GetOrDefault{T}(T)"/>' if you need to handle missing services more gracefully.
         /// </remarks>
         /// Note: Do NOT replace with <see cref="Engine.GetOrDefault{T}(T)"/>!
         /// This is a readonly field! It won't update after first <see cref="Engine.GetOrDefault{T}(T)"/> usage!
-        public static readonly T Instance = Engine.GetOrThrow<T>();
+        public static T Instance => m_Instance!;
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                               Static Fields
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        private static T? m_Instance;
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                                Constructors
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        static EngineService()
+        {
+            EngineServices.OnServicesUnloaded += () => m_Instance = null;
+            EngineServices.OnServicesInitializing += () => m_Instance = EngineServices.Get<T>();
+            m_Instance = EngineServices.Get<T>();
+        }
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                               Static Methods
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        public static bool Exist() => !(m_Instance is null);
     }
+
+
+
 
     /// <summary>
     /// An Eclipse service to be initialized.
@@ -55,6 +93,7 @@ namespace Eclipse
     /// <remarks>
     /// Add an <see cref="ServiceAttribute"/> to your service class to make it a valid service.
     /// </remarks>
+    /// TODO: Add IEngineService instead.
     public abstract class EngineService : IEngineServiceDirectAccess
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -62,11 +101,6 @@ namespace Eclipse
         /// .                                              Public Properties
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        // Delegates:
-
-        // Events:
-
-        // Properties:
         /// <summary>
         /// Whether service was initialized by engine or not.
         /// </summary>

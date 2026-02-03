@@ -108,17 +108,7 @@ namespace Eclipse
             }
         }
 
-        // Properties:
-        /// <summary>
-        /// Collection of all services.
-        /// </summary>
-        /// <remarks>
-        /// All non-overwritten services are constructed (from .ctor) before <see cref="EngineService.Initialize"/> is run.
-        /// So it is safe to reference this collection from <see cref="EngineService.Initialize"/>.
-        /// (However, in this case, some services might not be initialized yet.)
-        /// </remarks>
-        public static IReadOnlyCollection<EngineService> Services => m_Services.Values;
-
+        // Properties
         /// <summary>
         /// Status of the engine.
         /// </summary>
@@ -239,126 +229,8 @@ namespace Eclipse
         private static volatile Action? m_OnEngineUnloaded;
 
         // Local Fields:
-        private static readonly Dictionary<Type, EngineService> m_Services = new Dictionary<Type, EngineService>();
         private static readonly AssemblyStorage m_Assemblies = new AssemblyStorage(64);
         private static volatile bool m_AcceptsAssemblies = true;
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                              Service Retrieval
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <summary>
-        /// Checks whether <see cref="Eclipse"/> <see cref="Engine"/> has a specific <see cref="EngineService"/> initialized at this point.
-        /// </summary>
-        /// <returns><c>true</c> if has target <see cref="EngineService"/>, <c>false</c> otherwise.</returns>
-        public static bool Has<T>() where T : EngineService => m_Services.ContainsKey(typeof(T));
-
-        /// <summary>
-        /// Method is extremely optimized for a repeated usage. Feel free to use it very frequently.
-        /// <para>
-        /// However, using generic <see cref="EngineService{T}"/> is even better (by like x20 times).
-        /// </para>
-        /// <para>
-        /// Can be used in <see cref="EngineService.Initialize"/> method,
-        /// but service might not be initialized depending on <see cref="ServiceAttribute.InitializationOrder"/>.
-        /// </para>
-        /// </summary>
-        /// <remarks>
-        /// Will throw if requested <see cref="EngineService"/> was not created on initialization.
-        /// Use '<see cref="TryGet{T}(out T)"/>' or '<see cref="GetOrDefault{T}(T)"/>' if you need to handle missing services more gracefully.
-        /// </remarks>
-        public static T GetOrThrow<T>() where T : EngineService
-        {
-            if (m_Services.TryGetValue(typeof(T), out EngineService? service))
-            {
-                if (service is T result)
-                {
-                    return result;
-                }
-                else
-                {
-                    throw new Exception($"{LogPrefix} Service type miss-match: Found service '{service.GetType().Name}' but requested '{typeof(T).Name}'");
-                }
-            }
-            else
-            {
-                throw new Exception($"{LogPrefix} Service of type '{typeof(T).Name}' was not provided during initialization and cannot be found.");
-            }
-        }
-
-        /// <summary>
-        /// Returns a service, associated with a given type (<typeparamref name="T"/>), or default value (<paramref name="def"/>).
-        /// </summary>
-        /// <typeparam name="T">Type of the service to retrieve.</typeparam>
-        /// <param name="def">Default value to return.</param>
-        /// <returns>Either a requested service, or its version, overwritten by another mod.</returns>
-        public static T GetOrDefault<T>(T def = default!) where T : EngineService
-        {
-            if (m_Services.TryGetValue(typeof(T), out EngineService? service))
-            {
-                if (service is T result)
-                {
-                    return result;
-                }
-                else
-                {
-                    return def;
-                }
-            }
-            else
-            {
-                return def;
-            }
-        }
-
-        /// <summary>
-        /// Returns a service, associated with a given type (<typeparamref name="T"/>), or default value provided by (<paramref name="def"/>).
-        /// </summary>
-        /// <typeparam name="T">Type of the service to retrieve.</typeparam>
-        /// <param name="def">Default value provider to use.</param>
-        /// <returns>Either a requested service, or its version, overwritten by another mod.</returns>
-        public static T GetOrDefault<T>(Func<T> def) where T : EngineService
-        {
-            if (m_Services.TryGetValue(typeof(T), out EngineService? service))
-            {
-                if (service is T result)
-                {
-                    return result;
-                }
-                else
-                {
-                    return def();
-                }
-            }
-            else
-            {
-                return def();
-            }
-        }
-
-        /// <summary>
-        /// Tries to retrieve <see cref="EngineService"/> associated with given type (<typeparamref name="T"/>).
-        /// </summary>
-        /// <typeparam name="T">Target type of <see cref="EngineService"/> to retrieve.</typeparam>
-        /// <param name="service">Retrieved <see cref="EngineService"/> or null.</param>
-        /// <returns>'<c>true</c>' if service was found. Otherwise '<c>false</c>'.</returns>
-        public static bool TryGet<T>([NotNullWhen(true)] out T? service) where T : EngineService
-        {
-            if (m_Services.TryGetValue(typeof(T), out EngineService? finding) && finding is T result)
-            {
-                service = result;
-                return true;
-            }
-            else
-            {
-                service = default;
-                return false;
-            }
-        }
 
 
 
@@ -464,13 +336,15 @@ namespace Eclipse
                 return;
             }
 
-            Status = EngineStatus.Unloading;
-            foreach (var service in m_Services.Values)
+            using (EngineServices.Unsafe.Unload())
             {
-                ((IEngineServiceDirectAccess)service).EngineInvokeUnloading();
+                Status = EngineStatus.Unloading;
+                foreach (var service in EngineServices.Services)
+                {
+                    ((IEngineServiceDirectAccess)service).EngineInvokeUnloading();
+                }
             }
 
-            m_Services.Clear();
             m_Assemblies.Clear();
             m_AcceptsAssemblies = true;
             await UniTask.CompletedTask;
@@ -616,8 +490,6 @@ namespace Eclipse
 #if UNITY_WEBGL
                 Debug.LogWarning($"{LogName} Threaded initialization runs synchronously on WebGL. Long initialization time is to be expected.");
 #endif
-                m_Services.Clear();
-
                 // TODO: Both CPU and memory optimize the initialization.
                 List<ServiceSummary>? services = new List<ServiceSummary>();
 
