@@ -18,7 +18,13 @@ using System;
 /// ]]>
 namespace Eclipse.Modding
 {
-    public static class ModManager
+    /// <summary>
+    /// Stores information about all loaded-in mods.
+    /// </summary>
+    /// <remarks>
+    /// (TODO) Also provides a way to dynamically load-in new mods. Beware that mod unloading is not supported at the moment.
+    /// </remarks>
+    public static class Mods
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
