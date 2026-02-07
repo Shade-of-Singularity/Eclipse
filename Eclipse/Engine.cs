@@ -15,16 +15,13 @@
 /// ]]>
 
 using Cysharp.Threading.Tasks;
-using Eclipse.Configuration;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace Eclipse
 {
@@ -818,100 +815,6 @@ namespace Eclipse
                 this.attribute = attribute;
                 this.method = method;
             }
-        }
-
-        /// <summary>
-        /// Stores assemblies while efficiently checking for duplicates.
-        /// </summary>
-        /// <remarks>
-        /// Might be removed in future updates.
-        /// </remarks>
-        private sealed class AssemblyStorage : IEnumerable<Assembly>
-        {
-            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            /// .
-            /// .                                              Public Properties
-            /// .
-            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            public Assembly this[int index]
-            {
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get => List[index];
-            }
-
-
-
-
-            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            /// .
-            /// .                                                Public Fields
-            /// .
-            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            public readonly List<Assembly> List;
-            public readonly HashSet<Assembly> Set;
-
-
-
-
-            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            /// .
-            /// .                                                Constructors
-            /// .
-            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            public AssemblyStorage() : this(64) { }
-            public AssemblyStorage(int capacity)
-            {
-                List = new List<Assembly>(capacity);
-                Set = new HashSet<Assembly>(capacity);
-            }
-
-
-
-
-
-            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            /// .
-            /// .                                               Public Methods
-            /// .
-            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            public bool Register(Assembly assembly)
-            {
-                if (Set.Add(assembly))
-                {
-                    List.Add(assembly);
-                    return true;
-                }
-
-                return false;
-            }
-
-            public bool Remove(Assembly assembly)
-            {
-                if (Set.Remove(assembly))
-                {
-                    List.Remove(assembly);
-                    return true;
-                }
-
-                return false;
-            }
-
-            public void Clear()
-            {
-                Set.Clear();
-                List.Clear();
-            }
-
-
-
-
-            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            /// .
-            /// .                                              Implementations
-            /// .
-            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            public IEnumerator<Assembly> GetEnumerator() => List.GetEnumerator();
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }
