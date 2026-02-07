@@ -1,9 +1,4 @@
-﻿
-using System;
-using System.Runtime.CompilerServices;
-using UnityEngine;
-
-/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
+﻿/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
 /// 
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -18,6 +13,9 @@ using UnityEngine;
 /// limitations under the License.
 /// 
 /// ]]>
+
+using System;
+using System.Runtime.CompilerServices;
 
 namespace Eclipse.Serialization
 {
@@ -136,6 +134,7 @@ namespace Eclipse.Serialization
         /// Stores variables in chunks.
         /// Uses excess bit you get with Base64 to store if next chunk exist or not.
         /// </summary>
+        /// TODO: Actually reduce Base64 space usage based on a size of variable.
         public static string Pack(ulong value)
         {
             // Root defines header.

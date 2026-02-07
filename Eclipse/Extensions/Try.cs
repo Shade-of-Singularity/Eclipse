@@ -15,24 +15,32 @@
 /// ]]>
 
 using System;
-using UnityEngine;
 
 namespace Eclipse.Extensions
 {
+    /// <summary>
+    /// Provides extensions to call methods within try block.
+    /// </summary>
     public static class Try
     {
-        public static void WithLog(Action action) => Execute(action, Debug.LogException);
-        public static void Execute(Action action, Action<Exception>? callback = null)
+        /// <summary>
+        /// Invokes given <paramref name="action"/> with default logger <see cref="Logger.LogException(Exception)"/>.
+        /// </summary>
+        public static void WithLog(Action? action) => Invoke(action, Logger.LogException);
+
+        /// <summary>
+        /// Invokes given <paramref name="action"/> with using <paramref name="callback"/> handler for exception handling.
+        /// </summary>
+        public static void Invoke(Action? action, Action<Exception>? callback)
         {
             try
             {
-                action();
+                action?.Invoke();
             }
             catch (Exception ex)
             {
                 callback?.Invoke(ex);
             }
         }
-
     }
 }

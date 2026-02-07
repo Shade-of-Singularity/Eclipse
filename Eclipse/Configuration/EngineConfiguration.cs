@@ -20,13 +20,14 @@ using UnityEngine;
 namespace Eclipse.Configuration
 {
     /// <summary>
-    /// Fast, type-safe access to internal configuration classes. Will throw exception if accessed before <see cref="ConfigurationService"/> is initialized.
+    /// Fast, type-safe access to internal configuration classes. Will throw exception if accessed before <see cref="DefaultConfigurationService"/> is initialized.
     /// </summary>
     /// <remarks>
     /// <seealso cref="ImbeddedConfiguration"/> classes provide readonly configurations required to start-up the engine at all.
     /// Mods cannot use them.
     /// </remarks>
     /// <typeparam name="T">The type of the configuration to retrieve. Must inherit from <see cref="EngineConfiguration"/>.</typeparam>
+    /// TODO: Replace with system, similar to <see cref="IService{T}.Instance"/>.
     public static class EngineConfiguration<T> where T : EngineConfiguration
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -43,8 +44,14 @@ namespace Eclipse.Configuration
             {
                 if (m_Instance == null)
                 {
-                    m_Instance = EngineService<ConfigurationService>.Instance.GetOrNew<T>();
-                    Engine.OnEngineReset += () => m_Instance = null;
+                    m_Instance = IConfigurationService.Instance.GetOrNew<T>();
+                    Engine.OnEngineTerminated += ResetInstance;
+
+                    static void ResetInstance()
+                    {
+                        m_Instance = null;
+                        Engine.OnEngineTerminated -= ResetInstance;
+                    }
                 }
 
                 return m_Instance;

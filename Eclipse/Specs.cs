@@ -1,6 +1,20 @@
-﻿using Eclipse.Configuration;
-using Eclipse.Extensions;
-using JetBrains.Annotations;
+﻿/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
+/// 
+/// Licensed under the Apache License, Version 2.0 (the "License");
+/// you may not use this file except in compliance with the License.
+/// You may obtain a copy of the License at
+/// 
+///         http://www.apache.org/licenses/LICENSE-2.0
+/// 
+/// Unless required by applicable law or agreed to in writing, software
+/// distributed under the License is distributed on an "AS IS" BASIS,
+/// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+/// See the License for the specific language governing permissions and
+/// limitations under the License.
+/// 
+/// ]]>
+
+using Eclipse.Configuration;
 using System;
 using System.IO;
 using UnityEngine;
@@ -53,7 +67,7 @@ namespace Eclipse
         /// <summary>
         /// Information about CPU caches.
         /// <para>
-        /// Note: only access this section after <see cref="ConfigurationService"/> has initialized.
+        /// Note: only access this section after <see cref="DefaultConfigurationService"/> has initialized.
         /// </para>
         /// </summary>
         /// <remarks>
@@ -123,7 +137,8 @@ namespace Eclipse
             /// .
             /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             /// <summary>
-            /// Called whenever <see cref="FinalL1Cache"/>, <see cref="FinalL2Cache"/>, <see cref="FinalL3Cache"/>) or <see cref="PerformOptimizations"/>
+            /// Called whenever <see cref="FinalL1Cache"/>, <see cref="FinalL2Cache"/>,
+            /// <see cref="FinalL3Cache"/>) or <see cref="PerformOptimizations"/>
             /// was changed and changes were applied.
             /// </summary>
             public static event Action? OnCacheSpecsChanged;
@@ -172,7 +187,7 @@ namespace Eclipse
                     if (Configure.SetValue(UseCacheOptimizationsKey, ref m_UseCacheOptimizations, value))
                     {
                         PerformOptimizations = IsSettingsAllowOptimizations();
-                        ConfigurationService.Delay(ref m_BlockCallbacks, InvokeSpecsChangedCallback);
+                        DefaultConfigurationService.Delay(ref m_BlockCallbacks, InvokeSpecsChangedCallback);
                     }
                 }
             }
@@ -196,7 +211,7 @@ namespace Eclipse
                         FinalL3Cache = (uint)Math.Ceiling(m_L3Cache * value);
                         TotalCacheSize = FinalL1Cache + FinalL2Cache + FinalL3Cache;
                         PerformOptimizations = IsSettingsAllowOptimizations();
-                        ConfigurationService.Delay(ref m_BlockCallbacks, InvokeSpecsChangedCallback);
+                        DefaultConfigurationService.Delay(ref m_BlockCallbacks, InvokeSpecsChangedCallback);
                     }
                 }
             }
@@ -214,7 +229,7 @@ namespace Eclipse
                         FinalL1Cache = (uint)Math.Ceiling(m_L1Cache * m_CacheUtilization);
                         TotalCacheSize = FinalL1Cache + FinalL2Cache + FinalL3Cache;
                         PerformOptimizations = IsSettingsAllowOptimizations();
-                        ConfigurationService.Delay(ref m_BlockCallbacks, InvokeSpecsChangedCallback);
+                        DefaultConfigurationService.Delay(ref m_BlockCallbacks, InvokeSpecsChangedCallback);
                     }
                 }
             }
@@ -232,7 +247,7 @@ namespace Eclipse
                         FinalL2Cache = (uint)Math.Ceiling(m_L2Cache * m_CacheUtilization);
                         TotalCacheSize = FinalL1Cache + FinalL2Cache + FinalL3Cache;
                         PerformOptimizations = IsSettingsAllowOptimizations();
-                        ConfigurationService.Delay(ref m_BlockCallbacks, InvokeSpecsChangedCallback);
+                        DefaultConfigurationService.Delay(ref m_BlockCallbacks, InvokeSpecsChangedCallback);
                     }
                 }
             }
@@ -250,7 +265,7 @@ namespace Eclipse
                         FinalL3Cache = (uint)Math.Ceiling(m_L3Cache * m_CacheUtilization);
                         TotalCacheSize = FinalL1Cache + FinalL2Cache + FinalL3Cache;
                         PerformOptimizations = IsSettingsAllowOptimizations();
-                        ConfigurationService.Delay(ref m_BlockCallbacks, InvokeSpecsChangedCallback);
+                        DefaultConfigurationService.Delay(ref m_BlockCallbacks, InvokeSpecsChangedCallback);
                     }
                 }
             }
@@ -281,7 +296,7 @@ namespace Eclipse
             /// [0.0 : 1.0], percent value.
             /// </summary>
             private static float m_CacheUtilization;
-            
+
             /// <summary>
             /// L1 cache size (in bytes).
             /// </summary>
@@ -305,7 +320,7 @@ namespace Eclipse
             /// .                                                Constructors
             /// .
             /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            [ServiceAfterloadMethod(typeof(ConfigurationService))]
+            [AfterServiceInitialized(typeof(DefaultConfigurationService))]
             internal static void Initialize()
             {
                 Configure.GetValue(UseCacheOptimizationsKey, out m_UseCacheOptimizations, true);
@@ -344,7 +359,7 @@ namespace Eclipse
         /// <summary>
         /// General information and settings about disks in active use.
         /// <para>
-        /// Note: only access this section after <see cref="ConfigurationService"/> has initialized.
+        /// Note: only access this section after <see cref="DefaultConfigurationService"/> has initialized.
         /// </para>
         /// </summary>
         /// <remarks>
@@ -431,7 +446,7 @@ namespace Eclipse
                 {
                     if (Configure.SetValue(ReduceDiskWearKey, ref m_ReduceDiskWear, value))
                     {
-                        ConfigurationService.Delay(ref m_BlockCallbacks, InvokeDiskSpecsChanged);
+                        DefaultConfigurationService.Delay(ref m_BlockCallbacks, InvokeDiskSpecsChanged);
                     }
                 }
             }
@@ -446,7 +461,7 @@ namespace Eclipse
                 {
                     if (Configure.SetValue(UseDiskSpeedOptimizationsKey, ref m_UseDiskOptimizations, value))
                     {
-                        ConfigurationService.Delay(ref m_BlockCallbacks, InvokeDiskSpecsChanged);
+                        DefaultConfigurationService.Delay(ref m_BlockCallbacks, InvokeDiskSpecsChanged);
                     }
                 }
             }
@@ -462,7 +477,7 @@ namespace Eclipse
                     value = Math.Clamp(value, 0f, 1f);
                     if (Configure.SetValue(DiskUtilizationKey, ref m_DiskUtilization, value))
                     {
-                        ConfigurationService.Delay(ref m_BlockCallbacks, InvokeDiskSpecsChanged);
+                        DefaultConfigurationService.Delay(ref m_BlockCallbacks, InvokeDiskSpecsChanged);
                     }
                 }
             }
@@ -484,7 +499,7 @@ namespace Eclipse
                 {
                     if (Configure.SetValue(DataDiskReadingSpeedKey, ref m_DataDiskReadingSpeed, value))
                     {
-                        ConfigurationService.Delay(ref m_BlockCallbacks, InvokeDiskSpecsChanged);
+                        DefaultConfigurationService.Delay(ref m_BlockCallbacks, InvokeDiskSpecsChanged);
                     }
                 }
             }
@@ -500,7 +515,7 @@ namespace Eclipse
                 {
                     if (Configure.SetValue(DataDiskWritingSpeedKey, ref m_DataDiskWritingSpeed, value))
                     {
-                        ConfigurationService.Delay(ref m_BlockCallbacks, InvokeDiskSpecsChanged);
+                        DefaultConfigurationService.Delay(ref m_BlockCallbacks, InvokeDiskSpecsChanged);
                     }
                 }
             }
@@ -521,7 +536,7 @@ namespace Eclipse
                 {
                     if (Configure.SetValue(GameDiskReadingSpeedKey, ref m_GameDiskReadingSpeed, value))
                     {
-                        ConfigurationService.Delay(ref m_BlockCallbacks, InvokeDiskSpecsChanged);
+                        DefaultConfigurationService.Delay(ref m_BlockCallbacks, InvokeDiskSpecsChanged);
                     }
                 }
             }
@@ -537,7 +552,7 @@ namespace Eclipse
                 {
                     if (Configure.SetValue(GameDiskWritingSpeedKey, ref m_GameDiskWritingSpeed, value))
                     {
-                        ConfigurationService.Delay(ref m_BlockCallbacks, InvokeDiskSpecsChanged);
+                        DefaultConfigurationService.Delay(ref m_BlockCallbacks, InvokeDiskSpecsChanged);
                     }
                 }
             }
@@ -587,7 +602,7 @@ namespace Eclipse
                     DataDiskReadingSpeedKey = string.Concat("@", DataDiskPartition, "|ReadingSpeed");
                     DataDiskWritingSpeedKey = string.Concat("@", DataDiskPartition, "|WritingSpeed");
 
-                    GameDiskPartition = GetPartitionName(ConfigurationService.ConfigurationPath);
+                    GameDiskPartition = GetPartitionName(DefaultConfigurationService.ConfigurationPath);
                     GameDiskReadingSpeedKey = string.Concat("@", GameDiskPartition, "|ReadingSpeed");
                     GameDiskWritingSpeedKey = string.Concat("@", GameDiskPartition, "|WritingSpeed");
                 }
@@ -605,7 +620,7 @@ namespace Eclipse
                 }
             }
 
-            [ServiceAfterloadMethod(typeof(ConfigurationService))]
+            [AfterServiceInitialized(typeof(DefaultConfigurationService))]
             internal static void Initialized()
             {
                 Configure.GetValue(ReduceDiskWearKey, out m_ReduceDiskWear, false);
@@ -646,8 +661,8 @@ namespace Eclipse
                 catch (Exception ex)
                 {
                     // TODO: Remove after debugging.
-                    Debug.LogError(ex);
-                    Debug.LogWarning($"Cannot retrieve partition name for path: ({path}). Default value will be used instead.");
+                    Logger.LogError(ex);
+                    Logger.LogWarning($"Cannot retrieve partition name for path: ({path}). Default value will be used instead.");
                 }
 
                 return GetDefault();

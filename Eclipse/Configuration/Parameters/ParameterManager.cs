@@ -86,7 +86,9 @@ namespace Eclipse.Configuration.Parameters
                 if (!m_Parameters.TryGetValue(id, out result))
                 {
                     // Creates new parameter if it doesn't exist yet.
-                    return (TParameter)(m_Parameters[id] = constructor(id));
+                    result = constructor(id);
+                    m_Parameters[id] = result;
+                    return (TParameter)result;
                 }
             }
 

@@ -107,9 +107,11 @@ namespace Eclipse.Serialization
         /// .                                               Private Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private static string DefaultSerializer(TValue value) => JsonUtility.ToJson(value, Serializers.UsePrettyPrint);
+        private static string DefaultSerializer(TValue value) => JsonUtility.ToJson(value, prettyPrint: true);
         private static TValue DefaultDeserializer(string raw) => JsonUtility.FromJson<TValue>(raw);
     }
+
+
 
     /// <summary>
     /// Non-type specific serializer holder to be accessed with a reference of a <see cref="Type"/> instead of a generic type.
@@ -120,16 +122,6 @@ namespace Eclipse.Serialization
     /// TODO: Make sure it can work with <see cref="object"/>s instead of direct references.
     public static class Serializers
     {
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                                 Constants
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public const bool UsePrettyPrint = false;
-
-
-
-
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
         /// .                                               Private Fields

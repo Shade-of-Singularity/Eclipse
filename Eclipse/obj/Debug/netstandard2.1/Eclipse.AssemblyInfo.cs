@@ -13,10 +13,11 @@ using System.Reflection;
 
 [assembly: System.Reflection.AssemblyCompanyAttribute("Shade of Singularity")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
-[assembly: System.Reflection.AssemblyDescriptionAttribute("Service-based core Unity Engine extension, which work as a basis for your custom " +
-    "code.\r\nNatively supports managed C# modding with custom assembly loader.")]
+[assembly: System.Reflection.AssemblyDescriptionAttribute("\r\n      Service-based core Unity Engine extension, which work as a basis for your" +
+    " custom code.\r\n      Natively supports managed C# modding with custom assembly l" +
+    "oader.\r\n    ")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+115325a0e4ab9537dca5dbe8e7db992b98821588")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+71200540750243660b5db5446155e9774a964524")]
 [assembly: System.Reflection.AssemblyProductAttribute("Eclipse")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Eclipse")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

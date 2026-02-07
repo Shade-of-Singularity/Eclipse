@@ -1,4 +1,7 @@
-﻿/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
+﻿
+using Cysharp.Threading.Tasks;
+
+/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
 /// 
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -13,29 +16,21 @@
 /// limitations under the License.
 /// 
 /// ]]>
-
 namespace Eclipse.Configuration
 {
     /// <summary>
-    /// Reconfiguration service for you to target with <see cref="ServicePreloadMethodAttribute"/>s or <see cref="ServiceAfterloadMethodAttribute"/>s
+    /// Reconfiguration service for you to target with <see cref="BeforeServiceInitializedAttribute"/>s or <see cref="AfterServiceInitializedAttribute"/>s
     /// in order to reconfigure <see cref="EngineConfiguration{T}"/>s.
     /// </summary>
     /// <remarks>
     /// Cannot be inherited as it should not be replaced by any other service.
     /// </remarks>
-    [Service(InitializationOrder = InitializationOrder, ThreadExecutionOrder = ServiceAttribute.ThreadExecutionMode.MainThread)]
-    public sealed class ReconfigurationService : EngineService
+    [Service(IReconfigurationService.InitializationOrder)]
+    public class ReconfigurationService : IReconfigurationService
     {
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                                 Constants
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public const int InitializationOrder = ConfigurationService.InitializationOrder + 1000;
-
         /// <see cref="ReconfigurationService"/> itself doesn't reconfigure anything.
         /// Code example: <![CDATA[
-        /// [ServicePreloadMethod(typeof(ReconfigurationService), InvokeOrder = 0, ThreadSafe = false)]
+        /// [AfterServiceInitialized(typeof(IReconfigurationService), InvokeOrder = 0, ThreadSafe = false)]
         /// public static void AllowAutoSave()
         /// {
         ///     EngineConfiguration<ConfigurationSettings>.Instance.SettingsAutoSave = true;
@@ -52,9 +47,26 @@ namespace Eclipse.Configuration
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <inheritdoc/>
-        protected override void Initialize() { }
+        public virtual UniTask Initialize() => UniTask.CompletedTask;
 
         /// <inheritdoc/>
-        protected override void Unload() { }
+        public virtual UniTask Terminate() => UniTask.CompletedTask;
+    }
+
+    /// <summary>
+    /// Reconfiguration service for you to target with <see cref="BeforeServiceInitializedAttribute"/>s or <see cref="AfterServiceInitializedAttribute"/>s
+    /// in order to reconfigure <see cref="EngineConfiguration{T}"/>s.
+    /// </summary>
+    /// <remarks>
+    /// Cannot be inherited as it should not be replaced by any other service.
+    /// </remarks>
+    public interface IReconfigurationService : IService<IReconfigurationService>
+    {
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                                 Constants
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        public const int InitializationOrder = IConfigurationService.InitializationOrder + 1000;
     }
 }

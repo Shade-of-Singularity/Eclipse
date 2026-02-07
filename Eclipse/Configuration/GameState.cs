@@ -37,8 +37,14 @@ namespace Eclipse.Configuration
             {
                 if (m_Instance is null)
                 {
-                    m_Instance = EngineService<ConfigurationService>.Instance.Load<T>();
-                    Engine.OnEngineReset += () => m_Instance = null;
+                    m_Instance = IConfigurationService.Instance.Load<T>();
+                    Engine.OnEngineTerminated += ResetInstance;
+
+                    static void ResetInstance()
+                    {
+                        m_Instance = null;
+                        Engine.OnEngineTerminated -= ResetInstance;
+                    }
                 }
 
                 return m_Instance;
@@ -75,7 +81,7 @@ namespace Eclipse.Configuration
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Retrieves custom <see cref="GameState"/> class from current <see cref="ConfigurationService"/>.
+        /// Retrieves custom <see cref="GameState"/> class from current <see cref="DefaultConfigurationService"/>.
         /// </summary>
         /// <remarks>
         /// Use generic implementation directly instead, if possible.

@@ -14,6 +14,7 @@
 /// 
 /// ]]>
 
+using System;
 using UnityEngine;
 
 namespace Eclipse.Configuration
@@ -63,7 +64,7 @@ namespace Eclipse.Configuration
         public float SettingsAutoSaveDelay
         {
             get => m_SettingsAutoSaveDelay;
-            set => m_SettingsAutoSaveDelay = Mathf.Max(0.5f, value);
+            set => m_SettingsAutoSaveDelay = Math.Max(0.5f, value);
         }
 
 
@@ -77,6 +78,7 @@ namespace Eclipse.Configuration
         // Static Fields:
 
         // Encapsulated Fields:
+        // TODO: Serialize in Unity.
         [SerializeField] private bool m_SettingsAutoApply = true;
         [SerializeField] private bool m_SettingsAutoSave = true;
         [SerializeField, Min(1f)] private float m_SettingsAutoSaveDelay = 5f;

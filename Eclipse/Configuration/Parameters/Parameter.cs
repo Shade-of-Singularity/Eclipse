@@ -137,7 +137,7 @@ namespace Eclipse.Configuration.Parameters
         /// Value, stored in the configuration file.
         /// </summary>
         /// <remarks>
-        /// Set value can be reverted with <see cref="ConfigurationService.Revert"/>, if anything was changed.
+        /// Set value can be reverted with <see cref="DefaultConfigurationService.Revert"/>, if anything was changed.
         /// </remarks>
         public TValue Value
         {

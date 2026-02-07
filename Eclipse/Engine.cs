@@ -15,15 +15,16 @@
 /// ]]>
 
 using Cysharp.Threading.Tasks;
+using Eclipse.Configuration;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Eclipse
 {
@@ -47,18 +48,15 @@ namespace Eclipse
 
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
-        /// .                                              Public Properties
+        /// .                                                   Events
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        // Delegates:
-
-        // Events:
         /// <summary>
         /// Event that is fired when <see cref="Status"/> is set <see cref="EngineStatus.Initialized"/>
         /// </summary>
         /// <remarks>
         /// Callback list is cleared after initialization.
-        /// This implies that you should only use this callback before calling <see cref="Initialize"/>, or inside <see cref="EngineService.Initialize"/>.
+        /// This implies that you should only use this callback before calling <see cref="Initialize"/>, or inside <see cref="Service.Initialize"/>.
         /// <para>
         /// To get consistent callback, you can use <see cref="EclipseInitializeAttribute"/> on custom static methods.
         /// </para>
@@ -80,31 +78,31 @@ namespace Eclipse
         }
 
         /// <summary>
-        /// Called when every existing instance of <see cref="EngineService"/> and similar is fully unloaded. (e.g. on <see cref="Unload()"/>)
+        /// Called when every existing instance of <see cref="IService"/> and similar is fully unloaded. (e.g. on <see cref="Terminate()"/>)
         /// <para>
         /// Used to reset static references to the old services and configuration classes, as to prevent memory leaks on mod reloading.
         /// </para>
         /// </summary>
         /// <remarks>
         /// Callback list is cleared after engine reset.
-        /// This implies that you should only use this callback before calling <see cref="Unload"/>, or inside <see cref="EngineService.Unload"/>.
+        /// This implies that you should only use this callback before calling <see cref="Terminate"/>, or inside <see cref="IService.Terminate"/>.
         /// <para>
         /// To get consistent callback, you can use <see cref="EclipseInitializeAttribute"/> on custom static methods.
         /// </para>
         /// </remarks>
-        public static event Action? OnEngineReset
+        public static event Action? OnEngineTerminated
         {
-            remove => m_OnEngineUnloaded -= value;
+            remove => m_OnEngineTerminated -= value;
             add
             {
                 if (value == null) return;
-                if (m_Status == EngineStatus.Unloaded)
+                if (m_Status == EngineStatus.Terminated)
                 {
                     value.Invoke();
                     return;
                 }
 
-                m_OnEngineUnloaded += value;
+                m_OnEngineTerminated += value;
             }
         }
 
@@ -113,12 +111,12 @@ namespace Eclipse
         /// Status of the engine.
         /// </summary>
         /// <remarks>
-        /// <para>Set to <see cref="EngineStatus.Unloaded"/> - by default.</para>
+        /// <para>Set to <see cref="EngineStatus.Terminated"/> - by default.</para>
         /// <para>Set to <see cref="EngineStatus.Initializing"/> - during initialization (after calling <see cref="Initialize"/>, potentially automatically).</para>
         /// <para>Set to <see cref="EngineStatus.Initialized"/> - when <see cref="Engine"/> and <see cref="Modding.Mod"/>s are fully initialized!</para>
-        /// <para>Set to <see cref="EngineStatus.Unloading"/> - during unloading (after calling <see cref="Unload"/>, maybe by <see cref="EngineUnloader"/>)</para>
+        /// <para>Set to <see cref="EngineStatus.Terminating"/> - during unloading (after calling <see cref="Terminate"/>, maybe by <see cref="QuitHandler"/>)</para>
         /// <para>Set to <see cref="EngineStatus.InitializationBroken"/> - if engine got irreversibly broken during initialization.</para>
-        /// <para>Set to <see cref="EngineStatus.UnloadingBroken"/> - if engine got irreversibly broken during unloading.</para>
+        /// <para>Set to <see cref="EngineStatus.TerminationBroken"/> - if engine got irreversibly broken during unloading.</para>
         /// </remarks>
         public static EngineStatus Status
         {
@@ -133,7 +131,7 @@ namespace Eclipse
                     // Temporary states are ignored.
                     //
                     case EngineStatus.Initializing: break;
-                    case EngineStatus.Unloading: break;
+                    case EngineStatus.Terminating: break;
 
                     //
                     // Unknown states are immediately reported.
@@ -155,26 +153,26 @@ namespace Eclipse
                         {
                             try
                             {
-                                callback.DynamicInvoke();
+                                callback?.DynamicInvoke();
                             }
                             catch (Exception ex)
                             {
-                                Debug.LogException(ex);
+                                Logger.LogException(ex);
                                 exceptions |= true;
                             }
                         }
 
                         if (exceptions)
                         {
-                            Debug.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineInitialized)}' thrown exceptions! Look above for errors.");
+                            Logger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineInitialized)}' thrown exceptions! Look above for errors.");
                         }
 
                         break;
 
-                    case EngineStatus.Unloaded:
-                        if (m_OnEngineUnloaded == null) break;
-                        delegates = m_OnEngineUnloaded.GetInvocationList();
-                        m_OnEngineUnloaded = null;
+                    case EngineStatus.Terminated:
+                        if (m_OnEngineTerminated == null) break;
+                        delegates = m_OnEngineTerminated.GetInvocationList();
+                        m_OnEngineTerminated = null;
 
                         // Callback list should not be modifiable at this point, since after IsInitialized is set to true - callbacks are auto fired immediately.
                         // Because of that, we don't need any locks, AFAIK.
@@ -183,18 +181,18 @@ namespace Eclipse
                         {
                             try
                             {
-                                callback.DynamicInvoke();
+                                callback?.DynamicInvoke();
                             }
                             catch (Exception ex)
                             {
-                                Debug.LogException(ex);
+                                Logger.LogException(ex);
                                 exceptions |= true;
                             }
                         }
 
                         if (exceptions)
                         {
-                            Debug.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineInitialized)}' thrown exceptions! Look above for errors.");
+                            Logger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineTerminated)}' thrown exceptions! Look above for errors.");
                         }
 
                         break;
@@ -204,12 +202,12 @@ namespace Eclipse
                     //
                     case EngineStatus.InitializationBroken:
                         // TODO: Replace with EngineLogger implementation.
-                        Debug.LogError($"{LogPrefix} {nameof(Engine)} was irreversibly broken during initialization. You will need to restart your app to fix this.");
+                        Logger.LogError($"{LogPrefix} {nameof(Engine)} was irreversibly broken during initialization. You will need to restart your app to fix this.");
                         break;
 
-                    case EngineStatus.UnloadingBroken:
+                    case EngineStatus.TerminationBroken:
                         // TODO: Replace with EngineLogger implementation.
-                        Debug.LogError($"{LogPrefix} {nameof(Engine)} was irreversibly broken during unloading. You will need to restart your app to fix this.");
+                        Logger.LogError($"{LogPrefix} {nameof(Engine)} was irreversibly broken during unloading. You will need to restart your app to fix this.");
                         break;
                 }
             }
@@ -224,9 +222,9 @@ namespace Eclipse
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         // Encapsulated Fields:
-        private static volatile EngineStatus m_Status = EngineStatus.Unloaded;
+        private static volatile EngineStatus m_Status = EngineStatus.Terminated;
         private static volatile Action? m_OnEngineInitialized;
-        private static volatile Action? m_OnEngineUnloaded;
+        private static volatile Action? m_OnEngineTerminated;
 
         // Local Fields:
         private static readonly AssemblyStorage m_Assemblies = new AssemblyStorage(64);
@@ -327,7 +325,7 @@ namespace Eclipse
         /// <remarks>
         /// Will not unload mod Assemblies from the memory, as it is impossible.
         /// </remarks>
-        public static async UniTask Unload()
+        public static async UniTask Terminate()
         {
             // Only already initialized engine can be unloaded.
             // (TODO) Note: should we introduce unloading of a partially loaded engine? Something to think about later.
@@ -336,19 +334,21 @@ namespace Eclipse
                 return;
             }
 
-            using (EngineServices.Unsafe.Unload())
+            // TODO: Hold callers in await block until engine is fully unloaded.
+            using (Services.Unsafe.Terminate())
             {
-                Status = EngineStatus.Unloading;
-                foreach (var service in EngineServices.Services)
+                Status = EngineStatus.Terminating;
+                foreach (var service in Services.List)
                 {
-                    ((IEngineServiceDirectAccess)service).EngineInvokeUnloading();
+                    // TODO: Terminate asynchronously if possible.
+                    await service.InvokeTerminate();
                 }
             }
 
             m_Assemblies.Clear();
             m_AcceptsAssemblies = true;
             await UniTask.CompletedTask;
-            Status = EngineStatus.Unloaded;
+            Status = EngineStatus.Terminated;
         }
 
 
@@ -360,11 +360,11 @@ namespace Eclipse
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Initializes the entire engine: <see cref="EngineService"/>s, <see cref="Modding.Mod"/>s, and so on.
+        /// Initializes the entire engine: <see cref="IService"/>s, <see cref="Modding.Mod"/>s, and so on.
         /// </summary>
         public static async UniTask Initialize()
         {
-            if (Status != EngineStatus.Unloaded)
+            if (Status != EngineStatus.Terminated)
             {
                 return;
             }
@@ -495,8 +495,8 @@ namespace Eclipse
 
                 // Note: 'preload'/'afterload' here refer to method attribute categories,
                 // not the threaded execution mode ('BeforeMain' / 'AfterMain').   - Dark & GPT
-                List<MethodSummary<ServicePreloadMethodAttribute>> preload = new List<MethodSummary<ServicePreloadMethodAttribute>>();
-                List<MethodSummary<ServiceAfterloadMethodAttribute>> afterload = new List<MethodSummary<ServiceAfterloadMethodAttribute>>();
+                List<MethodSummary<BeforeServiceInitializedAttribute>> preload = new List<MethodSummary<BeforeServiceInitializedAttribute>>();
+                List<MethodSummary<AfterServiceInitializedAttribute>> afterload = new List<MethodSummary<AfterServiceInitializedAttribute>>();
 
                 // TODO: resolve initialization order from a mod dependency order.
                 Assembly[] assemblies = m_Assemblies.ToArray();
@@ -528,22 +528,22 @@ namespace Eclipse
                     // 
                     // Right now activation is synced with a main thread, but it doesn't have to. This code will be moved to background thread later.
                     // You should use EngineService Initialize for executing code on a main thread instead.
-                    EngineService service = (EngineService)Activator.CreateInstance(summary.service)!;
+                    IService service = (IService)Activator.CreateInstance(summary.service)!;
 
                     do
                     {
                         mapping[target] = summary;
-                        m_Services[target] = service;
-                        target = target.BaseType!;
+                        Services.Unsafe.Dictionary[target] = service;
+                        target = target.BaseType;
                     }
-                    while (!(target is null) && target != typeof(EngineService) && target != typeof(EngineService));
+                    while (target is { });
                 }
 
                 // No reason to parallelize this one - it will just create unnecessary overhead.
                 // We will have at max 50-100 services with mods, I assume   - Dark
                 // (Note: I wonder if it will even work in WebGL XD   - Dark)
-                int before = summaries.Count(s => s.attribute.ThreadExecutionOrder == ServiceAttribute.ThreadExecutionMode.ThreadSafeBeforeMain);
-                int after = summaries.Count(s => s.attribute.ThreadExecutionOrder == ServiceAttribute.ThreadExecutionMode.ThreadSafeAfterMain);
+                int before = summaries.Count(s => s.attribute.ExecutionMode == IService.ThreadExecutionMode.ThreadedBeforeMain);
+                int after = summaries.Count(s => s.attribute.ExecutionMode == IService.ThreadExecutionMode.ThreadedAfterMain);
                 int normal = summaries.Length - before - after;
 
                 // Adds all methods to a referenced services.
@@ -551,7 +551,7 @@ namespace Eclipse
                 await UniTask.WhenAll(
                     UniTask.Run(() =>
                     {
-                        foreach (MethodSummary<ServicePreloadMethodAttribute> callback in preload)
+                        foreach (MethodSummary<BeforeServiceInitializedAttribute> callback in preload)
                         {
                             // Note: 'TryGetValue' checks are mandatory, as some of the MethodSummaries might reference removed service.
                             // TODO: Move all references attached to an removed service to its replacement, somehow.
@@ -565,7 +565,7 @@ namespace Eclipse
 
                     UniTask.Run(() =>
                     {
-                        foreach (MethodSummary<ServiceAfterloadMethodAttribute> callback in afterload)
+                        foreach (MethodSummary<AfterServiceInitializedAttribute> callback in afterload)
                         {
                             // Note: 'TryGetValue' checks are mandatory, as some of the MethodSummaries might reference removed service.
                             // TODO: Move all references attached to an removed service to its replacement, somehow.
@@ -599,7 +599,7 @@ namespace Eclipse
                 await UniTask.WhenAll(
                     UniTask.Run(() => Array.ForEach(summaries, s => s.preload.Sort((a, b) => a.attribute.InvokeOrder.CompareTo(b.attribute.InvokeOrder)))),
                     UniTask.Run(() => Array.ForEach(summaries, s => s.afterload.Sort((a, b) => a.attribute.InvokeOrder.CompareTo(b.attribute.InvokeOrder)))),
-                    UniTask.Run(() => services.Sort((a, b) => a.attribute.InitializationOrder.CompareTo(b.attribute.InitializationOrder)))
+                    UniTask.Run(() => services.Sort((a, b) => a.attribute.ExecutionOrder.CompareTo(b.attribute.ExecutionOrder)))
                 );
 
                 // Updates summaries with sorted data.
@@ -607,25 +607,25 @@ namespace Eclipse
                 services = null; // List itself should not be used after this point, as it is inefficient.
 
                 // Executed thread-safe initializations and callbacks before main thread.
-                await RunThreadedInitialization(before, ServiceAttribute.ThreadExecutionMode.ThreadSafeBeforeMain);
+                await RunThreadedInitialization(before, IService.ThreadExecutionMode.ThreadedBeforeMain);
 
                 // Initialization part on a Main Unity thread.
                 if (normal > 0)
                 {
                     foreach (ServiceSummary summary in summaries)
                     {
-                        if (summary.attribute.ThreadExecutionOrder != ServiceAttribute.ThreadExecutionMode.MainThread) continue;
+                        if (summary.attribute.ExecutionMode != IService.ThreadExecutionMode.MainThread) continue;
                         summary.preload.ForEach(m => m.method.Invoke(null, null));
-                        ((IEngineServiceDirectAccess)m_Services[summary.service]).EngineInvokeInitialization();
+                        await Services.Unsafe.Dictionary[summary.service].InvokeInitialize();
                         summary.afterload.ForEach(m => m.method.Invoke(null, null));
                     }
                 }
 
                 // Executed thread-safe initializations and callbacks after main thread.
-                await RunThreadedInitialization(after, ServiceAttribute.ThreadExecutionMode.ThreadSafeAfterMain);
+                await RunThreadedInitialization(after, IService.ThreadExecutionMode.ThreadedAfterMain);
 
                 // Simplifications:
-                async UniTask RunThreadedInitialization(int expected, ServiceAttribute.ThreadExecutionMode mode)
+                async UniTask RunThreadedInitialization(int expected, IService.ThreadExecutionMode mode)
                 {
                     // Runs services that are thread-safe and should be executed before main thread in parallel.
                     // Note: using m_Services[ServiceSummary.service] here should never produce an exception.
@@ -641,7 +641,7 @@ namespace Eclipse
                         for (int i = 0; i < summaries.Length; i++)
                         {
                             var set = summaries[i];
-                            if (set.attribute.ThreadExecutionOrder == mode)
+                            if (set.attribute.ExecutionMode == mode)
                             {
                                 temp[stored++] = set;
                                 if (stored >= expected) break;
@@ -661,7 +661,7 @@ namespace Eclipse
                         UniTask[] tasks = new UniTask[stored];
                         for (int i = 0; i < stored; i++)
                         {
-                            tasks[i] = UniTask.Run(() =>
+                            tasks[i] = UniTask.Run(async () =>
                             {
                                 var set = temp[i];
                                 set.preload.ForEach(c =>
@@ -669,7 +669,7 @@ namespace Eclipse
                                     if (c.attribute.ThreadSafe) c.method.Invoke(null, null);
                                 });
 
-                                ((IEngineServiceDirectAccess)m_Services[set.service]).EngineInvokeInitialization();
+                                await Services.Unsafe.Dictionary[set.service].InvokeInitialize();
                                 set.afterload.ForEach(c =>
                                 {
                                     if (c.attribute.ThreadSafe) c.method.Invoke(null, null);
@@ -729,64 +729,56 @@ namespace Eclipse
 
         private static void LoadServices(
             Assembly assembly, List<ServiceSummary> services,
-            List<MethodSummary<ServicePreloadMethodAttribute>> preload,
-            List<MethodSummary<ServiceAfterloadMethodAttribute>> afterload)
+            List<MethodSummary<BeforeServiceInitializedAttribute>> preload,
+            List<MethodSummary<AfterServiceInitializedAttribute>> afterload)
         {
             foreach (Type type in assembly.GetTypes())
             {
-                if (typeof(EngineService).IsAssignableFrom(type) && !type.IsAbstract)
+                // TODO: Benchmark if storing typeof result in stack is more optimized.
+                if (typeof(IService).IsAssignableFrom(type))
                 {
-                    var attribute = type.GetCustomAttribute<ServiceAttribute>();
-                    if (attribute == null)
+                    if (!type.IsDefined(typeof(ServiceAttribute)))
                     {
-                        services.Add(new ServiceSummary(new ServiceAttribute(), type));
+                        continue;
                     }
-                    else
+
+                    ServiceAttribute attribute = type.GetCustomAttribute<ServiceAttribute>();
+                    Type[] interfaces = type.FindInterfaces((type, _) => typeof(IService).IsAssignableFrom(type), null);
+                    Logger.Log();
+                    foreach (var declaration in interfaces)
                     {
-                        ServiceSummary summary = new ServiceSummary(attribute, type);
-                        if (attribute.Replace != null)
+                        Logger.Log($"Found interface: {declaration}");
+                        if (declaration.BaseType?.BaseType == typeof(IService))
                         {
-                            int length = services.Count;
-                            for (int i = 0; i < length; i++)
+                            Logger.LogWarning($"Found target service interface!!! {declaration} and base type: {declaration.BaseType.BaseType}");
+                            ServiceSummary summary = new ServiceSummary(attribute, type, declaration);
+
+                            int index = services.FindIndex(s => s.declaration == declaration);
+                            if (index == -1)
                             {
-                                var entry = services[i];
-                                if (entry.service == attribute.Replace)
-                                {
-                                    services.RemoveAt(i);
-                                    i--; length--;
-
-#if UNITY_EDITOR
-                                    for (; i < length; i++)
-                                    {
-                                        if (services[i].service == attribute.Replace)
-                                        {
-                                            Debug.LogWarning($"Found a duplicate of the service '{attribute.Replace.Name}'! This should not happen!");
-                                        }
-                                    }
-
-                                    break; // Removes only one reference, as normally, it should be impossible for you to get two of the same services.
-#else
-                                    break; // Removes only one reference, as normally, it should be impossible for you to get two of the same services.
-#endif
-                                }
+                                services.Add(summary);
                             }
-                        }
+                            else
+                            {
+                                services[index] = summary;
+                            }
 
-                        services.Add(summary);
+                            break;
+                        }
                     }
                 }
 
                 foreach (var method in type.GetMethods())
                 {
                     if (!method.IsStatic) continue;
-                    foreach (var attribute in method.GetCustomAttributes<ServicePreloadMethodAttribute>(inherit: false))
+                    foreach (var attribute in method.GetCustomAttributes<BeforeServiceInitializedAttribute>(inherit: false))
                     {
-                        preload.Add(new MethodSummary<ServicePreloadMethodAttribute>(attribute, method));
+                        preload.Add(new MethodSummary<BeforeServiceInitializedAttribute>(attribute, method));
                     }
 
-                    foreach (var attribute in method.GetCustomAttributes<ServiceAfterloadMethodAttribute>(inherit: false))
+                    foreach (var attribute in method.GetCustomAttributes<AfterServiceInitializedAttribute>(inherit: false))
                     {
-                        afterload.Add(new MethodSummary<ServiceAfterloadMethodAttribute>(attribute, method));
+                        afterload.Add(new MethodSummary<AfterServiceInitializedAttribute>(attribute, method));
                     }
                 }
             }
@@ -804,14 +796,16 @@ namespace Eclipse
         {
             public readonly ServiceAttribute attribute;
             public readonly Type service;
-            public readonly List<MethodSummary<ServicePreloadMethodAttribute>> preload;
-            public readonly List<MethodSummary<ServiceAfterloadMethodAttribute>> afterload;
-            public ServiceSummary(ServiceAttribute attribute, Type service)
+            public readonly Type declaration;
+            public readonly List<MethodSummary<BeforeServiceInitializedAttribute>> preload;
+            public readonly List<MethodSummary<AfterServiceInitializedAttribute>> afterload;
+            public ServiceSummary(ServiceAttribute attribute, Type service, Type declaration)
             {
                 this.attribute = attribute;
                 this.service = service;
-                preload = new List<MethodSummary<ServicePreloadMethodAttribute>>(0);
-                afterload = new List<MethodSummary<ServiceAfterloadMethodAttribute>>(0);
+                this.declaration = declaration;
+                preload = new List<MethodSummary<BeforeServiceInitializedAttribute>>(0);
+                afterload = new List<MethodSummary<AfterServiceInitializedAttribute>>(0);
             }
         }
 

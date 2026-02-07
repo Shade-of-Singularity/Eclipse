@@ -1,4 +1,8 @@
-﻿/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
+﻿
+using Cysharp.Threading.Tasks;
+using Eclipse.Serialization;
+
+/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
 /// 
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -13,11 +17,10 @@
 /// limitations under the License.
 /// 
 /// ]]>
-
 namespace Eclipse.Localization
 {
-    /// <inheritdoc/>
-    public sealed class DefaultLocalizationService : LocalizationService
+    /// <inheritdoc cref="ILocalizationService"/>
+    public class DefaultLocalizationService : ILocalizationService
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -25,9 +28,9 @@ namespace Eclipse.Localization
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <inheritdoc/>
-        protected override void Initialize() { }
+        public virtual UniTask Initialize() => UniTask.CompletedTask;
 
         /// <inheritdoc/>
-        protected override void Unload() { }
+        public virtual UniTask Terminate() => UniTask.CompletedTask;
     }
 }
