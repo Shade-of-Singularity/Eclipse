@@ -1950,6 +1950,97 @@
             </summary>
             <param name="timing"></param>
         </member>
+        <member name="T:Eclipse.EclipseLogger">
+            <summary>
+            Provides ways for you to change how engine logs messages.
+            </summary>
+        </member>
+        <member name="T:Eclipse.EclipseLogger.LogHandler">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                 Delegates
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Handler for handling regular messages.
+            </summary>
+        </member>
+        <member name="T:Eclipse.EclipseLogger.ExceptionHandler">
+            <summary>
+            Handler for handling <see cref="T:System.Exception"/>s.
+            </summary>
+        </member>
+        <member name="E:Eclipse.EclipseLogger.InformationReceived">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                   Events
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Handler for regular logs.
+            </summary>
+        </member>
+        <member name="E:Eclipse.EclipseLogger.WarningReceived">
+            <summary>
+            Handler for warnings. Default logger also draws those messages in yellow.
+            </summary>
+        </member>
+        <member name="E:Eclipse.EclipseLogger.ErrorReceived">
+            <summary>
+            Handler for errors. Default logger also draws those messages in red.
+            </summary>
+        </member>
+        <member name="E:Eclipse.EclipseLogger.ExceptionReceived">
+            <summary>
+            Handler for exceptions. Default logger logs <see cref="P:System.Exception.Message"/> and <see cref="P:System.Exception.StackTrace"/>.
+            </summary>
+        </member>
+        <member name="M:Eclipse.EclipseLogger.#cctor">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.EclipseLogger.Initialize(Eclipse.EclipseLogger.LogHandler,Eclipse.EclipseLogger.LogHandler,Eclipse.EclipseLogger.LogHandler,Eclipse.EclipseLogger.ExceptionHandler)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Static Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Attaches given log handlers to
+            <see cref="E:Eclipse.EclipseLogger.InformationReceived"/>, <see cref="E:Eclipse.EclipseLogger.WarningReceived"/>,
+            <see cref="E:Eclipse.EclipseLogger.ErrorReceived"/> and <see cref="E:Eclipse.EclipseLogger.ExceptionReceived"/>.
+            </summary>
+            (Dark): Imported from my beloved RiptideNetworking.
+        </member>
+        <member name="M:Eclipse.EclipseLogger.Log(System.Object)">
+            <summary>
+            Invokes <see cref="E:Eclipse.EclipseLogger.InformationReceived"/> with given <paramref name="obj"/>.
+            Calls <see cref="M:System.Object.ToString"/> on given <paramref name="obj"/>.
+            </summary>
+        </member>
+        <member name="M:Eclipse.EclipseLogger.LogWarning(System.Object)">
+            <summary>
+            Invokes <see cref="E:Eclipse.EclipseLogger.WarningReceived"/> with given <paramref name="obj"/>.
+            Calls <see cref="M:System.Object.ToString"/> on given <paramref name="obj"/>.
+            </summary>
+        </member>
+        <member name="M:Eclipse.EclipseLogger.LogError(System.Object)">
+            <summary>
+            Invokes <see cref="E:Eclipse.EclipseLogger.ErrorReceived"/> with given <paramref name="obj"/>.
+            Calls <see cref="M:System.Object.ToString"/> on given <paramref name="obj"/>.
+            </summary>
+        </member>
+        <member name="M:Eclipse.EclipseLogger.LogException(System.Exception)">
+            <summary>
+            Invokes <see cref="E:Eclipse.EclipseLogger.ExceptionReceived"/> with given <paramref name="exception"/>.
+            </summary>
+            <remarks>
+            Replaces <paramref name="exception"/> with an empty exception as a fail-safe.
+            </remarks>
+        </member>
         <member name="T:Eclipse.EclipseTerminationAttribute">
             <summary>
             Runs methods with this attribute when <see cref="N:Eclipse"/>.<see cref="T:Eclipse.Engine"/> terminates.
@@ -1984,6 +2075,49 @@
             <summary>
             Main class for <see cref="N:Eclipse"/> Foundation Library
             </summary>
+        </member>
+        <member name="T:Eclipse.Engine.AssemblyStorage">
+            <summary>
+            Stores assemblies while efficiently checking for duplicates.
+            </summary>
+            <remarks>
+            Might be removed in future updates.
+            </remarks>
+        </member>
+        <member name="P:Eclipse.Engine.AssemblyStorage.Item(System.Int32)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="F:Eclipse.Engine.AssemblyStorage.List">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Public Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Engine.AssemblyStorage.#ctor">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Engine.AssemblyStorage.Register(System.Reflection.Assembly)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Engine.AssemblyStorage.GetEnumerator">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Implementations
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
         <member name="F:Eclipse.Engine.LogPrefix">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -2112,49 +2246,6 @@
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                                  Structs
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        </member>
-        <member name="T:Eclipse.Engine.AssemblyStorage">
-            <summary>
-            Stores assemblies while efficiently checking for duplicates.
-            </summary>
-            <remarks>
-            Might be removed in future updates.
-            </remarks>
-        </member>
-        <member name="P:Eclipse.Engine.AssemblyStorage.Item(System.Int32)">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                              Public Properties
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        </member>
-        <member name="F:Eclipse.Engine.AssemblyStorage.List">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                                Public Fields
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        </member>
-        <member name="M:Eclipse.Engine.AssemblyStorage.#ctor">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                                Constructors
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        </member>
-        <member name="M:Eclipse.Engine.AssemblyStorage.Register(System.Reflection.Assembly)">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                               Public Methods
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        </member>
-        <member name="M:Eclipse.Engine.AssemblyStorage.GetEnumerator">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                              Implementations
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
@@ -2400,7 +2491,7 @@
         </member>
         <member name="M:Eclipse.Extensions.Try.WithLog(System.Action)">
             <summary>
-            Invokes given <paramref name="action"/> with default logger <see cref="M:Eclipse.Logger.LogException(System.Exception)"/>.
+            Invokes given <paramref name="action"/> with default logger <see cref="M:Eclipse.EclipseLogger.LogException(System.Exception)"/>.
             </summary>
         </member>
         <member name="M:Eclipse.Extensions.Try.Invoke(System.Action,System.Action{System.Exception})">
@@ -2664,89 +2755,6 @@
             <summary>
             Prefix for messages sent to the console from this class.
             </summary>
-        </member>
-        <member name="T:Eclipse.Logger">
-            <summary>
-            Provides ways for you to change how engine logs messages.
-            </summary>
-        </member>
-        <member name="T:Eclipse.Logger.LogHandler">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                                 Delegates
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            <summary>
-            Handler for handling regular messages.
-            </summary>
-        </member>
-        <member name="T:Eclipse.Logger.ExceptionHandler">
-            <summary>
-            Handler for handling <see cref="T:System.Exception"/>s.
-            </summary>
-        </member>
-        <member name="E:Eclipse.Logger.InformationReceived">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                                   Events
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            <summary>
-            Handler for regular logs.
-            </summary>
-        </member>
-        <member name="E:Eclipse.Logger.WarningReceived">
-            <summary>
-            Handler for warnings. Default logger also draws those messages in yellow.
-            </summary>
-        </member>
-        <member name="E:Eclipse.Logger.ErrorReceived">
-            <summary>
-            Handler for errors. Default logger also draws those messages in red.
-            </summary>
-        </member>
-        <member name="E:Eclipse.Logger.ExceptionReceived">
-            <summary>
-            Handler for exceptions. Default logger logs <see cref="P:System.Exception.Message"/> and <see cref="P:System.Exception.StackTrace"/>.
-            </summary>
-        </member>
-        <member name="M:Eclipse.Logger.#cctor">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                                Constructors
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        </member>
-        <member name="M:Eclipse.Logger.Log(System.Object)">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                               Static Methods
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            <summary>
-            Invokes <see cref="E:Eclipse.Logger.InformationReceived"/> with given <paramref name="obj"/>.
-            Calls <see cref="M:System.Object.ToString"/> on given <paramref name="obj"/>.
-            </summary>
-        </member>
-        <member name="M:Eclipse.Logger.LogWarning(System.Object)">
-            <summary>
-            Invokes <see cref="E:Eclipse.Logger.WarningReceived"/> with given <paramref name="obj"/>.
-            Calls <see cref="M:System.Object.ToString"/> on given <paramref name="obj"/>.
-            </summary>
-        </member>
-        <member name="M:Eclipse.Logger.LogError(System.Object)">
-            <summary>
-            Invokes <see cref="E:Eclipse.Logger.ErrorReceived"/> with given <paramref name="obj"/>.
-            Calls <see cref="M:System.Object.ToString"/> on given <paramref name="obj"/>.
-            </summary>
-        </member>
-        <member name="M:Eclipse.Logger.LogException(System.Exception)">
-            <summary>
-            Invokes <see cref="E:Eclipse.Logger.ExceptionReceived"/> with given <paramref name="exception"/>.
-            </summary>
-            <remarks>
-            Replaces <paramref name="exception"/> with an empty exception as a fail-safe.
-            </remarks>
         </member>
         <member name="T:Eclipse.Modding.Mod`1">
             <inheritdoc cref="T:Eclipse.Modding.Mod"/>
@@ -3555,6 +3563,7 @@
             <remarks>
             For example - changing services here after <see cref="T:Eclipse.Engine"/> initialization will require 
             </remarks>
+            TODO: Add partial service initialization.
         </member>
         <member name="E:Eclipse.Services.Unsafe.CacheServices">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -3608,7 +3617,11 @@
             <code><![CDATA[
             using (Initialize())
             {
-                // Initialize services here.
+                // Construct services here.
+                // Register them.
+                Services.Unsafe.Rebind(); // Mandatory.
+                // Initialize here.
+                // ...
             }
             ]]></code>
             </returns>
@@ -3627,6 +3640,7 @@
             using (Terminate())
             {
                 // Terminate services here.
+                // No need to run Rebind().
             }
             ]]></code>
             </returns>

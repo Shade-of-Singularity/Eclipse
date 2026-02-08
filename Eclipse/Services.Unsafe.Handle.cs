@@ -25,35 +25,22 @@ namespace Eclipse
             /// <summary>
             /// Used for determining when to fire <see cref="OnServicesInitialized"/> and similar events.
             /// </summary>
-            public sealed class Lock : IDisposable
+            public readonly struct Handle : IDisposable
             {
-                private readonly object _lock = new object();
-                private volatile Action? m_Callback;
-                internal bool TrySet(Action callback)
-                {
-                    lock (_lock)
-                    {
-                        if (m_Callback is null)
-                        {
-                            m_Callback = callback;
-                            return true;
-                        }
+                /// <summary>
+                /// Callback to fire on disposal.
+                /// </summary>
+                private readonly Action? m_Callback;
 
-                        return false;
-                    }
-                }
+                /// <summary>
+                /// Default constructor.
+                /// </summary>
+                public Handle(Action? callback) => m_Callback = callback;
 
                 /// <summary>
                 /// Used to fire target event.
                 /// </summary>
-                public void Dispose()
-                {
-                    lock (_lock)
-                    {
-                        m_Callback?.Invoke();
-                        m_Callback = null;
-                    }
-                }
+                public void Dispose() => m_Callback?.Invoke();
             }
         }
     }

@@ -661,8 +661,8 @@ namespace Eclipse
                 catch (Exception ex)
                 {
                     // TODO: Remove after debugging.
-                    Logger.LogError(ex);
-                    Logger.LogWarning($"Cannot retrieve partition name for path: ({path}). Default value will be used instead.");
+                    EclipseLogger.LogError(ex);
+                    EclipseLogger.LogWarning($"Cannot retrieve partition name for path: ({path}). Default value will be used instead.");
                 }
 
                 return GetDefault();

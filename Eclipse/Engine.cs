@@ -154,14 +154,14 @@ namespace Eclipse
                             }
                             catch (Exception ex)
                             {
-                                Logger.LogException(ex);
+                                EclipseLogger.LogException(ex);
                                 exceptions |= true;
                             }
                         }
 
                         if (exceptions)
                         {
-                            Logger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineInitialized)}' thrown exceptions! Look above for errors.");
+                            EclipseLogger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineInitialized)}' thrown exceptions! Look above for errors.");
                         }
 
                         break;
@@ -182,14 +182,14 @@ namespace Eclipse
                             }
                             catch (Exception ex)
                             {
-                                Logger.LogException(ex);
+                                EclipseLogger.LogException(ex);
                                 exceptions |= true;
                             }
                         }
 
                         if (exceptions)
                         {
-                            Logger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineTerminated)}' thrown exceptions! Look above for errors.");
+                            EclipseLogger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineTerminated)}' thrown exceptions! Look above for errors.");
                         }
 
                         break;
@@ -199,12 +199,12 @@ namespace Eclipse
                     //
                     case EngineStatus.InitializationBroken:
                         // TODO: Replace with EngineLogger implementation.
-                        Logger.LogError($"{LogPrefix} {nameof(Engine)} was irreversibly broken during initialization. You will need to restart your app to fix this.");
+                        EclipseLogger.LogError($"{LogPrefix} {nameof(Engine)} was irreversibly broken during initialization. You will need to restart your app to fix this.");
                         break;
 
                     case EngineStatus.TerminationBroken:
                         // TODO: Replace with EngineLogger implementation.
-                        Logger.LogError($"{LogPrefix} {nameof(Engine)} was irreversibly broken during unloading. You will need to restart your app to fix this.");
+                        EclipseLogger.LogError($"{LogPrefix} {nameof(Engine)} was irreversibly broken during unloading. You will need to restart your app to fix this.");
                         break;
                 }
             }
@@ -511,9 +511,11 @@ namespace Eclipse
                 // Note: maybe 'LoadServices' can be optimized (specifically duplicate fetching) if we provide dictionary instead?
                 //Dictionary<Type, ServiceSummary> mapping = summaries.ToDictionary(s => s.service);
                 const float ResizeSafetyMargin = 1.75f; // How much more space to reserve in dictionary for associations with the same services.
-                Dictionary<Type, ServiceSummary> mapping = new Dictionary<Type, ServiceSummary>(Mathf.NextPowerOfTwo((int)(summaries.Length * ResizeSafetyMargin)));
+                Dictionary<Type, ServiceSummary> mapping = new Dictionary<Type, ServiceSummary>(
+                    capacity: Mathf.NextPowerOfTwo((int)(summaries.Length * ResizeSafetyMargin)));
 
                 // Creates association between all parent classes with ServiceAttribute of replaced services, so for any of them child will be returned.
+                using var initialization = Services.Unsafe.Initialize();
                 for (int i = 0; i < summaries.Length; i++)
                 {
                     // TODO: Test if service types are still valid.
@@ -526,6 +528,12 @@ namespace Eclipse
                     // Right now activation is synced with a main thread, but it doesn't have to. This code will be moved to background thread later.
                     // You should use EngineService Initialize for executing code on a main thread instead.
                     IService service = (IService)Activator.CreateInstance(summary.service)!;
+                    foreach (var declaration in summary.declarations)
+                    {
+                        mapping[declaration] = summary;
+                        Services.Unsafe.Dictionary[declaration] = service;
+                        RuntimeHelpers.RunClassConstructor(declaration.TypeHandle);
+                    }
 
                     do
                     {
@@ -533,8 +541,11 @@ namespace Eclipse
                         Services.Unsafe.Dictionary[target] = service;
                         target = target.BaseType;
                     }
-                    while (target is { });
+                    while (target is { } && target.GetInterface(nameof(IService)) != null);
                 }
+
+                // Binds before initializing.
+                Services.Unsafe.Rebind();
 
                 // No reason to parallelize this one - it will just create unnecessary overhead.
                 // We will have at max 50-100 services with mods, I assume   - Dark
@@ -740,28 +751,29 @@ namespace Eclipse
                     }
 
                     ServiceAttribute attribute = type.GetCustomAttribute<ServiceAttribute>();
-                    Type[] interfaces = type.FindInterfaces((type, _) => typeof(IService).IsAssignableFrom(type), null);
-                    Logger.Log();
-                    foreach (var declaration in interfaces)
+                    Type[] interfaces = type.FindInterfaces(Filter, null);
+                    static bool Filter(Type type, object _)
                     {
-                        Logger.Log($"Found interface: {declaration}");
-                        if (declaration.BaseType?.BaseType == typeof(IService))
-                        {
-                            Logger.LogWarning($"Found target service interface!!! {declaration} and base type: {declaration.BaseType.BaseType}");
-                            ServiceSummary summary = new ServiceSummary(attribute, type, declaration);
+                        // Allows interface declaration + generic IService<T> type declaration for better mapping.
+                        return typeof(IService).IsAssignableFrom(type) && type != typeof(IService);
+                    }
 
-                            int index = services.FindIndex(s => s.declaration == declaration);
-                            if (index == -1)
-                            {
-                                services.Add(summary);
-                            }
-                            else
-                            {
-                                services[index] = summary;
-                            }
+                    ServiceSummary summary = new ServiceSummary(attribute, type);
+                    foreach (Type declaration in interfaces)
+                    {
+                        summary.declarations.Add(declaration);
+                    }
 
-                            break;
-                        }
+                    Type target = summary.declarations.Find(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IService<>));
+                    int index = services.FindIndex(s => s.declarations.Contains(target));
+                    if (index == -1)
+                    {
+                        services.Add(summary);
+                    }
+                    else
+                    {
+                        EclipseLogger.LogWarning($"Replacing {services[index].service}.");
+                        services[index] = summary;
                     }
                 }
 
@@ -793,14 +805,12 @@ namespace Eclipse
         {
             public readonly ServiceAttribute attribute;
             public readonly Type service;
-            public readonly Type declaration;
             public readonly List<MethodSummary<BeforeServiceInitializedAttribute>> preload;
             public readonly List<MethodSummary<AfterServiceInitializedAttribute>> afterload;
-            public ServiceSummary(ServiceAttribute attribute, Type service, Type declaration)
+            public ServiceSummary(ServiceAttribute attribute, Type service)
             {
                 this.attribute = attribute;
                 this.service = service;
-                this.declaration = declaration;
                 preload = new List<MethodSummary<BeforeServiceInitializedAttribute>>(0);
                 afterload = new List<MethodSummary<AfterServiceInitializedAttribute>>(0);
             }

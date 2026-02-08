@@ -27,6 +27,19 @@ namespace Eclipse
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
+        /// .                                                 Constants
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Prefix for log messages sent from this class.
+        /// </summary>
+        public const string LogPrefix = "[" + nameof(Services) + "]";
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
         /// .                                                   Events
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
@@ -55,7 +68,40 @@ namespace Eclipse
         /// .                                              Static Properties
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public static IReadOnlyCollection<IService> List => m_Services.Values;
+        /// <summary>
+        /// Enumerator over all <see cref="ServiceEntry"/> of all registered services.
+        /// </summary>
+        public static IEnumerable<ServiceEntry> Entries
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    foreach (var entry in m_Services.Values)
+                    {
+                        yield return entry;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Enumerator over all registered services.
+        /// </summary>
+        public static IEnumerable<IService> List
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    foreach (var entry in m_Services.Values)
+                    {
+                        yield return entry.service;
+                    }
+                }
+            }
+        }
+
 
 
 
@@ -65,7 +111,8 @@ namespace Eclipse
         /// .                                               Static Fields
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private static readonly Dictionary<Type, IService> m_Services = new Dictionary<Type, IService>();
+        private static readonly Dictionary<Type, ServiceEntry> m_Services = new Dictionary<Type, ServiceEntry>();
+        private static readonly object _lock = new object();
 
 
 
@@ -83,7 +130,7 @@ namespace Eclipse
         /// </remarks>
         public static bool Has<T>() where T : class, IService
         {
-            return m_Services.TryGetValue(typeof(T), out IService service) && service is T;
+            return m_Services.TryGetValue(typeof(T), out ServiceEntry entry) && entry.service is T;
         }
 
         /// <summary>
@@ -94,7 +141,7 @@ namespace Eclipse
         /// </remarks>
         public static bool Has(Type type)
         {
-            return m_Services.TryGetValue(type, out IService service) && service.GetType() == type;
+            return m_Services.TryGetValue(type, out ServiceEntry entry) && entry.service.GetType() == type;
         }
 
 
@@ -107,7 +154,15 @@ namespace Eclipse
         /// <remarks>
         /// Never throws. Instead, returns <c>null</c> if service is not defined or its type was changed.
         /// </remarks>
-        public static T? Get<T>() where T : class, IService => m_Services.GetValueOrDefault(typeof(T)) as T;
+        public static T? Get<T>() where T : class, IService
+        {
+            if (m_Services.TryGetValue(typeof(T), out ServiceEntry entry))
+            {
+                return entry.service as T;
+            }
+
+            return default;
+        }
 
         /// <summary>
         /// Retrieves service of a requested type.
@@ -118,9 +173,9 @@ namespace Eclipse
         /// </remarks>
         public static IService? Get(Type type)
         {
-            if (m_Services.TryGetValue(type, out IService service) && service.GetType() == type)
+            if (m_Services.TryGetValue(type, out ServiceEntry entry) && entry.GetType() == type)
             {
-                return service;
+                return entry.service;
             }
 
             return default;
@@ -138,7 +193,7 @@ namespace Eclipse
         /// </remarks>
         public static bool TryGet<T>([NotNullWhen(true)] out T? service) where T : class, IService
         {
-            if (m_Services.TryGetValue(typeof(T), out IService result) && result is T t)
+            if (m_Services.TryGetValue(typeof(T), out ServiceEntry entry) && entry.service is T t)
             {
                 service = t;
                 return true;
@@ -147,9 +202,6 @@ namespace Eclipse
             service = default;
             return false;
         }
-
-
-
 
         /// <summary>
         /// Retrieves service of a requested type.
@@ -160,7 +212,14 @@ namespace Eclipse
         /// </remarks>
         public static bool TryGet(Type type, [NotNullWhen(true)] out IService? service)
         {
-            return m_Services.TryGetValue(type, out service) && service.GetType() == type;
+            if (m_Services.TryGetValue(type, out ServiceEntry entry) && entry.service.GetType() == type)
+            {
+                service = entry.service;
+                return true;
+            }
+
+            service = default;
+            return false;
         }
     }
 }

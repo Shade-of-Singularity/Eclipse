@@ -24,9 +24,9 @@ namespace Eclipse.Extensions
     public static class Try
     {
         /// <summary>
-        /// Invokes given <paramref name="action"/> with default logger <see cref="Logger.LogException(Exception)"/>.
+        /// Invokes given <paramref name="action"/> with default logger <see cref="EclipseLogger.LogException(Exception)"/>.
         /// </summary>
-        public static void WithLog(Action? action) => Invoke(action, Logger.LogException);
+        public static void WithLog(Action? action) => Invoke(action, EclipseLogger.LogException);
 
         /// <summary>
         /// Invokes given <paramref name="action"/> with using <paramref name="callback"/> handler for exception handling.

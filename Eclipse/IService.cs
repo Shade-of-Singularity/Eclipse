@@ -33,6 +33,7 @@ namespace Eclipse
     /// (Note: Only mod-pack developers working with older game versions should use it, to back-port stuff)
     /// </remarks>
     /// <typeparam name="T">The type of the service to retrieve. Must inherit from <see cref="IService{TService}"/>.</typeparam>
+    [IgnoreService] // Were added to allow child services to implement this attribute as well.
     public interface IService<T> : IService where T : class, IService<T>
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -97,7 +98,7 @@ namespace Eclipse
         {
             Services.Unsafe.DisposeServices += DisposeService;
             Services.Unsafe.CacheServices += CacheService;
-            m_Instance = Services.Get<T>();
+            //m_Instance = Services.Get<T>(); // No need, since services are initialized via CacheServices callback.
         }
 
         private static void DisposeService()
@@ -182,6 +183,7 @@ namespace Eclipse
     /// For custom services, please use <see cref="IService{TService}"/> interface instead.
     /// This interface is needed only for internal usage and listing in <see cref="Services.List"/>.
     /// </remarks>
+    [IgnoreService]
     public partial interface IService
     {
         /// <summary>
@@ -222,7 +224,7 @@ namespace Eclipse
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogException(new Exception($"Failed to initialize {GetType().Name} service!", ex));
+                    EclipseLogger.LogException(new Exception($"Failed to initialize {GetType().Name} service!", ex));
                 }
 
                 Initialized = true;
@@ -242,7 +244,7 @@ namespace Eclipse
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogException(new Exception($"Failed to terminate {GetType().Name} service!", ex));
+                    EclipseLogger.LogException(new Exception($"Failed to terminate {GetType().Name} service!", ex));
                 }
 
                 Initialized = false;

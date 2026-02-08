@@ -93,7 +93,7 @@ namespace Eclipse
         /// as to allow you to show appropriate warning.
         /// </para>
         /// </remarks>
-        public AutomaticStartupType InitializationType = AutomaticStartupType.AfterAssembliesLoaded;
+        public AutomaticStartupType InitializationType = AutomaticStartupType.SubsystemRegistration;
 
         /// <summary>
         /// Whether to allow modding the game.

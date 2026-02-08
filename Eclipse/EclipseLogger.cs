@@ -21,7 +21,7 @@ namespace Eclipse
     /// <summary>
     /// Provides ways for you to change how engine logs messages.
     /// </summary>
-    public static class Logger
+    public static class EclipseLogger
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -70,7 +70,7 @@ namespace Eclipse
         /// .                                                Constructors
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        static Logger()
+        static EclipseLogger()
         {
             InformationReceived += (message) =>
             {
@@ -114,20 +114,37 @@ namespace Eclipse
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
+        /// Attaches given log handlers to
+        /// <see cref="InformationReceived"/>, <see cref="WarningReceived"/>,
+        /// <see cref="ErrorReceived"/> and <see cref="ExceptionReceived"/>.
+        /// </summary>
+        /// (Dark): Imported from my beloved RiptideNetworking.
+        public static void Initialize(LogHandler? info, LogHandler? warning, LogHandler? error, ExceptionHandler? exception)
+        {
+            InformationReceived += info;
+            WarningReceived += warning;
+            ErrorReceived += error;
+            ExceptionReceived += exception;
+        }
+
+        /// <summary>
         /// Invokes <see cref="InformationReceived"/> with given <paramref name="obj"/>.
         /// Calls <see cref="object.ToString"/> on given <paramref name="obj"/>.
         /// </summary>
         public static void Log(object? obj = null) => InformationReceived?.Invoke(obj?.ToString() ?? string.Empty);
+
         /// <summary>
         /// Invokes <see cref="WarningReceived"/> with given <paramref name="obj"/>.
         /// Calls <see cref="object.ToString"/> on given <paramref name="obj"/>.
         /// </summary>
         public static void LogWarning(object? obj = null) => WarningReceived?.Invoke(obj?.ToString() ?? string.Empty);
+
         /// <summary>
         /// Invokes <see cref="ErrorReceived"/> with given <paramref name="obj"/>.
         /// Calls <see cref="object.ToString"/> on given <paramref name="obj"/>.
         /// </summary>
         public static void LogError(object? obj = null) => ErrorReceived?.Invoke(obj?.ToString() ?? string.Empty);
+
         /// <summary>
         /// Invokes <see cref="ExceptionReceived"/> with given <paramref name="exception"/>.
         /// </summary>

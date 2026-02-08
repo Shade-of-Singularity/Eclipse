@@ -105,7 +105,7 @@ namespace Eclipse.Configuration
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogException(ex);
+                        EclipseLogger.LogException(ex);
                     }
                 }
             }
@@ -137,7 +137,7 @@ namespace Eclipse.Configuration
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogException(ex);
+                        EclipseLogger.LogException(ex);
                     }
                 }
             }
@@ -166,7 +166,7 @@ namespace Eclipse.Configuration
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogException(ex);
+                        EclipseLogger.LogException(ex);
                     }
                 }
             }
@@ -195,7 +195,7 @@ namespace Eclipse.Configuration
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogException(ex);
+                        EclipseLogger.LogException(ex);
                     }
                 }
             }
@@ -224,7 +224,7 @@ namespace Eclipse.Configuration
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogException(ex);
+                        EclipseLogger.LogException(ex);
                     }
                 }
             }
@@ -253,7 +253,7 @@ namespace Eclipse.Configuration
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogException(ex);
+                        EclipseLogger.LogException(ex);
                     }
                 }
             }

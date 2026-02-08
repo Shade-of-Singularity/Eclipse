@@ -27,6 +27,7 @@ namespace Eclipse
         /// <remarks>
         /// For example - changing services here after <see cref="Engine"/> initialization will require 
         /// </remarks>
+        /// TODO: Add partial service initialization.
         public static partial class Unsafe
         {
             /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -35,19 +36,10 @@ namespace Eclipse
             /// .
             /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             /// <summary>
-            /// Asks systems to cache services in internal fields.
+            /// Asks systems to recache all services in internal fields.
+            /// Called after services were added or all services were removed.
             /// </summary>
-            /// <remarks>
-            /// Fired before <see cref="OnServicesInitializing"/>
-            /// </remarks>
-            public static event Action? CacheServices;
-            /// <summary>
-            /// Asks systems to remove any cached services from internal fields.
-            /// </summary>
-            /// <remarks>
-            /// Fired after <see cref="OnServicesTerminated"/>
-            /// </remarks>
-            public static event Action? DisposeServices;
+            public static event Action? RebindServices;
 
 
 
@@ -57,18 +49,7 @@ namespace Eclipse
             /// .                                              Static Properties
             /// .
             /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            public static IDictionary<Type, IService> Dictionary => m_Services;
-
-
-
-
-            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            /// .
-            /// .                                               Static Fields
-            /// .
-            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            private static readonly Lock m_InitializationLock = new Lock();
-            private static readonly Lock m_TerminationLock = new Lock();
+            public static IDictionary<Type, ServiceEntry> Dictionary => m_Services;
 
 
 
@@ -79,82 +60,129 @@ namespace Eclipse
             /// .
             /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             /// <summary>
-            /// Fires <see cref="OnServicesInitializing"/> callback and returns special unloading lock.
+            /// Fires <see cref="OnServicesInitializing"/> event and returns special unloading lock.
             /// </summary>
             /// <remarks>
-            /// After returned value is disposed - fires <see cref="OnServicesInitialized"/> callback.
+            /// After returned value is disposed - fires <see cref="OnServicesInitialized"/> event.
+            /// Does not fire <see cref="RebindServices"/> event.
             /// </remarks>
             /// <returns>
             /// You are meant to use returned value like that:
             /// <code><![CDATA[
-            /// using (Initialize())
+            /// using (Initialize()) // Auto-fires OnServicesInitializing event.
             /// {
-            ///     // Initialize services here.
+            ///     // Initialize *existing* services.
+            ///     // ...
             /// }
+            /// // Fires OnServicesInitialized event.
             /// ]]></code>
             /// </returns>
             public static IDisposable Initialize()
             {
-                if (m_InitializationLock.TrySet(FireInitializedCallbacks))
-                {
-                    m_Services.Clear();
-                    OnServicesInitializing?.Invoke();
-                }
-
-                return m_InitializationLock;
+                OnServicesInitializing?.Invoke();
+                return new Handle(FireInitializedEvents);
             }
 
             /// <summary>
-            /// Fires <see cref="OnServicesTerminating"/> callback and returns special termination lock.
+            /// Fires <see cref="OnServicesTerminating"/> event and returns special termination lock.
             /// </summary>
             /// <remarks>
-            /// After returned value is disposed - fires <see cref="OnServicesTerminated"/> callback.
-            /// And after that - automatically clears <see cref="List"/> collection.
+            /// After returned value is disposed - fires <see cref="OnServicesTerminated"/> event.
+            /// Does not fire <see cref="RebindServices"/> event.
             /// </remarks>
             /// <returns>
             /// You are meant to use returned value like that:
             /// <code><![CDATA[
-            /// using (Terminate())
+            /// using (Terminate()) // Auto-fires OnServicesTerminating event.
             /// {
-            ///     // Terminate services here.
+            ///     // Terminate services.
+            ///     // ...
             /// }
+            /// // Auto-fires OnServicesTerminated event.
             /// ]]></code>
             /// </returns>
             public static IDisposable Terminate()
             {
-                if (m_TerminationLock.TrySet(FireTerminationCallbacks))
-                {
-                    OnServicesTerminating?.Invoke();
-                }
-
-                return m_TerminationLock;
+                OnServicesTerminating?.Invoke();
+                return new Handle(FireTerminationEvents);
             }
 
             /// <summary>
             /// Rebinds values for internal instance fields of <see cref="IService{T}.Instance"/>.
             /// </summary>
-            public static void Rebind() => CacheServices?.Invoke();
+            /// <remarks>
+            /// Does so by firing <see cref="RebindServices"/> event.
+            /// </remarks>
+            /// <returns>
+            /// You are meant to use returned value like that:
+            /// <code><![CDATA[
+            /// using (Rebind()) // Auto-fires nothing.
+            /// {
+            ///     // Add or Remove services.
+            /// }
+            /// // Auto-fires RebindServices event.
+            /// ]]></code>
+            /// </returns>
+            public static IDisposable Rebind() => new Handle(FireRebindEvents);
 
             /// <summary>
-            /// Registers <paramref name="service"/> of a type <typeparamref name="T"/>.
+            /// Sets or Replaces existing service in internal service collection.
             /// </summary>
-            //public static void Set<T>(T service) where T : class, IService
-            //{
-            //    // TODO: Completely remove associations with old keys.
-            //    // TODO: Register the entire tree.
-            //    throw new NotImplementedException();
-            //}
+            /// <param name="service">Service to register.</param>
+            /// TODO: Add locking for internal dictionary.
+            public static void Set(IService service)
+            {
+                if (service is null)
+                {
+                    EclipseLogger.LogWarning($"{LogPrefix} Attempted to register null service.");
+                    return;
+                }
+
+                SetUnchecked(ServiceEntry.Construct(service));
+            }
 
             /// <summary>
-            /// Registers <paramref name="service"/> of a given <paramref name="type"/>.
+            /// Sets or Replaces existing service in internal service collection.
             /// </summary>
-            //public static void Set(Type type, IService service)
-            //{
-            //    // TODO: Completely remove associations with old keys.
-            //    // TODO: Replace with IEngineService.
-            //    // TODO: Register the entire tree.
-            //    throw new NotImplementedException();
-            //}
+            /// <remarks>
+            /// Internally, service is replaced on if *any* conflict between 
+            /// </remarks>
+            /// <param name="entry">Service entry to register.</param>
+            /// TODO: Add locking for internal dictionary.
+            public static void Set(ServiceEntry entry)
+            {
+                if (entry.service is null)
+                {
+                    EclipseLogger.LogWarning($"{LogPrefix} Attempted to register null service.");
+                    return;
+                }
+
+                SetUnchecked(entry);
+            }
+
+            /// <summary>
+            /// Removes given service from a service list.
+            /// </summary>
+            /// <returns><inheritdoc cref="Remove(Type)"/></returns>
+            public static bool Remove(IService service) => Remove(service.GetType());
+
+            /// <summary>
+            /// Removes service under given association <paramref name="key"/> from a service list.
+            /// </summary>
+            /// <returns>
+            /// <c>true</c> if service was removed.
+            /// <c>false</c> if there was no service under given <paramref name="key"/> to begin with.
+            /// </returns>
+            public static bool Remove(Type key)
+            {
+                if (m_Services.TryGetValue(key, out ServiceEntry entry))
+                {
+                    Array.ForEach(entry.associations, a => m_Services.Remove(a));
+                    return true;
+                }
+
+                return false;
+            }
 
 
 
@@ -164,7 +192,7 @@ namespace Eclipse
             /// .                                               Private Methods
             /// .
             /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            private static void FireInitializedCallbacks()
+            private static void FireInitializedEvents()
             {
                 try
                 {
@@ -172,11 +200,11 @@ namespace Eclipse
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogException(ex);
+                    EclipseLogger.LogException(ex);
                 }
             }
 
-            private static void FireTerminationCallbacks()
+            private static void FireTerminationEvents()
             {
                 try
                 {
@@ -184,10 +212,38 @@ namespace Eclipse
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogException(ex);
+                    EclipseLogger.LogException(ex);
                 }
+            }
 
-                m_Services.Clear();
+            private static void FireRebindEvents()
+            {
+                try
+                {
+                    RebindServices?.Invoke();
+                }
+                catch (Exception ex)
+                {
+                    EclipseLogger.LogException(ex);
+                }
+            }
+
+            private static void SetUnchecked(ServiceEntry entry)
+            {
+                // Registers service.
+                for (int i = 0; i < entry.associations.Length; i++)
+                {
+                    Type association = entry.associations[i];
+                    if (association is null) continue;
+
+                    if (!m_Services.TryAdd(association, entry))
+                    {
+                        // Overwrites previously existing service entirely.
+                        ServiceEntry existing = m_Services[association];
+                        Array.ForEach(existing.associations, a => m_Services.Remove(a));
+                        m_Services[association] = entry;
+                    }
+                }
             }
         }
     }
