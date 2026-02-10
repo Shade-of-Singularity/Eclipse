@@ -1,5 +1,5 @@
 # Eclipse
-Is a Service-based Unity Foundation Library with community-modding support. Release for non-Unity environments is planned for later.
+Is a Service-based Unity Foundation Library with community-modding support. Uses UniTask for async initialization. Release for non-Unity environments is planned for later.
 
 Eclipse enforces service access via static declarations in `ICustomService : IService<ICustomService>`, but in return provides exceptionally high performance.
 It should be used as a core for your application to support proper runtime modding.
@@ -38,6 +38,12 @@ public sealed class GameService : IGameService
 {
     /// <inheritdoc/>
     public void LoadFirstLevel() => SceneManagement.LoadLevel(1);
+
+    /// <inheritdoc/>
+    public virtual UniTask Initialize() => UniTask.CompletedTask;
+
+    /// <inheritdoc/>
+    public virtual UniTask Terminate() => UniTask.CompletedTask;
 }
 
 // Recommended way to declare services:
