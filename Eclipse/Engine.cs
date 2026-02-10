@@ -594,6 +594,7 @@ namespace Eclipse
             public readonly List<MethodSummary<AfterServiceInitializedAttribute>> Afterload = [];
             public readonly Dictionary<Type, ServiceSummary> Mapping = [];
         }
+
         private static async UniTask UnloadInternal(IEnumerable<Assembly> assemblies)
         {
             await UniTask.CompletedTask;
@@ -617,7 +618,6 @@ namespace Eclipse
                 await Extract(assembly, context);
             }
 
-            EclipseLogger.LogWarning($"Found services ({context.Services.Count}).");
             await ConstructServices(context);
             await InitializeServices(context);
         }
@@ -633,7 +633,6 @@ namespace Eclipse
                 throw new NotSupportedException("You can't load assemblies not from current AppDomain yet.");
             }
 
-            EclipseLogger.LogWarning($"Extracting ({assembly.FullName}).");
             // TODO: Support services defined inside other classes (?)
             List<ServiceSummary> services = context.Services;
             List<MethodSummary<BeforeServiceInitializedAttribute>> preload = context.Preload;
