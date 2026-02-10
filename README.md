@@ -14,7 +14,7 @@ RimWorld Game.GetComponent<>()  | 0.0167          | 0.4001           | O(n) n:7
 Native GetField                 | 0.0101          | 0.0104           | O(1)      
 Idle (Control)                  | 0.0003          | 0.0003           | O(1)      
 ```
-Benchmark project: github.com/Shade-of-Singularity/EclipseBenchmark
+Benchmark project: https://github.com/Shade-of-Singularity/EclipseBenchmark
 
 Provides optional multi-threaded initialization system for thread-safe functions.
 Also provides a way for you or modders to modify initialization orders of different systems to made modding easier.
