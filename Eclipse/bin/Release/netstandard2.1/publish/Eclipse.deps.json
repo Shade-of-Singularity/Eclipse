@@ -7,7 +7,7 @@
   "targets": {
     ".NETStandard,Version=v2.1": {},
     ".NETStandard,Version=v2.1/": {
-      "Eclipse/1.0.0": {
+      "Eclipse/0.4.0.0": {
         "dependencies": {
           "UniTask": "2.5.10",
           "UnityEngine": "0.0.0.0"
@@ -57,7 +57,7 @@
     }
   },
   "libraries": {
-    "Eclipse/1.0.0": {
+    "Eclipse/0.4.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

@@ -147,7 +147,7 @@
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
-    "version": "1.0.0",
+    "version": "0.4.0",
     "restore": {
       "projectUniqueName": "F:\\Unity\\Support\\Eclipse\\Eclipse\\Eclipse.csproj",
       "projectName": "Eclipse",

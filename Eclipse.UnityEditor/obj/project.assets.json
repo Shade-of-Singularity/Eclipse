@@ -47,7 +47,7 @@
           }
         }
       },
-      "Eclipse/1.0.0": {
+      "Eclipse/0.4.0": {
         "type": "project",
         "framework": ".NETStandard,Version=v2.1",
         "dependencies": {
@@ -60,11 +60,11 @@
           "bin/placeholder/Eclipse.dll": {}
         }
       },
-      "Eclipse.UnityEngine/1.0.0": {
+      "Eclipse.UnityEngine/0.4.0": {
         "type": "project",
         "framework": ".NETStandard,Version=v2.1",
         "dependencies": {
-          "Eclipse": "1.0.0",
+          "Eclipse": "0.4.0",
           "UniTask": "2.5.10"
         },
         "compile": {
@@ -163,12 +163,12 @@
         "unitask.nuspec"
       ]
     },
-    "Eclipse/1.0.0": {
+    "Eclipse/0.4.0": {
       "type": "project",
       "path": "../Eclipse/Eclipse.csproj",
       "msbuildProject": "../Eclipse/Eclipse.csproj"
     },
-    "Eclipse.UnityEngine/1.0.0": {
+    "Eclipse.UnityEngine/0.4.0": {
       "type": "project",
       "path": "../Eclipse.UnityEngine/Eclipse.UnityEngine.csproj",
       "msbuildProject": "../Eclipse.UnityEngine/Eclipse.UnityEngine.csproj"
@@ -176,8 +176,8 @@
   },
   "projectFileDependencyGroups": {
     ".NETStandard,Version=v2.1": [
-      "Eclipse >= 1.0.0",
-      "Eclipse.UnityEngine >= 1.0.0",
+      "Eclipse >= 0.4.0",
+      "Eclipse.UnityEngine >= 0.4.0",
       "UniTask >= 2.5.10"
     ]
   },
@@ -186,7 +186,7 @@
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
-    "version": "1.0.0",
+    "version": "0.4.0",
     "restore": {
       "projectUniqueName": "F:\\Unity\\Support\\Eclipse\\Eclipse.UnityEditor\\Eclipse.UnityEditor.csproj",
       "projectName": "Eclipse.UnityEditor",

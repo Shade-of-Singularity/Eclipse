@@ -5,7 +5,7 @@
   },
   "projects": {
     "F:\\Unity\\Support\\Eclipse\\Eclipse.UnityEngine\\Eclipse.UnityEngine.csproj": {
-      "version": "1.0.0",
+      "version": "0.4.0",
       "restore": {
         "projectUniqueName": "F:\\Unity\\Support\\Eclipse\\Eclipse.UnityEngine\\Eclipse.UnityEngine.csproj",
         "projectName": "Eclipse.UnityEngine",
@@ -80,7 +80,7 @@
       }
     },
     "F:\\Unity\\Support\\Eclipse\\Eclipse\\Eclipse.csproj": {
-      "version": "1.0.0",
+      "version": "0.4.0",
       "restore": {
         "projectUniqueName": "F:\\Unity\\Support\\Eclipse\\Eclipse\\Eclipse.csproj",
         "projectName": "Eclipse",
