@@ -1,8 +1,4 @@
-﻿
-using Cysharp.Threading.Tasks;
-using Eclipse.Serialization;
-
-/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
+﻿/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
 /// 
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -17,6 +13,10 @@ using Eclipse.Serialization;
 /// limitations under the License.
 /// 
 /// ]]>
+
+
+using Cysharp.Threading.Tasks;
+
 namespace Eclipse.Localization
 {
     /// <inheritdoc cref="ILocalizationService"/>
