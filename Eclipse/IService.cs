@@ -17,7 +17,6 @@
 using Cysharp.Threading.Tasks;
 using System;
 using System.Runtime.CompilerServices;
-using static Eclipse.IService;
 
 namespace Eclipse
 {
@@ -96,20 +95,20 @@ namespace Eclipse
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         static IService()
         {
-            Services.Unsafe.DisposeServices += DisposeService;
-            Services.Unsafe.CacheServices += CacheService;
-            //m_Instance = Services.Get<T>(); // No need, since services are initialized via CacheServices callback.
+            Services.Unsafe.RebindServices += RebindService;
+            //m_Instance = Services.Get<T>(); // No need, since services instance is provided after RebindService callback.
         }
 
-        private static void DisposeService()
+        private static void RebindService()
         {
-            m_Initialized = false;
-            m_Instance = null;
-        }
-
-        private static void CacheService()
-        {
-            m_Instance = Services.Get<T>();
+            T? service = Services.Get<T>();
+            m_Instance = service;
+            if (service is null && m_Initialized)
+            {
+                // Note: is this even a right way to handle it?
+                EclipseLogger.LogError($"{Services.LogPrefix} Rebinded to null service ({typeof(T).Name}) without termination! Service state won't reset!");
+                return;
+            }
         }
 
 

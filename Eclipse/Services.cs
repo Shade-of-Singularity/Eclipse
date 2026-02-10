@@ -77,6 +77,7 @@ namespace Eclipse
             {
                 lock (_lock)
                 {
+                    // TODO: Avoid duplicates, which appear due to map mapping services to multiple keys for optimization.
                     foreach (var entry in m_Services.Values)
                     {
                         yield return entry;
@@ -94,6 +95,7 @@ namespace Eclipse
             {
                 lock (_lock)
                 {
+                    // TODO: Avoid duplicates, which appear due to map mapping services to multiple keys for optimization.
                     foreach (var entry in m_Services.Values)
                     {
                         yield return entry.service;
@@ -111,8 +113,8 @@ namespace Eclipse
         /// .                                               Static Fields
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private static readonly Dictionary<Type, ServiceEntry> m_Services = new Dictionary<Type, ServiceEntry>();
-        private static readonly object _lock = new object();
+        private static readonly Dictionary<Type, ServiceEntry> m_Services = [];
+        private static readonly object _lock = new();
 
 
 

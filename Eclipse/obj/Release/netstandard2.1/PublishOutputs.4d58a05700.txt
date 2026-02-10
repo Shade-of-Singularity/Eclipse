@@ -1,0 +1,9 @@
+F:\Unity\Support\Eclipse\Eclipse\bin\Release\netstandard2.1\publish\Eclipse.dll
+F:\Unity\Support\Eclipse\Eclipse\bin\Release\netstandard2.1\publish\Eclipse.deps.json
+F:\Unity\Support\Eclipse\Eclipse\bin\Release\netstandard2.1\publish\Eclipse.pdb
+F:\Unity\Support\Eclipse\Eclipse\bin\Release\netstandard2.1\publish\System.Runtime.CompilerServices.Unsafe.dll
+F:\Unity\Support\Eclipse\Eclipse\bin\Release\netstandard2.1\publish\System.Threading.Tasks.Extensions.dll
+F:\Unity\Support\Eclipse\Eclipse\bin\Release\netstandard2.1\publish\UniTask.dll
+F:\Unity\Support\Eclipse\Eclipse\bin\Release\netstandard2.1\publish\UnityEngine.dll
+F:\Unity\Support\Eclipse\Eclipse\bin\Release\netstandard2.1\publish\UnityEngine.xml
+F:\Unity\Support\Eclipse\Eclipse\bin\Release\netstandard2.1\publish\Eclipse.xml

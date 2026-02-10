@@ -29,7 +29,7 @@ namespace Eclipse
         /// <remarks>
         /// Might be removed in future updates.
         /// </remarks>
-        private sealed class AssemblyStorage : IEnumerable<Assembly>
+        private sealed class AssemblyStorage(int capacity) : IEnumerable<Assembly>
         {
             /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             /// .
@@ -50,8 +50,8 @@ namespace Eclipse
             /// .                                                Public Fields
             /// .
             /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            public readonly List<Assembly> List;
-            public readonly HashSet<Assembly> Set;
+            public readonly List<Assembly> List = new(capacity);
+            public readonly HashSet<Assembly> Set = new(capacity);
 
 
 
@@ -62,11 +62,6 @@ namespace Eclipse
             /// .
             /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             public AssemblyStorage() : this(64) { }
-            public AssemblyStorage(int capacity)
-            {
-                List = new List<Assembly>(capacity);
-                Set = new HashSet<Assembly>(capacity);
-            }
 
 
 

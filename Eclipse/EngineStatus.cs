@@ -22,6 +22,11 @@ namespace Eclipse
     public enum EngineStatus : byte
     {
         /// <summary>
+        /// Invalid state of the engine. Never returned by <see cref="Engine.Status"/>.
+        /// </summary>
+        Invalid = 0,
+
+        /// <summary>
         /// (Default) Engine is terminated and waits for <see cref="Engine.Initialize"/> to be used.
         /// </summary>
         /// <remarks>
@@ -29,24 +34,24 @@ namespace Eclipse
         /// by setting <see cref="EclipseConfiguration.InitializationType"/>
         /// to anything but <see cref="AutomaticStartupType.Manual"/> - will be in terminated state very briefly.
         /// </remarks>
-        Terminated = 0b0000_0000,
+        Terminated = 0b0000_0001,
 
         /// <summary>
         /// Indicates that <see cref="Engine"/> is in active initialization right now.
         /// Will be set to <see cref="Initialized"/> once initialization is finished.
         /// </summary>
-        Initializing = 0b0000_0001,
+        Initializing = 0b0000_0010,
 
         /// <summary>
         /// Indicates that <see cref="Engine"/> is fully initialized.
         /// </summary>
-        Initialized = 0b0000_0010,
+        Initialized = 0b0000_0100,
 
         /// <summary>
         /// Indicates that <see cref="Engine"/> is being terminated.
         /// Will be set to <see cref="Terminated"/> once terminated is finished.
         /// </summary>
-        Terminating = 0b0000_0100,
+        Terminating = 0b0000_1000,
 
         /// <summary>
         /// Represents that <see cref="Engine"/> got irreversibly broken during <see cref="Initializing"/>

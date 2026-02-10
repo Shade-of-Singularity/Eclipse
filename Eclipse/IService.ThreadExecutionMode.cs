@@ -24,24 +24,24 @@ namespace Eclipse
         /// <remarks>
         /// Anything else than <see cref="MainThread"/> will result in service being initialized on a background thread (not thread-safe).
         /// </remarks>
-        public enum ThreadExecutionMode : byte
+        public enum ThreadExecutionMode : sbyte // sbyte for sorting.
         {
+            /// <summary>
+            /// Initializes service in multithreaded mode, before other <see cref="MainThread"/> services initialize.
+            /// Order is reversed during unloading.
+            /// </summary>
+            ThreadedBeforeMain = -1,
+
             /// <summary>
             /// Initializes service on main thread (e.g. Unity UI thread).
             /// </summary>
             MainThread = 0,
 
             /// <summary>
-            /// Initializes service in multithreaded mode, before other <see cref="MainThread"/> services initialize.
-            /// Order is reversed during unloading.
-            /// </summary>
-            ThreadedBeforeMain = 1,
-
-            /// <summary>
             /// Initializes service in multithreaded mode, after other <see cref="MainThread"/> services initialize.
             /// Order is reversed during unloading.
             /// </summary>
-            ThreadedAfterMain = 2,
+            ThreadedAfterMain = 1,
         }
     }
 }

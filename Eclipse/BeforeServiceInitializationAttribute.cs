@@ -42,13 +42,7 @@ namespace Eclipse
         /// Whether method can be executed in a background thread.
         /// </summary>
         /// <remarks>
-        /// <remarks>
-        /// Flag is ignored if target <see cref="Service"/> has <see cref="ServiceAttribute.ThreadExecutionMode.MainThread"/> flag set on it.
-        /// In which case method will be executed on a main thread instead.
-        /// <para>
-        /// Regardless of being executed in a background or on a main thread,
-        /// will still only run before <see cref="Service"/>'s <see cref="Service.Initialize"/> method.
-        /// </para>
+        /// It won't always run in background when set to <c>true</c>, but whenever possible - will run in parallel.
         /// </remarks>
         public bool ThreadSafe { get; set; } = false;
 

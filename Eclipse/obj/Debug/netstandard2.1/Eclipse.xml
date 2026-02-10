@@ -129,7 +129,14 @@
             - it will run within synchronization context of <see cref="P:Eclipse.BeforeServiceInitializedAttribute.Service"/>.
             </remarks>
         </member>
-        <!-- Badly formed XML comment ignored for member "P:Eclipse.BeforeServiceInitializedAttribute.ThreadSafe" -->
+        <member name="P:Eclipse.BeforeServiceInitializedAttribute.ThreadSafe">
+            <summary>
+            Whether method can be executed in a background thread.
+            </summary>
+            <remarks>
+            It won't always run in background when set to <c>true</c>, but whenever possible - will run in parallel.
+            </remarks>
+        </member>
         <member name="P:Eclipse.BeforeServiceInitializedAttribute.Service">
             <summary>
             Reference service to use. Method with this attribute will be executed after this service is initialized.
@@ -2084,6 +2091,14 @@
             Might be removed in future updates.
             </remarks>
         </member>
+        <member name="M:Eclipse.Engine.AssemblyStorage.#ctor(System.Int32)">
+            <summary>
+            Stores assemblies while efficiently checking for duplicates.
+            </summary>
+            <remarks>
+            Might be removed in future updates.
+            </remarks>
+        </member>
         <member name="P:Eclipse.Engine.AssemblyStorage.Item(System.Int32)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
@@ -2129,55 +2144,108 @@
             Prefix for console messages sent from this class.
             </summary>
         </member>
-        <member name="E:Eclipse.Engine.OnEngineInitialized">
+        <member name="E:Eclipse.Engine.OnEngineInitializing">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                                   Events
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Event that is fired when <see cref="P:Eclipse.Engine.Status"/> is set <see cref="F:Eclipse.EngineStatus.Initialized"/>
+            Invoked right after <see cref="M:Eclipse.Engine.Initialize"/> is called.
+            </summary>
+        </member>
+        <member name="E:Eclipse.Engine.OnEngineInitialized">
+            <summary>
+            Invoked when all engine systems, including <see cref="T:Eclipse.Services"/>, were fully initialized.
+            </summary>
+        </member>
+        <member name="E:Eclipse.Engine.OnEngineTerminating">
+            <summary>
+            Invoked right after <see cref="M:Eclipse.Engine.Terminate"/> is called.
+            </summary>
+        </member>
+        <member name="E:Eclipse.Engine.OnEngineTerminated">
+            <summary>
+            Invoked when entire <see cref="T:Eclipse.Engine"/> were terminated.
+            </summary>
+        </member>
+        <member name="E:Eclipse.Engine.FireWithEngineInitializing">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Auto-fire Events
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            <inheritdoc cref="E:Eclipse.Engine.OnEngineInitializing"/>
             </summary>
             <remarks>
-            Callback list is cleared after initialization.
-            This implies that you should only use this callback before calling <see cref="M:Eclipse.Engine.Initialize"/>, or inside <see cref="!:Service.Initialize"/>.
+            If <see cref="E:Eclipse.Engine.OnEngineInitializing"/> event was already fired - immediately fires attaching callback.
             <para>
             To get consistent callback, you can use <see cref="T:Eclipse.EclipseInitializeAttribute"/> on custom static methods.
             </para>
             </remarks>
         </member>
-        <member name="E:Eclipse.Engine.OnEngineTerminated">
+        <member name="E:Eclipse.Engine.FireWithEngineInitialized">
             <summary>
-            Called when every existing instance of <see cref="T:Eclipse.IService"/> and similar is fully unloaded. (e.g. on <see cref="M:Eclipse.Engine.Terminate"/>)
-            <para>
-            Used to reset static references to the old services and configuration classes, as to prevent memory leaks on mod reloading.
-            </para>
+            <inheritdoc cref="E:Eclipse.Engine.OnEngineInitializing"/>
             </summary>
             <remarks>
-            Callback list is cleared after engine reset.
-            This implies that you should only use this callback before calling <see cref="M:Eclipse.Engine.Terminate"/>, or inside <see cref="!:IService.Terminate"/>.
+            If <see cref="E:Eclipse.Engine.OnEngineInitialized"/> event was already fired - immediately fires attaching callback.
+            <para>
+            To get consistent callback, you can use <see cref="T:Eclipse.EclipseInitializeAttribute"/> on custom static methods.
+            </para>
+            </remarks>
+        </member>
+        <member name="E:Eclipse.Engine.FireWithEngineTerminating">
+            <summary>
+            <inheritdoc cref="E:Eclipse.Engine.OnEngineTerminating"/>
+            </summary>
+            <remarks>
+            If <see cref="E:Eclipse.Engine.OnEngineTerminating"/> event was already fired - immediately fires attaching callback.
+            <para>
+            To get consistent callback, you can use <see cref="T:Eclipse.EclipseInitializeAttribute"/> on custom static methods.
+            </para>
+            </remarks>
+        </member>
+        <member name="E:Eclipse.Engine.FireWithEngineTerminated">
+            <summary>
+            <inheritdoc cref="E:Eclipse.Engine.OnEngineTerminated"/>
+            </summary>
+            <remarks>
+            If <see cref="E:Eclipse.Engine.OnEngineTerminated"/> event was already fired - immediately fires attaching callback.
             <para>
             To get consistent callback, you can use <see cref="T:Eclipse.EclipseInitializeAttribute"/> on custom static methods.
             </para>
             </remarks>
         </member>
         <member name="P:Eclipse.Engine.Status">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
             Status of the engine.
             </summary>
             <remarks>
             <para>Set to <see cref="F:Eclipse.EngineStatus.Terminated"/> - by default.</para>
-            <para>Set to <see cref="F:Eclipse.EngineStatus.Initializing"/> - during initialization (after calling <see cref="M:Eclipse.Engine.Initialize"/>, potentially automatically).</para>
+            <para>Set to <see cref="F:Eclipse.EngineStatus.Initializing"/> - during initialization (after calling <see cref="M:Eclipse.Engine.Initialize"/>).</para>
             <para>Set to <see cref="F:Eclipse.EngineStatus.Initialized"/> - when <see cref="T:Eclipse.Engine"/> and <see cref="T:Eclipse.Modding.Mod"/>s are fully initialized!</para>
-            <para>Set to <see cref="F:Eclipse.EngineStatus.Terminating"/> - during unloading (after calling <see cref="M:Eclipse.Engine.Terminate"/>, maybe by <see cref="T:Eclipse.QuitHandler"/>)</para>
+            <para>Set to <see cref="F:Eclipse.EngineStatus.Terminating"/> - during unloading (after <see cref="M:Eclipse.Engine.Terminate"/>/automatically by <see cref="T:Eclipse.QuitHandler"/>)</para>
             <para>Set to <see cref="F:Eclipse.EngineStatus.InitializationBroken"/> - if engine got irreversibly broken during initialization.</para>
             <para>Set to <see cref="F:Eclipse.EngineStatus.TerminationBroken"/> - if engine got irreversibly broken during unloading.</para>
             </remarks>
         </member>
-        <member name="F:Eclipse.Engine.m_Status">
+        <member name="P:Eclipse.Engine.NativeAssemblies">
+            <summary>
+            Lists all Assemblies referencing <see cref="T:Eclipse.Engine"/>.
+            Such Assemblies are considered "Native" and will be automatically loaded first on <see cref="M:Eclipse.Engine.Initialize"/> call.
+            </summary>
+        </member>
+        <member name="F:Eclipse.Engine.m_NativeAssemblies">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
-            .                                               Private Fields
+            .                                               Static Fields
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
@@ -2186,6 +2254,7 @@
             .
             .                                       Unity Initialization Callbacks
             .                                TODO: Add Editor-time initialization methods.
+            .                                   TODO: Move to Eclipse.UnityEngine.dll
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
@@ -2210,7 +2279,7 @@
         <member name="M:Eclipse.Engine.Terminate">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
-            .                                                 Unloading
+            .                                                 Termination
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
@@ -2230,24 +2299,75 @@
             Initializes the entire engine: <see cref="T:Eclipse.IService"/>s, <see cref="T:Eclipse.Modding.Mod"/>s, and so on.
             </summary>
         </member>
-        <member name="M:Eclipse.Engine.Harmony_BeforeLoadingMods">
+        <member name="M:Eclipse.Engine.Load(System.Reflection.Assembly)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Selective Loading
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Can be used by mods to enqueue assemblies directly, if implementing them using provided tools is not for you.
+            Loads all data from an assembly. It includes: <see cref="T:Eclipse.Modding.Mod"/>s, <see cref="T:Eclipse.IService"/>s, etc.
+            </summary>
+            <remarks>
+            Will run (TODO: add entry point method) on assembly load, so it can run some initialization methods.
+            (Note: might not be implemented in favor of using mod initialization order instead and <see cref="M:Eclipse.Modding.Mod.Initializing"/>)
+            </remarks>
+        </member>
+        <member name="M:Eclipse.Engine.Load(System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
+            <summary>
+            Loads all data from a list of assemblies. Will fire global updates only after iterating over all <paramref name="assemblies"/>.
             </summary>
         </member>
-        <member name="M:Eclipse.Engine.EnqueueAssemblies(System.Reflection.Assembly)">
+        <member name="M:Eclipse.Engine.Unload(System.Reflection.Assembly)">
+            <summary>
+            Not supported. To support it, we will need to add AppDomain reloading.
+            There was no experiments with it yet.
+            </summary>
+            <exception cref="T:System.NotSupportedException">Assembly unloading via AppDomain change is yet to be supported.</exception>
+        </member>
+        <member name="M:Eclipse.Engine.Unload(System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
+            <summary>
+            Not supported. To support it, we will need to add AppDomain reloading.
+            There was no experiments with it yet.
+            </summary>
+            <exception cref="T:System.NotSupportedException">Assembly unloading via AppDomain change is yet to be supported.</exception>
+        </member>
+        <member name="M:Eclipse.Engine.#cctor">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Engine.IsNative(System.Reflection.Assembly)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                               Private Methods
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
+        <member name="M:Eclipse.Engine.TryFireCallback(System.Action@)">
+            <remarks>Whether callbacks was fired without any exceptions.</remarks>
+        </member>
         <member name="T:Eclipse.Engine.ServiceSummary">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
-            .                                                  Structs
+            .                                               Initialization
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Engine.ServiceSummary.#ctor(Eclipse.ServiceAttribute,System.Type)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Initialization
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Engine.Extract(System.Reflection.Assembly,Eclipse.Engine.LoadingContext)">
+            <summary>
+            Extracts all important information from an <paramref name="assembly"/> to the <paramref name="context"/>.
+            </summary>
+            <exception cref="T:System.NotSupportedException">Throws when <paramref name="assembly"/> is not amongst <see cref="P:Eclipse.Engine.NativeAssemblies"/>.</exception>
         </member>
         <member name="T:Eclipse.Engine.Flags">
             <summary>
@@ -2343,6 +2463,11 @@
         <member name="T:Eclipse.EngineStatus">
             <summary>
             Current status of the engine.
+            </summary>
+        </member>
+        <member name="F:Eclipse.EngineStatus.Invalid">
+            <summary>
+            Invalid state of the engine. Never returned by <see cref="P:Eclipse.Engine.Status"/>.
             </summary>
         </member>
         <member name="F:Eclipse.EngineStatus.Terminated">
@@ -2499,6 +2624,12 @@
             Invokes given <paramref name="action"/> with using <paramref name="callback"/> handler for exception handling.
             </summary>
         </member>
+        <member name="T:Eclipse.IgnoreServiceAttribute">
+            <summary>
+            Defines which services (or service interfaces) should be ignored when constructing service associations.
+            </summary>
+            <seealso cref="M:Eclipse.Services.ServiceEntry.Construct(Eclipse.IService)"/>
+        </member>
         <member name="T:Eclipse.InitializationTiming">
             <summary>
             Indicates when <see cref="T:Eclipse.EclipseInitializeAttribute"/> should run .ctor on static class.
@@ -2614,7 +2745,7 @@
             Called when <see cref="T:Eclipse.Engine"/> initializes all the code and resources from the memory.
             <para>
             Unlike any <see cref="T:Eclipse.IService"/> .ctor (constructor), this method is thread-safe.
-            (as long as <see cref="P:Eclipse.ServiceAttribute.ExecutionMode"/> is <see cref="F:Eclipse.IService.ThreadExecutionMode.MainThread"/>)
+            (as long as <see cref="P:Eclipse.ServiceAttribute.ExecutionMode"/> is <see cref="!:ThreadExecutionMode.MainThread"/>)
             </para>
             </summary>
             <returns>
@@ -2702,15 +2833,15 @@
             Anything else than <see cref="F:Eclipse.IService.ThreadExecutionMode.MainThread"/> will result in service being initialized on a background thread (not thread-safe).
             </remarks>
         </member>
-        <member name="F:Eclipse.IService.ThreadExecutionMode.MainThread">
-            <summary>
-            Initializes service on main thread (e.g. Unity UI thread).
-            </summary>
-        </member>
         <member name="F:Eclipse.IService.ThreadExecutionMode.ThreadedBeforeMain">
             <summary>
             Initializes service in multithreaded mode, before other <see cref="F:Eclipse.IService.ThreadExecutionMode.MainThread"/> services initialize.
             Order is reversed during unloading.
+            </summary>
+        </member>
+        <member name="F:Eclipse.IService.ThreadExecutionMode.MainThread">
+            <summary>
+            Initializes service on main thread (e.g. Unity UI thread).
             </summary>
         </member>
         <member name="F:Eclipse.IService.ThreadExecutionMode.ThreadedAfterMain">
@@ -2948,6 +3079,25 @@
         </member>
         <member name="M:Eclipse.Modding.IEngineModDirectAccess.EngineInvokeUnloaded">
             <inheritdoc cref="M:Eclipse.Modding.Mod.Unloaded"/>
+        </member>
+        <member name="T:Eclipse.Modding.ModInfo">
+            <summary>
+            Information about <see cref="T:Eclipse.Modding.Mod"/>, to use before loading it in.
+            </summary>
+            TODO: Finish.
+        </member>
+        <member name="P:Eclipse.Modding.ModInfo.Assemblies">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Assemblies that this mod will try to load-in.
+            </summary>
+            <remarks>
+            Those are <see cref="P:System.Reflection.Assembly.FullName"/>s (?).
+            </remarks>
         </member>
         <member name="T:Eclipse.Modding.Mods">
             <summary>
@@ -3460,6 +3610,16 @@
             Stores references to all the services, to not overload <see cref="T:Eclipse.Engine"/>.
             </summary>
         </member>
+        <member name="F:Eclipse.Services.LogPrefix">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                 Constants
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Prefix for log messages sent from this class.
+            </summary>
+        </member>
         <member name="E:Eclipse.Services.OnServicesInitializing">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
@@ -3485,12 +3645,20 @@
             Invoked when services was fully terminated.
             </summary>
         </member>
-        <member name="P:Eclipse.Services.List">
+        <member name="P:Eclipse.Services.Entries">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                              Static Properties
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Enumerator over all <see cref="T:Eclipse.Services.ServiceEntry"/> of all registered services.
+            </summary>
+        </member>
+        <member name="P:Eclipse.Services.List">
+            <summary>
+            Enumerator over all registered services.
+            </summary>
         </member>
         <member name="F:Eclipse.Services.m_Services">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -3556,6 +3724,40 @@
             Will return <c>false</c> even if service exist, but its type is wrong.
             </remarks>
         </member>
+        <member name="T:Eclipse.Services.ServiceEntry">
+            <summary>
+            Entry with information about a service.
+            </summary>
+        </member>
+        <member name="F:Eclipse.Services.ServiceEntry.service">
+            <summary>
+            Service instance that can be referenced/used.
+            </summary>
+        </member>
+        <member name="F:Eclipse.Services.ServiceEntry.associations">
+            <summary>
+            All type keys associated with given <see cref="F:Eclipse.Services.ServiceEntry.service"/>.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Services.ServiceEntry.#ctor(Eclipse.IService,System.Type[])">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="F:Eclipse.Services.ServiceEntry.m_Associations">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Static Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:Eclipse.Services.ServiceEntry.Construct(Eclipse.IService)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Static Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
         <member name="T:Eclipse.Services.Unsafe">
             <summary>
             Provides methods which are usually unsafe to use unless you know the consequences.
@@ -3565,26 +3767,16 @@
             </remarks>
             TODO: Add partial service initialization.
         </member>
-        <member name="E:Eclipse.Services.Unsafe.CacheServices">
+        <member name="E:Eclipse.Services.Unsafe.RebindServices">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                                   Events
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Asks systems to cache services in internal fields.
+            Asks systems to recache all services in internal fields.
+            Called after services were added or all services were removed.
             </summary>
-            <remarks>
-            Fired before <see cref="E:Eclipse.Services.OnServicesInitializing"/>
-            </remarks>
-        </member>
-        <member name="E:Eclipse.Services.Unsafe.DisposeServices">
-            <summary>
-            Asks systems to remove any cached services from internal fields.
-            </summary>
-            <remarks>
-            Fired after <see cref="E:Eclipse.Services.OnServicesTerminated"/>
-            </remarks>
         </member>
         <member name="P:Eclipse.Services.Unsafe.Dictionary">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -3593,7 +3785,7 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
-        <member name="F:Eclipse.Services.Unsafe.m_InitializationLock">
+        <member name="F:Eclipse.Services.Unsafe.m_InitializationHandle">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                               Static Fields
@@ -3607,41 +3799,41 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Fires <see cref="E:Eclipse.Services.OnServicesInitializing"/> callback and returns special unloading lock.
+            Fires <see cref="E:Eclipse.Services.OnServicesInitializing"/> event and returns special unloading lock.
             </summary>
             <remarks>
-            After returned value is disposed - fires <see cref="E:Eclipse.Services.OnServicesInitialized"/> callback.
+            After returned value is disposed - fires <see cref="E:Eclipse.Services.OnServicesInitialized"/> event.
+            Does not fire <see cref="E:Eclipse.Services.Unsafe.RebindServices"/> event.
             </remarks>
             <returns>
             You are meant to use returned value like that:
             <code><![CDATA[
-            using (Initialize())
+            using (Initialize()) // Auto-fires OnServicesInitializing event.
             {
-                // Construct services here.
-                // Register them.
-                Services.Unsafe.Rebind(); // Mandatory.
-                // Initialize here.
+                // Initialize *existing* services.
                 // ...
             }
+            // Fires OnServicesInitialized event.
             ]]></code>
             </returns>
         </member>
         <member name="M:Eclipse.Services.Unsafe.Terminate">
             <summary>
-            Fires <see cref="E:Eclipse.Services.OnServicesTerminating"/> callback and returns special termination lock.
+            Fires <see cref="E:Eclipse.Services.OnServicesTerminating"/> event and returns special termination lock.
             </summary>
             <remarks>
-            After returned value is disposed - fires <see cref="E:Eclipse.Services.OnServicesTerminated"/> callback.
-            And after that - automatically clears <see cref="P:Eclipse.Services.List"/> collection.
+            After returned value is disposed - fires <see cref="E:Eclipse.Services.OnServicesTerminated"/> event.
+            Does not fire <see cref="E:Eclipse.Services.Unsafe.RebindServices"/> event.
             </remarks>
             <returns>
             You are meant to use returned value like that:
             <code><![CDATA[
-            using (Terminate())
+            using (Terminate()) // Auto-fires OnServicesTerminating event.
             {
-                // Terminate services here.
-                // No need to run Rebind().
+                // Terminate services.
+                // ...
             }
+            // Auto-fires OnServicesTerminated event.
             ]]></code>
             </returns>
         </member>
@@ -3649,22 +3841,87 @@
             <summary>
             Rebinds values for internal instance fields of <see cref="P:Eclipse.IService`1.Instance"/>.
             </summary>
+            <remarks>
+            Does so by firing <see cref="E:Eclipse.Services.Unsafe.RebindServices"/> event.
+            </remarks>
+            <returns>
+            You are meant to use returned value like that:
+            <code><![CDATA[
+            using (Rebind()) // Auto-fires nothing.
+            {
+                // Add or Remove services.
+            }
+            // Auto-fires RebindServices event.
+            ]]></code>
+            </returns>
         </member>
-        <member name="M:Eclipse.Services.Unsafe.FireInitializedCallbacks">
+        <member name="M:Eclipse.Services.Unsafe.Set(Eclipse.IService)">
+            <summary>
+            Sets or Replaces existing service in internal service collection.
+            </summary>
+            <param name="service">Service to register.</param>
+            TODO: Add locking for internal dictionary.
+        </member>
+        <member name="M:Eclipse.Services.Unsafe.Set(Eclipse.Services.ServiceEntry)">
+            <summary>
+            Sets or Replaces existing service in internal service collection.
+            </summary>
+            <remarks>
+            Internally, service is replaced on if *any* conflict between 
+            </remarks>
+            <param name="entry">Service entry to register.</param>
+            TODO: Add locking for internal dictionary.
+        </member>
+        <member name="M:Eclipse.Services.Unsafe.Remove(Eclipse.IService)">
+            <summary>
+            Removes given service from a service list.
+            </summary>
+            <returns><inheritdoc cref="M:Eclipse.Services.Unsafe.Remove(System.Type)"/></returns>
+        </member>
+        <member name="M:Eclipse.Services.Unsafe.Remove(System.Type)">
+            <summary>
+            Removes service under given association <paramref name="key"/> from a service list.
+            </summary>
+            <returns>
+            <c>true</c> if service was removed.
+            <c>false</c> if there was no service under given <paramref name="key"/> to begin with.
+            </returns>
+        </member>
+        <member name="M:Eclipse.Services.Unsafe.FireInitializedEvents">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                               Private Methods
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
-        <member name="T:Eclipse.Services.Unsafe.Lock">
+        <member name="T:Eclipse.Services.Unsafe.Handle">
             <summary>
             Used for determining when to fire <see cref="E:Eclipse.Services.OnServicesInitialized"/> and similar events.
             </summary>
         </member>
-        <member name="M:Eclipse.Services.Unsafe.Lock.Dispose">
+        <member name="F:Eclipse.Services.Unsafe.Handle.callback">
             <summary>
-            Used to fire target event.
+            Callback to fire on disposal.
+            </summary>
+        </member>
+        <member name="F:Eclipse.Services.Unsafe.Handle.users">
+            <summary>
+            Amount of users using this handle.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Services.Unsafe.Handle.#ctor(System.Action)">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Services.Unsafe.Handle.Activate">
+            <summary>
+            Activates this handle and registers another user.
+            </summary>
+        </member>
+        <member name="M:Eclipse.Services.Unsafe.Handle.Dispose">
+            <summary>
+            Fires internal callback if all users disposed this handle.
             </summary>
         </member>
         <member name="T:Eclipse.Specs">

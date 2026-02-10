@@ -56,6 +56,18 @@ namespace Eclipse
 
             /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             /// .
+            /// .                                               Static Fields
+            /// .
+            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            private static readonly Handle m_InitializationHandle = new Handle(FireInitializedEvents);
+            private static readonly Handle m_TerminationHandle = new Handle(FireTerminationEvents);
+            private static readonly Handle m_RebindHandle = new Handle(FireRebindEvents);
+
+
+
+
+            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            /// .
             /// .                                               Static Methods
             /// .
             /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
@@ -80,7 +92,7 @@ namespace Eclipse
             public static IDisposable Initialize()
             {
                 OnServicesInitializing?.Invoke();
-                return new Handle(FireInitializedEvents);
+                return m_InitializationHandle.Activate();
             }
 
             /// <summary>
@@ -104,7 +116,7 @@ namespace Eclipse
             public static IDisposable Terminate()
             {
                 OnServicesTerminating?.Invoke();
-                return new Handle(FireTerminationEvents);
+                return m_TerminationHandle.Activate();
             }
 
             /// <summary>
@@ -123,7 +135,7 @@ namespace Eclipse
             /// // Auto-fires RebindServices event.
             /// ]]></code>
             /// </returns>
-            public static IDisposable Rebind() => new Handle(FireRebindEvents);
+            public static IDisposable Rebind() => m_RebindHandle.Activate();
 
             /// <summary>
             /// Sets or Replaces existing service in internal service collection.

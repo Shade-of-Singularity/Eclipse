@@ -100,13 +100,13 @@ namespace Eclipse
                         associations.Add(type);
                         type = type.BaseType;
                     }
-                    while (!(type is null));
+                    while (!(type is null) && type != typeof(object));
                     return new ServiceEntry(service, associations.ToArray());
 
                     // Simplifications:
                     bool Filter(Type type, object? arg)
                     {
-                        if (typeof(IService).IsAssignableFrom(type) && type.IsDefined(typeof(IgnoreServiceAttribute), inherit: false))
+                        if (typeof(IService).IsAssignableFrom(type) && !type.IsDefined(typeof(IgnoreServiceAttribute), inherit: false))
                         {
                             associations.Add(type);
                         }

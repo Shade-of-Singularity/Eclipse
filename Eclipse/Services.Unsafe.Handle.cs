@@ -25,22 +25,42 @@ namespace Eclipse
             /// <summary>
             /// Used for determining when to fire <see cref="OnServicesInitialized"/> and similar events.
             /// </summary>
-            public readonly struct Handle : IDisposable
+            public sealed class Handle : IDisposable
             {
                 /// <summary>
                 /// Callback to fire on disposal.
                 /// </summary>
-                private readonly Action? m_Callback;
+                private readonly Action callback;
+                /// <summary>
+                /// Amount of users using this handle.
+                /// </summary>
+                private uint users;
 
                 /// <summary>
                 /// Default constructor.
                 /// </summary>
-                public Handle(Action? callback) => m_Callback = callback;
+                public Handle(Action callback) => this.callback = callback;
 
                 /// <summary>
-                /// Used to fire target event.
+                /// Activates this handle and registers another user.
                 /// </summary>
-                public void Dispose() => m_Callback?.Invoke();
+                public Handle Activate()
+                {
+                    users++;
+                    return this;
+                }
+
+                /// <summary>
+                /// Fires internal callback if all users disposed this handle.
+                /// </summary>
+                public void Dispose()
+                {
+                    if (users == 0)
+                    {
+                        callback();
+                    }
+                    else users--;
+                }
             }
         }
     }
