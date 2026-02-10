@@ -11243,13 +11243,13 @@ Will terminate currently on-going broadcast. If no broadcast is in progress, doe
     </member>
     <member name="M:UnityEngine.Application.CanStreamedLevelBeLoaded(System.Int32)">
       <summary>
-        <para>Checks if the streamed level can be loaded.</para>
+        <para>Checks if the built scene can be loaded.</para>
       </summary>
       <param name="levelIndex"></param>
     </member>
     <member name="M:UnityEngine.Application.CanStreamedLevelBeLoaded(System.String)">
       <summary>
-        <para>Checks if the streamed level can be loaded.</para>
+        <para>Checks if the built scene can be loaded.</para>
       </summary>
       <param name="levelName"></param>
     </member>
@@ -23575,7 +23575,7 @@ Sometimes it is not possible to project (for example when the joints form a cycl
     </member>
     <member name="M:UnityEngine.Cubemap.CreateExternalTexture(System.Int32,UnityEngine.TextureFormat,System.Boolean,System.IntPtr)">
       <summary>
-        <para>Creates a Unity cubemap out of externally created native cubemap object.</para>
+        <para>Creates a Unity cubemap out of an externally created native cubemap object.</para>
       </summary>
       <param name="size">The width and height of each face of the cubemap should be the same.</param>
       <param name="format">Format of underlying cubemap object.</param>
@@ -24770,7 +24770,7 @@ Only one class at any one time should set defaultBrush to true.</para>
     </member>
     <member name="M:UnityEngine.Debug.ClearDeveloperConsole">
       <summary>
-        <para>Clears errors from the developer console.</para>
+        <para>Clears all previously printed messages, warnings, and errors from the developer console.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.Debug.DrawLine(UnityEngine.Vector3,UnityEngine.Vector3)">
@@ -25750,7 +25750,10 @@ Only one class at any one time should set defaultBrush to true.</para>
     </member>
     <member name="M:UnityEngine.Device.Screen.GetDisplayLayout(System.Collections.Generic.List`1&lt;UnityEngine.DisplayInfo&gt;)">
       <summary>
-        <para>The Device Simulator doesn't simulate this property.</para>
+        <para>The Device Simulator doesn't simulate this property.
+
+                Additional resources: DisplayInfo, Screen.GetDisplayLayout
+                </para>
       </summary>
       <param name="displayLayout"></param>
     </member>
@@ -26030,6 +26033,11 @@ Only one class at any one time should set defaultBrush to true.</para>
         <para>This has the same functionality as SystemInfo.maxTextureSize and also mimics platform-specific behavior in the Unity Editor.</para>
       </summary>
     </member>
+    <member name="P:UnityEngine.Device.SystemInfo.maxTiledPixelStorageSize">
+      <summary>
+        <para>This has the same functionality as SystemInfo.maxTiledPixelStorageSize and also mimics platform-specific behavior in the Unity Editor.</para>
+      </summary>
+    </member>
     <member name="P:UnityEngine.Device.SystemInfo.npotSupport">
       <summary>
         <para>This has the same functionality as SystemInfo.npotSupport and also mimics platform-specific behavior in the Unity Editor.</para>
@@ -26153,6 +26161,11 @@ Only one class at any one time should set defaultBrush to true.</para>
     <member name="P:UnityEngine.Device.SystemInfo.supportsDepthFetchInRenderPass">
       <summary>
         <para>Indicates whether RenderPass can use its depth attachment as input. (Read Only)</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.Device.SystemInfo.supportsDynamicResolution">
+      <summary>
+        <para>Indicates whether the platform supports dynamic resolution scaling. (Read Only)</para>
       </summary>
     </member>
     <member name="P:UnityEngine.Device.SystemInfo.supportsGeometryShaders">
@@ -26360,6 +26373,13 @@ Only one class at any one time should set defaultBrush to true.</para>
         <para>This has the same functionality as SystemInfo.GetRenderTextureSupportedMSAASampleCount and also mimics platform-specific behavior in the Unity Editor.</para>
       </summary>
       <param name="desc"></param>
+    </member>
+    <member name="M:UnityEngine.Device.SystemInfo.GetTiledRenderTargetStorageSize(UnityEngine.Experimental.Rendering.GraphicsFormat,System.Int32)">
+      <summary>
+        <para>This has the same functionality as SystemInfo.GetTiledRenderTargetStorageSize and also mimics platform-specific behavior in the Unity Editor.</para>
+      </summary>
+      <param name="format"></param>
+      <param name="sampleCount"></param>
     </member>
     <member name="M:UnityEngine.Device.SystemInfo.IsFormatSupported(UnityEngine.Experimental.Rendering.GraphicsFormat,UnityEngine.Experimental.Rendering.GraphicsFormatUsage)">
       <summary>
@@ -31669,7 +31689,7 @@ GPU frame captures can be used to both analyze performance and debug graphics re
     </member>
     <member name="T:UnityEngine.FrameTimingManager">
       <summary>
-        <para>The FrameTimingManager allows the user to capture and access FrameTiming data for multiple frames.</para>
+        <para>Provides frame-level CPU and GPU time measurements.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.FrameTimingManager.CaptureFrameTimings">
@@ -40068,7 +40088,9 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
     </member>
     <member name="T:UnityEngine.HideInCallstackAttribute">
       <summary>
-        <para>Marks the methods you want to hide from the Console window callstack. When you hide these methods they are removed from the detail area of the selected message in the Console window.</para>
+        <para>Marks the methods you want to hide from the Console window call stack. When you hide these methods they are removed from the detail area of the selected message in the Console window.
+
+            Note: The intended use for HideInCallstackAttribute is to reduce call stack clutter by hiding trivial helper methods. If you apply [HideInCallstack] to the method that actually writes to the log, although the name is hidden from the detail view, the Console window still provides a clickable link to the called method.</para>
       </summary>
     </member>
     <member name="T:UnityEngine.HideInInspector">
@@ -49748,7 +49770,10 @@ JobHandle.CombineDependencies. Use dependencies to ensure that two jobs that rea
       <summary>
         <para>Returns the absolute value of value.</para>
       </summary>
-      <param name="value"></param>
+      <param name="value">Integer number whose absolute value will be returned.</param>
+      <returns>
+        <para>Non-negative value of value.</para>
+      </returns>
     </member>
     <member name="M:UnityEngine.Mathf.Acos(System.Single)">
       <summary>
@@ -49858,12 +49883,12 @@ JobHandle.CombineDependencies. Use dependencies to ensure that two jobs that rea
       <param name="current">The current angle in degrees.</param>
       <param name="target">The target angle in degrees.</param>
       <returns>
-        <para>A value between -179 and 180, in degrees.</para>
+        <para>A value between -180 (exclusive) and 180 (inclusive) in degrees</para>
       </returns>
     </member>
     <member name="F:UnityEngine.Mathf.Epsilon">
       <summary>
-        <para>A tiny floating point value (Read Only).</para>
+        <para>The smallest positive non-zero value that a float can represent. Using Mathf.Epsilon as a delta for equality makes the comparison effectively identical to exact equality on normal-range numbers. For an approximately equal value, use Mathf.Approximately or a tolerance that reflects your data’s scale, typically a combination of absolute and relative tolerances. </para>
       </summary>
     </member>
     <member name="M:UnityEngine.Mathf.Exp(System.Single)">
@@ -53642,7 +53667,7 @@ Note: When streamAudio is true, it supersedes compression, and the download hand
     </member>
     <member name="T:UnityEngine.Networking.DownloadHandlerScript">
       <summary>
-        <para>An abstract base class for user-created scripting-driven DownloadHandler implementations.</para>
+        <para>An abstract base class for custom, scriptable DownloadHandler implementations.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.Networking.DownloadHandlerScript.#ctor">
@@ -64432,6 +64457,11 @@ Note that there is a special case when the two overlapping colliders have physic
         <para>True if the ray intersects with a Collider, otherwise false.</para>
       </returns>
     </member>
+    <member name="M:UnityEngine.PhysicsScene.ReleaseLastSimulationStepBuffers">
+      <summary>
+        <para>Clear and deallocate the simulation results.</para>
+      </summary>
+    </member>
     <member name="M:UnityEngine.PhysicsScene.ResetInterpolationPoses">
       <summary>
         <para>Resets the Transform positions of interpolated and extrapolated Rigidbodies in this PhysicsScene to Rigidbody.position and Transform rotations to Rigidbody.rotation.</para>
@@ -67799,7 +67829,7 @@ Note that there is a special case when the two overlapping colliders have physic
     </member>
     <member name="T:UnityEngine.PlayerPrefs">
       <summary>
-        <para>PlayerPrefs is a class that stores Player preferences between game sessions. It can store string, float and integer values into the user’s platform registry.</para>
+        <para>PlayerPrefs is a class that stores Player preferences between game sessions. It can store string, float and integer values into the user's platform registry.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.PlayerPrefs.DeleteAll">
@@ -68223,12 +68253,12 @@ Note that there is a special case when the two overlapping colliders have physic
     </member>
     <member name="T:UnityEngine.Pool.ObjectPool`1">
       <summary>
-        <para>A stack based Pool.IObjectPool_1.</para>
+        <para>A stack-based pool of object instances of type T, which implements the IObjectPool interface.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.Pool.ObjectPool_1.Clear">
       <summary>
-        <para>Removes all pooled items. If the pool contains a destroy callback then it will be called for each item that is in the pool.</para>
+        <para>Removes all pooled items and invokes the pool's action on destroy callback for each item in the pool.</para>
       </summary>
     </member>
     <member name="P:UnityEngine.Pool.ObjectPool_1.CountActive">
@@ -68250,22 +68280,22 @@ Note that there is a special case when the two overlapping colliders have physic
       <summary>
         <para>Creates a new ObjectPool instance.</para>
       </summary>
-      <param name="createFunc">Used to create a new instance when the pool is empty. In most cases this will just be () =&gt; new T().</param>
-      <param name="actionOnGet">Called when the instance is taken from the pool.</param>
-      <param name="actionOnRelease">Called when the instance is returned to the pool. This can be used to clean up or disable the instance.</param>
-      <param name="actionOnDestroy">Called when the element could not be returned to the pool due to the pool reaching the maximum size.</param>
-      <param name="collectionCheck">Collection checks are performed when an instance is returned back to the pool. An exception will be thrown if the instance is already in the pool. Collection checks are only performed in the Editor.</param>
-      <param name="defaultCapacity">The default capacity the stack will be created with.</param>
-      <param name="maxSize">The maximum size of the pool. When the pool reaches the max size then any further instances returned to the pool will be ignored and can be garbage collected. This can be used to prevent the pool growing to a very large size.</param>
+      <param name="createFunc">Method called to create a new instance when the pool is empty. In most cases, this is a simple method that just returns a newly constructed instance of the pooled type.</param>
+      <param name="actionOnGet">Method called when the instance is taken from the pool. Use this to set up and activate the instance.</param>
+      <param name="actionOnRelease">Method called when the instance is returned to the pool. Use this to clean up and deactivate the instance.</param>
+      <param name="actionOnDestroy">Method called when an instance can't be returned to the pool because the pool has reached its maximum size.</param>
+      <param name="collectionCheck">If true, collection checks are performed when an instance is returned to the pool and an exception is thrown if the instance is already in the pool. Collection checks are only performed in the Editor and not in Player builds. If false, no collection checks are performed.</param>
+      <param name="defaultCapacity">The default capacity of the pool at creation as a number of object instances. This is the starting capacity of the stack-like structure the pool uses for internal storage. Note that this does not mean this number of instances are created at construction: they're created individually on each call to Get, which invokes createFunc. When the pool reaches defaultCapacity, it expands to accommodate any additional instances returned to it, but only up to the limit defined by maxSize.</param>
+      <param name="maxSize">The maximum number of object instances that the pool can hold. The pool can expand from its starting defaultCapacity up to maxSize and no further. When the pool reaches the maxSize then any further instances returned to the pool are ignored and can be garbage collected. Use this to prevent the pool growing beyond a pre-defined limit.</param>
     </member>
     <member name="M:UnityEngine.Pool.ObjectPool_1.Dispose">
       <summary>
-        <para>Removes all pooled items. If the pool contains a destroy callback then it will be called for each item that is in the pool.</para>
+        <para>Removes all pooled items and invokes the pool's action on destroy callback for each item in the pool.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.Pool.ObjectPool_1.Get">
       <summary>
-        <para>Get an instance from the pool. If the pool is empty then a new instance will be created.</para>
+        <para>Get an instance from the pool. If the pool is empty then a new instance is created.</para>
       </summary>
       <returns>
         <para>A pooled object or a new instance if the pool is empty.</para>
@@ -68282,7 +68312,7 @@ Note that there is a special case when the two overlapping colliders have physic
     </member>
     <member name="M:UnityEngine.Pool.ObjectPool_1.Release(T)">
       <summary>
-        <para>Returns the instance back to the pool. Returning an instance to a pool that is full will cause the instance to be destroyed.</para>
+        <para>Returns the instance back to the pool. If the pool has reached maximum size, the returned instance is destroyed.</para>
       </summary>
       <param name="element">The instance to return to the pool.</param>
     </member>
@@ -80087,6 +80117,15 @@ For Unity to exclude a GameObject from rendering, the GameObject must have moved
         <para>True if the IRenderPipelineGraphicsSettings is currently available and registered for the given pipeline.</para>
       </returns>
     </member>
+    <member name="M:UnityEngine.Rendering.GraphicsSettings.TrySetCurrentRenderPipelineGlobalSettings(UnityEngine.Rendering.RenderPipelineGlobalSettings)">
+      <summary>
+        <para>Attempts to set the active RenderPipelineGlobalSettings at runtime.</para>
+      </summary>
+      <param name="asset">The RenderPipelineGlobalSettings asset to activate for the project.</param>
+      <returns>
+        <para>Returns true if the asset was not null and Unity successfully applied the settings.</para>
+      </returns>
+    </member>
     <member name="M:UnityEngine.Rendering.GraphicsSettings.UnregisterRenderPipelineSettings">
       <summary>
         <para>The method removes the association between the given RenderPipeline and the RenderPipelineGlobalSettings asset from GraphicsSettings.</para>
@@ -88197,7 +88236,7 @@ Additional resources: RenderTexture.useMipMap.</para>
     </member>
     <member name="T:UnityEngine.Resources">
       <summary>
-        <para>The Resources class allows you to find and access Objects including assets.</para>
+        <para>The Resources class allows you to find and access objects including assets.</para>
       </summary>
     </member>
     <member name="M:UnityEngine.Resources.FindObjectsOfTypeAll">
@@ -90111,7 +90150,7 @@ Additional resources: RenderTexture.useMipMap.</para>
     </member>
     <member name="T:UnityEngine.SceneManagement.Scene">
       <summary>
-        <para>Run-time data structure for *.unity file.</para>
+        <para>The runtime data structure for a scene.</para>
       </summary>
     </member>
     <member name="P:UnityEngine.SceneManagement.Scene.buildIndex">
@@ -90257,9 +90296,9 @@ A Scene may be invalid if, for example, you tried to open a Scene that does not 
     </member>
     <member name="M:UnityEngine.SceneManagement.SceneManager.GetSceneAt(System.Int32)">
       <summary>
-        <para>Get the Scene at index in the SceneManager's list of loaded Scenes.</para>
+        <para>Gets the scene at the specified index in the SceneManager's scene list. This includes scenes that are currently loading or unloading.</para>
       </summary>
-      <param name="index">Index of the Scene to get. Index must be greater than or equal to 0 and less than SceneManager.sceneCount.</param>
+      <param name="index">Index of the scene to get. Index must be greater than or equal to 0 and less than SceneManager.sceneCount.</param>
       <returns>
         <para>A reference to the Scene at the index specified.</para>
       </returns>
@@ -90642,7 +90681,7 @@ Note: This flag does not unload assets which can be referenced by other scenes.<
     </member>
     <member name="P:UnityEngine.Screen.cutouts">
       <summary>
-        <para>Returns a list of screen areas that are not functional for displaying content (Read Only).</para>
+        <para>Returns a list of screen areas that do not display content (Read Only).</para>
       </summary>
     </member>
     <member name="P:UnityEngine.Screen.dpi">
@@ -90739,7 +90778,7 @@ Note: This flag does not unload assets which can be referenced by other scenes.<
     </member>
     <member name="M:UnityEngine.Screen.SetResolution(System.Int32,System.Int32,System.Boolean)">
       <summary>
-        <para>Switches the screen resolution.</para>
+        <para>Switches the screen resolution and refresh rate if supported.</para>
       </summary>
       <param name="width"></param>
       <param name="height"></param>
@@ -90749,7 +90788,7 @@ Note: This flag does not unload assets which can be referenced by other scenes.<
     </member>
     <member name="M:UnityEngine.Screen.SetResolution(System.Int32,System.Int32,UnityEngine.FullScreenMode)">
       <summary>
-        <para>Switches the screen resolution.</para>
+        <para>Switches the screen resolution and refresh rate if supported.</para>
       </summary>
       <param name="width"></param>
       <param name="height"></param>
@@ -90759,7 +90798,7 @@ Note: This flag does not unload assets which can be referenced by other scenes.<
     </member>
     <member name="M:UnityEngine.Screen.SetResolution(System.Int32,System.Int32,UnityEngine.FullScreenMode,UnityEngine.RefreshRate)">
       <summary>
-        <para>Switches the screen resolution.</para>
+        <para>Switches the screen resolution and refresh rate if supported.</para>
       </summary>
       <param name="width"></param>
       <param name="height"></param>
@@ -95039,6 +95078,11 @@ Once the instance is stopped, the subsystem representing this instance is no lon
         <para>Maximum texture size in pixels (Read Only).</para>
       </summary>
     </member>
+    <member name="P:UnityEngine.SystemInfo.maxTiledPixelStorageSize">
+      <summary>
+        <para>Returns the maximum per-pixel storage size in bytes for Multiple Render Targets (MRT) in tile or render target memory on the current platform. </para>
+      </summary>
+    </member>
     <member name="P:UnityEngine.SystemInfo.minConstantBufferOffsetAlignment">
       <summary>
         <para>Obsolete - use SystemInfo.constantBufferOffsetAlignment instead. Minimum buffer offset (in bytes) when binding a constant buffer using Shader.SetConstantBuffer or Material.SetConstantBuffer.</para>
@@ -95167,6 +95211,11 @@ Once the instance is stopped, the subsystem representing this instance is no lon
     <member name="P:UnityEngine.SystemInfo.supportsDepthFetchInRenderPass">
       <summary>
         <para>Indicates whether RenderPass can use its depth attachment as input. (Read Only)</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.SystemInfo.supportsDynamicResolution">
+      <summary>
+        <para>Indicates whether the platform supports dynamic resolution scaling. (Read Only)</para>
       </summary>
     </member>
     <member name="P:UnityEngine.SystemInfo.supportsGeometryShaders">
@@ -95407,6 +95456,16 @@ Once the instance is stopped, the subsystem representing this instance is no lon
       <param name="desc">The RenderTextureDescriptor to check.</param>
       <returns>
         <para>If the target platform supports the given MSAA samples count of RenderTextureDescriptor, returns the given MSAA samples count. Otherwise returns a lower fallback MSAA samples count value that the target platform supports.</para>
+      </returns>
+    </member>
+    <member name="M:UnityEngine.SystemInfo.GetTiledRenderTargetStorageSize(UnityEngine.Experimental.Rendering.GraphicsFormat,System.Int32)">
+      <summary>
+        <para>Returns the per-pixel storage size in bytes for a render target of the given GraphicsFormat on the current platform.</para>
+      </summary>
+      <param name="format">The GraphicsFormat format to look up.</param>
+      <param name="sampleCount">The number of MSAA samples.</param>
+      <returns>
+        <para>The number of bytes per pixel that the specified format consumes in GPU render target or tile memory.</para>
       </returns>
     </member>
     <member name="M:UnityEngine.SystemInfo.IsFormatSupported(UnityEngine.Experimental.Rendering.GraphicsFormat,UnityEngine.Experimental.Rendering.GraphicsFormatUsage)">
@@ -99672,24 +99731,24 @@ To see a Texture memory value that takes inputs into account, use `desiredTextur
     </member>
     <member name="M:UnityEngine.Texture2D.GetPixelBilinear(System.Single,System.Single,System.Int32)">
       <summary>
-        <para>Gets the filtered pixel color at the normalized coordinates (u, v).</para>
+        <para>Gets the filtered color at the normalized coordinates (u, v).</para>
       </summary>
-      <param name="u">The u coordinate of the pixel to get.</param>
-      <param name="v">The v coordinate of the pixel to get.</param>
+      <param name="u">The normalized U coordinate to interpolate to. 0 is the left of the mipmap level and 1 is one pixel beyond the right. Values outside the 0,1 range will be handled according to the texture's wrap mode.</param>
+      <param name="v">The normalized V coordinate to interpolate to. 0 is the bottom of the mipmap level and 1 is one pixel beyond the top. Values outside the 0,1 range will be handled according to the texture's wrap mode.</param>
       <param name="mipLevel">The mipmap level to read from. The range is 0 through the texture's Texture.mipmapCount. The default value is 0.</param>
       <returns>
-        <para>The pixel color.</para>
+        <para>The bilinearly interpolated color for the given UV coordinates and mipmap level.</para>
       </returns>
     </member>
     <member name="M:UnityEngine.Texture2D.GetPixelBilinear(System.Single,System.Single)">
       <summary>
-        <para>Gets the filtered pixel color at the normalized coordinates (u, v).</para>
+        <para>Gets the filtered color at the normalized coordinates (u, v).</para>
       </summary>
-      <param name="u">The u coordinate of the pixel to get.</param>
-      <param name="v">The v coordinate of the pixel to get.</param>
+      <param name="u">The normalized U coordinate to interpolate to. 0 is the left of the mipmap level and 1 is one pixel beyond the right. Values outside the 0,1 range will be handled according to the texture's wrap mode.</param>
+      <param name="v">The normalized V coordinate to interpolate to. 0 is the bottom of the mipmap level and 1 is one pixel beyond the top. Values outside the 0,1 range will be handled according to the texture's wrap mode.</param>
       <param name="mipLevel">The mipmap level to read from. The range is 0 through the texture's Texture.mipmapCount. The default value is 0.</param>
       <returns>
-        <para>The pixel color.</para>
+        <para>The bilinearly interpolated color for the given UV coordinates and mipmap level.</para>
       </returns>
     </member>
     <member name="M:UnityEngine.Texture2D.GetPixelData(System.Int32)">
@@ -100321,12 +100380,12 @@ To see a Texture memory value that takes inputs into account, use `desiredTextur
     </member>
     <member name="M:UnityEngine.Texture3D.CreateExternalTexture(System.Int32,System.Int32,System.Int32,UnityEngine.TextureFormat,System.Boolean,System.IntPtr)">
       <summary>
-        <para>Creates Unity Texture out of externally created native texture object.</para>
+        <para>Creates a Unity Texture out of an externally created native texture object.</para>
       </summary>
       <param name="nativeTex">Native 3D texture object.</param>
       <param name="width">Width of texture in pixels.</param>
       <param name="height">Height of texture in pixels.</param>
-      <param name="depth">Depth of texture in pixels</param>
+      <param name="depth">Depth of texture in pixels.</param>
       <param name="format">Format of underlying texture object.</param>
       <param name="mipmap">Does the texture have mipmaps?</param>
       <param name="mipChain"></param>
@@ -123599,6 +123658,14 @@ When the style class is present, the field automatically calculates the label wi
       <param name="cursorIndex"></param>
       <param name="selectionIndex"></param>
     </member>
+    <member name="M:UnityEngine.UIElements.TextInputBaseField_1.SetValueWithoutNotify(TValueType)">
+      <summary>
+        <para>
+ Allow to set the value without being notified.
+ </para>
+      </summary>
+      <param name="newValue">The new value to set.</param>
+    </member>
     <member name="M:UnityEngine.UIElements.TextInputBaseField_1.SetVerticalScrollerVisibility(UnityEngine.UIElements.ScrollerVisibility)">
       <summary>
         <para>
@@ -138279,6 +138346,8 @@ Be sure to still call Unity.Loading.ContentSceneFile.UnloadAtEndOfFrame to relea
       <summary>
         <para>
  Interface used to receive a visitation callbacks for property bags.
+
+ For more information on how to implement a property visitor by implementing this interface, including an example, refer to
  </para>
       </summary>
     </member>
@@ -138295,6 +138364,8 @@ Be sure to still call Unity.Loading.ContentSceneFile.UnloadAtEndOfFrame to relea
       <summary>
         <para>
  Interface for receiving strongly typed property callbacks.
+
+ For more information on how to implement a property visitor by implementing this interface, including an example, refer to
  </para>
       </summary>
     </member>
@@ -139695,6 +139766,8 @@ Be sure to still call Unity.Loading.ContentSceneFile.UnloadAtEndOfFrame to relea
       <summary>
         <para>
  Base class for implementing algorithms using properties. This is an abstract class.
+
+ For more information on how to implement a property visitor by deriving from this class, including an example, refer to
  </para>
       </summary>
     </member>
@@ -148871,6 +148944,11 @@ Gets the rotation of a specific node.</para>
     <member name="T:UnityEngine.XR.XRDisplaySubsystem">
       <summary>
         <para>An XRDisplaySubsystem controls rendering to a head tracked display.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.XR.XRDisplaySubsystem.appliedViewportScale">
+      <summary>
+        <para>The portion of the allocated display texture used by the active stereo device for the current frame.</para>
       </summary>
     </member>
     <member name="P:UnityEngine.XR.XRDisplaySubsystem.contentProtectionEnabled">

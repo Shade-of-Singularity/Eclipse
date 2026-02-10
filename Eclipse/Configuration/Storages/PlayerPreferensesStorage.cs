@@ -26,7 +26,7 @@ namespace Eclipse.Configuration.Storages
         /// .                                              Static Properties
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public static PlayerPreferenceStorage Instance = new PlayerPreferenceStorage();
+        public static new readonly PlayerPreferenceStorage Instance = new();
 
 
 

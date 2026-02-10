@@ -10,8 +10,7 @@
       "Eclipse.UnityEngine/1.0.0": {
         "dependencies": {
           "Eclipse": "1.0.0",
-          "UniTask": "2.5.10",
-          "UnityEngine": "0.0.0.0"
+          "UniTask": "2.5.10"
         },
         "runtime": {
           "Eclipse.UnityEngine.dll": {}
@@ -57,14 +56,6 @@
             "fileVersion": "1.0.0.0"
           }
         }
-      },
-      "UnityEngine/0.0.0.0": {
-        "runtime": {
-          "UnityEngine.dll": {
-            "assemblyVersion": "0.0.0.0",
-            "fileVersion": "0.0.0.0"
-          }
-        }
       }
     }
   },
@@ -97,11 +88,6 @@
     },
     "Eclipse/1.0.0": {
       "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "UnityEngine/0.0.0.0": {
-      "type": "reference",
       "serviceable": false,
       "sha512": ""
     }

@@ -2,8 +2,6 @@ F:\Unity\Support\Eclipse\Eclipse.UnityEngine\bin\Debug\netstandard2.1\Eclipse.Un
 F:\Unity\Support\Eclipse\Eclipse.UnityEngine\bin\Debug\netstandard2.1\Eclipse.UnityEngine.dll
 F:\Unity\Support\Eclipse\Eclipse.UnityEngine\bin\Debug\netstandard2.1\Eclipse.UnityEngine.pdb
 F:\Unity\Support\Eclipse\Eclipse.UnityEngine\bin\Debug\netstandard2.1\Eclipse.UnityEngine.xml
-F:\Unity\Support\Eclipse\Eclipse.UnityEngine\bin\Debug\netstandard2.1\UnityEngine.dll
-F:\Unity\Support\Eclipse\Eclipse.UnityEngine\bin\Debug\netstandard2.1\UnityEngine.xml
 F:\Unity\Support\Eclipse\Eclipse.UnityEngine\obj\Debug\netstandard2.1\Eclipse.UnityEngine.csproj.AssemblyReference.cache
 F:\Unity\Support\Eclipse\Eclipse.UnityEngine\obj\Debug\netstandard2.1\Eclipse.UnityEngine.GeneratedMSBuildEditorConfig.editorconfig
 F:\Unity\Support\Eclipse\Eclipse.UnityEngine\obj\Debug\netstandard2.1\Eclipse.UnityEngine.AssemblyInfoInputs.cache
