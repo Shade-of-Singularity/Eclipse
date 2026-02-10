@@ -5,7 +5,7 @@ Eclipse enforces service access via static declarations in `ICustomService : ISe
 It should be used as a core for your application to support proper runtime modding.
 
 ## Benchmarks
-```
+```C#
 Benchmark                       | Best (Avr.)(μs) | Worst (Avr.)(μs) | Complexity
 ------------------------------- | --------------- | ---------------- | ----------
 Eclipse IService.Instance       | 0.0103          | 0.0117           | O(1)      
