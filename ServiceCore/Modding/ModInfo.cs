@@ -17,7 +17,7 @@
 namespace ServiceCore.Modding
 {
     /// <summary>
-    /// Information about <see cref="Mod"/>, to use before loading it in.
+    /// Information about <see cref="Modification"/>, to use before loading it in.
     /// </summary>
     /// TODO: Finish.
     public sealed class ModInfo

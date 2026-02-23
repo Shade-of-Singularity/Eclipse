@@ -244,7 +244,7 @@
         </member>
         <member name="T:ServiceCore.Engine">
             <summary>
-            Main class for <see cref="N:ServiceCore"/> Foundation Library.
+            Main class for <see cref="N:ServiceCore"/> Library.
             </summary>
         </member>
         <member name="T:ServiceCore.Engine.AssemblyStorage">
@@ -394,7 +394,7 @@
             <remarks>
             <para>Set to <see cref="F:ServiceCore.EngineStatus.Terminated"/> - by default.</para>
             <para>Set to <see cref="F:ServiceCore.EngineStatus.Initializing"/> - during initialization (after calling <see cref="M:ServiceCore.Engine.Initialize"/>).</para>
-            <para>Set to <see cref="F:ServiceCore.EngineStatus.Initialized"/> - when <see cref="T:ServiceCore.Engine"/> and <see cref="T:ServiceCore.Modding.Mod"/>s are fully initialized!</para>
+            <para>Set to <see cref="F:ServiceCore.EngineStatus.Initialized"/> - when <see cref="T:ServiceCore.Engine"/> and <see cref="T:ServiceCore.Modding.Modification"/>s are fully initialized!</para>
             <para>Set to <see cref="F:ServiceCore.EngineStatus.Terminating"/> - during unloading (after <see cref="M:ServiceCore.Engine.Terminate"/>/automatically by <see cref="!:QuitHandler"/>)</para>
             <para>Set to <see cref="F:ServiceCore.EngineStatus.InitializationBroken"/> - if engine got irreversibly broken during initialization.</para>
             <para>Set to <see cref="F:ServiceCore.EngineStatus.TerminationBroken"/> - if engine got irreversibly broken during unloading.</para>
@@ -412,24 +412,6 @@
             .                                               Static Fields
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        </member>
-        <member name="M:ServiceCore.Engine.AssertModifiable(System.String)">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                              Fast-Access API
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            <summary>
-            Throws "Not modifiable" exception if called when <see cref="P:ServiceCore.Engine.Status"/> is anything but <see cref="F:ServiceCore.EngineStatus.Initializing"/>.
-            This is usually when core systems are still modifiable.
-            Assets and other resources, however, usually still modifiable at runtime to some degree (depends on type).
-            </summary>
-            <remarks>
-            (Hmm... Is it a good idea to lock systems behind such limitation though?)
-            <para>
-            (Use it in a non-performance critical code, like class setters that usually never called, or initialization-only setters, etc.)
-            </para>
-            </remarks>
         </member>
         <member name="M:ServiceCore.Engine.Terminate">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -451,7 +433,7 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Initializes the entire engine: <see cref="T:ServiceCore.IService"/>s, <see cref="T:ServiceCore.Modding.Mod"/>s, and so on.
+            Initializes the entire engine: <see cref="T:ServiceCore.IService"/>s, <see cref="T:ServiceCore.Modding.Modification"/>s, and so on.
             </summary>
         </member>
         <member name="M:ServiceCore.Engine.Load(System.Reflection.Assembly)">
@@ -461,11 +443,11 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Loads all data from an assembly. It includes: <see cref="T:ServiceCore.Modding.Mod"/>s, <see cref="T:ServiceCore.IService"/>s, etc.
+            Loads all data from an assembly. It includes: <see cref="T:ServiceCore.Modding.Modification"/>s, <see cref="T:ServiceCore.IService"/>s, etc.
             </summary>
             <remarks>
             Will run (TODO: add entry point method) on assembly load, so it can run some initialization methods.
-            (Note: might not be implemented in favor of using mod initialization order instead and <see cref="M:ServiceCore.Modding.Mod.Initializing"/>)
+            (Note: might not be implemented in favor of using mod initialization order instead and <see cref="M:ServiceCore.Modding.Modification.Initializing"/>)
             </remarks>
         </member>
         <member name="M:ServiceCore.Engine.Load(System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
@@ -719,7 +701,7 @@
             <remarks>
             <paramref name="mod"/> and <paramref name="id"/> are combined in the same way as <see cref="M:ServiceCore.Extensions.Naming.Get(System.String,System.String)"/> combines them.
             </remarks>
-            <param name="mod">Mod name of identifier.</param>
+            <param name="mod">Modification name of identifier.</param>
             <param name="id">Identifier of a thing.</param>
         </member>
         <member name="T:ServiceCore.Extensions.StaticInitialization`1">
@@ -833,8 +815,25 @@
             While it will make development a bit harder, it will automatically enforce code structure, needed for proper modding.
             (i.e. mod developers will be able to completely override how service behaves)
             (Service provider, highest in a dependency tree, will be prioritized)
-            (Note: Mod developers should refrain from overwriting services though for compatibility)
+            (Note: Modification developers should refrain from overwriting services though for compatibility)
             (Note: Only mod-pack developers working with older game versions should use it, to back-port stuff)
+            <para>
+            When deciding whether to use <see cref="T:ServiceCore.Service`1"/> or <see cref="T:ServiceCore.IService`1"/>, ask yourself:
+            </para>
+            <para>
+            1. Are you prototyping right now? If yes - use <see cref="T:ServiceCore.Service`1"/>.
+            You don't need to care about modding at this stage. You can just turn it into a Service + <see cref="T:ServiceCore.IService`1"/> set later.
+            </para>
+            <para>
+            2. Is functionality of this service has any benefits of being changed by the modders?
+            For example - changing how configuration manager works might introduce inconsistency in standards.
+            It has no reason to be customized besides making modding harder and less stable.
+            (Assuming official game's code has better quality than mods, which is reasonable for commercial projects)
+            </para>
+            <para>
+            3. Are you preparing for release? Consider both options again.
+            Using interfaces might be harder for you, but might help modders if service has any reason, at all, to be overwritten or expanded on.
+            </para>
             </remarks>
             <typeparam name="T">The type of the service to retrieve. Must inherit from <see cref="T:ServiceCore.IService`1"/>.</typeparam>
         </member>
@@ -1045,20 +1044,20 @@
             Prefix for messages sent to the console from this class.
             </summary>
         </member>
-        <member name="T:ServiceCore.Modding.Mod`1">
-            <inheritdoc cref="T:ServiceCore.Modding.Mod"/>
+        <member name="T:ServiceCore.Modding.Modification`1">
+            <inheritdoc cref="T:ServiceCore.Modding.Modification"/>
             <typeparam name="T">Type of the mod.</typeparam>
         </member>
-        <member name="F:ServiceCore.Modding.Mod`1.Instance">
+        <member name="F:ServiceCore.Modding.Modification`1.Instance">
             <summary>
             Instance of a mod class.
             </summary>
             <remarks>
             As long as dependency tree is built correctly, no other mod or engine itself should be accessing instance before it was initialized.
-            At least in theory. We might introduce special callback, like "ResolveDependencies" method, which will be fired after <see cref="M:ServiceCore.Modding.Mod.Initialized"/> method.
+            At least in theory. We might introduce special callback, like "ResolveDependencies" method, which will be fired after <see cref="M:ServiceCore.Modding.Modification.Initialized"/> method.
             </remarks>
         </member>
-        <member name="T:ServiceCore.Modding.Mod">
+        <member name="T:ServiceCore.Modding.Modification">
             <summary>
             Class describes all the mod data it can have.
             AssetBundles, assemblies, and other resources are described here with wrappers around dictionaries and resource addresses.
@@ -1084,7 +1083,7 @@
             </para>
             </remarks>
         </member>
-        <member name="F:ServiceCore.Modding.Mod.EmptyModName">
+        <member name="F:ServiceCore.Modding.Modification.EmptyModName">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                                Constructors
@@ -1094,7 +1093,7 @@
             Default mod name to be used.
             </summary>
         </member>
-        <member name="P:ServiceCore.Modding.Mod.IsEnabled">
+        <member name="P:ServiceCore.Modding.Modification.IsEnabled">
             <summary>
             Whether mod was enabled by the user.
             </summary>
@@ -1102,24 +1101,24 @@
             At the moment, initialization callbacks will still run. This has to be changed (TODO).
             </remarks>
         </member>
-        <member name="P:ServiceCore.Modding.Mod.IsLoaded">
+        <member name="P:ServiceCore.Modding.Modification.IsLoaded">
             <summary>
             Whether mod is loaded or not.
             </summary>
         </member>
-        <member name="P:ServiceCore.Modding.Mod.Name">
+        <member name="P:ServiceCore.Modding.Modification.Name">
             <summary>
             Internal name of the mod.
             </summary>
         </member>
-        <member name="F:ServiceCore.Modding.Mod.m_SkippedCallbacks">
+        <member name="F:ServiceCore.Modding.Modification.m_SkippedCallbacks">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                               Private Fields
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
-        <member name="M:ServiceCore.Modding.Mod.ServiceCore#Modding#IEngineModDirectAccess#EngineInvokeInitializing">
+        <member name="M:ServiceCore.Modding.Modification.ServiceCore#Modding#IEngineModDirectAccess#EngineInvokeInitializing">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                                Constructors
@@ -1131,7 +1130,7 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
-        <member name="M:ServiceCore.Modding.Mod.Initializing">
+        <member name="M:ServiceCore.Modding.Modification.Initializing">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                               Public Methods
@@ -1149,7 +1148,7 @@
             Other services might not be available at this point.
             </remarks>
         </member>
-        <member name="M:ServiceCore.Modding.Mod.Initialized">
+        <member name="M:ServiceCore.Modding.Modification.Initialized">
             <summary>
             Called synchronously when all mod data and services were loaded.
             </summary>
@@ -1157,12 +1156,12 @@
             Services from next mods in a queue will not be accessible at this point.
             </remarks>
         </member>
-        <member name="M:ServiceCore.Modding.Mod.EngineLoaded">
+        <member name="M:ServiceCore.Modding.Modification.EngineLoaded">
             <summary>
             Called synchronously when all mods in the entire game was successfully initialized.
             </summary>
         </member>
-        <member name="M:ServiceCore.Modding.Mod.Unloading">
+        <member name="M:ServiceCore.Modding.Modification.Unloading">
             <summary>
             Called synchronously when mod and services is right about to be unloaded. 
             </summary>
@@ -1170,7 +1169,7 @@
             Unloading order is reversed to the loading order. Do not expect any service to be available at this point.
             </remarks>
         </member>
-        <member name="M:ServiceCore.Modding.Mod.Unloaded">
+        <member name="M:ServiceCore.Modding.Modification.Unloaded">
             <summary>
             Called synchronously when all mod data and services were unloaded.
             </summary>
@@ -1184,7 +1183,7 @@
             You should not use this interface. It should only be used by the <see cref="T:ServiceCore.Engine"/> itself.
             </summary>
             <remarks>
-            That's said - you can cast <see cref="T:ServiceCore.Modding.Mod"/> to this interface to access hidden (declared explicitly) methods.
+            That's said - you can cast <see cref="T:ServiceCore.Modding.Modification"/> to this interface to access hidden (declared explicitly) methods.
             </remarks>
         </member>
         <member name="T:ServiceCore.Modding.IEngineModDirectAccess.Callback">
@@ -1224,23 +1223,23 @@
             </summary>
         </member>
         <member name="M:ServiceCore.Modding.IEngineModDirectAccess.EngineInvokeInitializing">
-            <inheritdoc cref="M:ServiceCore.Modding.Mod.Initializing"/>
+            <inheritdoc cref="M:ServiceCore.Modding.Modification.Initializing"/>
         </member>
         <member name="M:ServiceCore.Modding.IEngineModDirectAccess.EngineInvokeInitialized">
-            <inheritdoc cref="M:ServiceCore.Modding.Mod.Initialized"/>
+            <inheritdoc cref="M:ServiceCore.Modding.Modification.Initialized"/>
         </member>
         <member name="M:ServiceCore.Modding.IEngineModDirectAccess.EngineInvokeGameLoaded">
-            <inheritdoc cref="M:ServiceCore.Modding.Mod.EngineLoaded"/>
+            <inheritdoc cref="M:ServiceCore.Modding.Modification.EngineLoaded"/>
         </member>
         <member name="M:ServiceCore.Modding.IEngineModDirectAccess.EngineInvokeUnloading">
-            <inheritdoc cref="M:ServiceCore.Modding.Mod.Unloading"/>
+            <inheritdoc cref="M:ServiceCore.Modding.Modification.Unloading"/>
         </member>
         <member name="M:ServiceCore.Modding.IEngineModDirectAccess.EngineInvokeUnloaded">
-            <inheritdoc cref="M:ServiceCore.Modding.Mod.Unloaded"/>
+            <inheritdoc cref="M:ServiceCore.Modding.Modification.Unloaded"/>
         </member>
         <member name="T:ServiceCore.Modding.ModInfo">
             <summary>
-            Information about <see cref="T:ServiceCore.Modding.Mod"/>, to use before loading it in.
+            Information about <see cref="T:ServiceCore.Modding.Modification"/>, to use before loading it in.
             </summary>
             TODO: Finish.
         </member>
@@ -2143,10 +2142,16 @@
             1. Are you prototyping right now? If yes - use <see cref="T:ServiceCore.Service`1"/>.
             You don't need to care about modding at this stage. You can just turn it into a Service + <see cref="T:ServiceCore.IService`1"/> set later.
             </para>
+            <para>
             2. Is functionality of this service has any benefits of being changed by the modders?
             For example - changing how configuration manager works might introduce inconsistency in standards.
             It has no reason to be customized besides making modding harder and less stable.
             (Assuming official game's code has better quality than mods, which is reasonable for commercial projects)
+            </para>
+            <para>
+            3. Are you preparing for release? Consider both options again.
+            Using interfaces might be harder for you, but might help modders if service has any reason, at all, to be overwritten or expanded on.
+            </para>
             </remarks>
             <typeparam name="T">Service implementing this abstract class.</typeparam>
         </member>

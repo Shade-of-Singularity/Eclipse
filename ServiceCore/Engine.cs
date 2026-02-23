@@ -182,7 +182,7 @@ namespace ServiceCore
         /// <remarks>
         /// <para>Set to <see cref="EngineStatus.Terminated"/> - by default.</para>
         /// <para>Set to <see cref="EngineStatus.Initializing"/> - during initialization (after calling <see cref="Initialize"/>).</para>
-        /// <para>Set to <see cref="EngineStatus.Initialized"/> - when <see cref="Engine"/> and <see cref="Modding.Mod"/>s are fully initialized!</para>
+        /// <para>Set to <see cref="EngineStatus.Initialized"/> - when <see cref="Engine"/> and <see cref="Modding.Modification"/>s are fully initialized!</para>
         /// <para>Set to <see cref="EngineStatus.Terminating"/> - during unloading (after <see cref="Terminate"/>/automatically by <see cref="QuitHandler"/>)</para>
         /// <para>Set to <see cref="EngineStatus.InitializationBroken"/> - if engine got irreversibly broken during initialization.</para>
         /// <para>Set to <see cref="EngineStatus.TerminationBroken"/> - if engine got irreversibly broken during unloading.</para>
@@ -265,7 +265,7 @@ namespace ServiceCore
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Initializes the entire engine: <see cref="IService"/>s, <see cref="Modding.Mod"/>s, and so on.
+        /// Initializes the entire engine: <see cref="IService"/>s, <see cref="Modding.Modification"/>s, and so on.
         /// </summary>
         public static async UniTask Initialize()
         {
@@ -306,17 +306,17 @@ namespace ServiceCore
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Loads all data from an assembly. It includes: <see cref="Modding.Mod"/>s, <see cref="IService"/>s, etc.
+        /// Loads all data from an assembly. It includes: <see cref="Modding.Modification"/>s, <see cref="IService"/>s, etc.
         /// </summary>
         /// <remarks>
         /// Will run (TODO: add entry point method) on assembly load, so it can run some initialization methods.
-        /// (Note: might not be implemented in favor of using mod initialization order instead and <see cref="Modding.Mod.Initializing"/>)
+        /// (Note: might not be implemented in favor of using mod initialization order instead and <see cref="Modding.Modification.Initializing"/>)
         /// </remarks>
         public static async UniTask Load(Assembly assembly)
         {
             try
             {
-                await LoadInternal(Provider());
+                await LoadInternal(Provider()); // TODO: Use Reserve().
             }
             catch (Exception ex)
             {
@@ -333,7 +333,7 @@ namespace ServiceCore
         {
             try
             {
-                await LoadInternal(assemblies);
+                await LoadInternal(assemblies); // TODO: Use Reserve().
             }
             catch (Exception ex)
             {

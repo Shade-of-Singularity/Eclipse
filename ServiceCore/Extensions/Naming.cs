@@ -85,7 +85,7 @@ namespace ServiceCore.Extensions
         /// <remarks>
         /// <paramref name="mod"/> and <paramref name="id"/> are combined in the same way as <see cref="Get(string, string)"/> combines them.
         /// </remarks>
-        /// <param name="mod">Mod name of identifier.</param>
+        /// <param name="mod">Modification name of identifier.</param>
         /// <param name="id">Identifier of a thing.</param>
         public static string GetPrefix(string mod, string id)
         {

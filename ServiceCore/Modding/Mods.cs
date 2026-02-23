@@ -71,7 +71,7 @@ namespace ServiceCore.Modding
         /// .                                               Public Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public static T GetOrThrow<T>() where T : Mod
+        public static T GetOrThrow<T>() where T : Modification
         {
             throw new NotImplementedException();
         }

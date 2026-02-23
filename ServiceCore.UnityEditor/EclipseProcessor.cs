@@ -66,7 +66,7 @@ namespace ServiceCore.Editor
         public static void HandleAssetDatabaseReload() => EditorApplication.delayCall += UpdateResourceReferences;
         private static void UpdateResourceReferences()
         {
-            List<string> guids = new List<string>(AssetDatabase.FindAssets($"t:{nameof(EclipseConfiguration)}"));
+            List<string> guids = [.. AssetDatabase.FindAssets($"t:{nameof(EclipseConfiguration)}")];
             for (int i = 0; i < guids.Count; i++)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guids[i]);
@@ -88,7 +88,6 @@ namespace ServiceCore.Editor
 
                 EditorApplication.delayCall += () =>
                 {
-                    StringBuilder builder = new StringBuilder(512);
                     Debug.LogWarning($"No {nameof(EclipseConfiguration)} file was found in the entire project. New file was created at: \"{DefaultFolder}\"");
                 };
 
@@ -98,10 +97,9 @@ namespace ServiceCore.Editor
             configuration = AssetDatabase.LoadAssetAtPath<EclipseConfiguration>(AssetDatabase.GUIDToAssetPath(guids[0]));
             if (guids.Count >= 2)
             {
-
                 EditorApplication.delayCall += () =>
                 {
-                    StringBuilder builder = new StringBuilder(512);
+                    StringBuilder builder = new(512);
                     builder.Append($"A total of ({guids.Count}) different {nameof(EclipseConfiguration)} files we found.");
                     builder.Append($" This is not allowed, and only the first one will be used. Keep only one configuration file at all times. Paths:\n");
                     foreach (var guid in guids)
@@ -109,6 +107,8 @@ namespace ServiceCore.Editor
                         builder.Append("- ");
                         builder.AppendLine(AssetDatabase.GUIDToAssetPath(guid));
                     }
+
+                    Debug.LogWarning(builder.ToString());
                 };
             }
 

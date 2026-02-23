@@ -19,16 +19,16 @@ using System;
 
 namespace ServiceCore.Modding
 {
-    /// <inheritdoc cref="Mod"/>
+    /// <inheritdoc cref="Modification"/>
     /// <typeparam name="T">Type of the mod.</typeparam>
-    public abstract class Mod<T> where T : Mod, new()
+    public abstract class Modification<T> where T : Modification, new()
     {
         /// <summary>
         /// Instance of a mod class.
         /// </summary>
         /// <remarks>
         /// As long as dependency tree is built correctly, no other mod or engine itself should be accessing instance before it was initialized.
-        /// At least in theory. We might introduce special callback, like "ResolveDependencies" method, which will be fired after <see cref="Mod.Initialized"/> method.
+        /// At least in theory. We might introduce special callback, like "ResolveDependencies" method, which will be fired after <see cref="Modification.Initialized"/> method.
         /// </remarks>
         public static readonly T Instance = new();
     }
@@ -62,7 +62,7 @@ namespace ServiceCore.Modding
     /// (This message is from Dark)
     /// </para>
     /// </remarks>
-    public abstract class Mod : IEngineModDirectAccess
+    public abstract class Modification : IEngineModDirectAccess
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -255,7 +255,7 @@ namespace ServiceCore.Modding
     /// You should not use this interface. It should only be used by the <see cref="Engine"/> itself.
     /// </summary>
     /// <remarks>
-    /// That's said - you can cast <see cref="Mod"/> to this interface to access hidden (declared explicitly) methods.
+    /// That's said - you can cast <see cref="Modification"/> to this interface to access hidden (declared explicitly) methods.
     /// </remarks>
     public interface IEngineModDirectAccess
     {
@@ -298,19 +298,19 @@ namespace ServiceCore.Modding
         }
 
         // Methods don't have cancellation tokens, as even if you stop the engine mid-loading - it should only quit after service loaded/unloaded.
-        /// <inheritdoc cref="Mod.Initializing"/>
+        /// <inheritdoc cref="Modification.Initializing"/>
         UniTask EngineInvokeInitializing();
 
-        /// <inheritdoc cref="Mod.Initialized"/>
+        /// <inheritdoc cref="Modification.Initialized"/>
         UniTask EngineInvokeInitialized();
 
-        /// <inheritdoc cref="Mod.EngineLoaded"/>
+        /// <inheritdoc cref="Modification.EngineLoaded"/>
         UniTask EngineInvokeGameLoaded();
 
-        /// <inheritdoc cref="Mod.Unloading"/>
+        /// <inheritdoc cref="Modification.Unloading"/>
         UniTask EngineInvokeUnloading();
 
-        /// <inheritdoc cref="Mod.Unloaded"/>
+        /// <inheritdoc cref="Modification.Unloaded"/>
         UniTask EngineInvokeUnloaded();
     }
 }

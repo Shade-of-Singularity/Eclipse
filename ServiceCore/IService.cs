@@ -28,7 +28,7 @@ namespace ServiceCore
     /// While it will make development a bit harder, it will automatically enforce code structure, needed for proper modding.
     /// (i.e. mod developers will be able to completely override how service behaves)
     /// (Service provider, highest in a dependency tree, will be prioritized)
-    /// (Note: Mod developers should refrain from overwriting services though for compatibility)
+    /// (Note: Modification developers should refrain from overwriting services though for compatibility)
     /// (Note: Only mod-pack developers working with older game versions should use it, to back-port stuff)
     /// <para>
     /// When deciding whether to use <see cref="Service{T}"/> or <see cref="IService{T}"/>, ask yourself:
