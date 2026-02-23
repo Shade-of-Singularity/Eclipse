@@ -1,0 +1,316 @@
+﻿/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
+/// 
+/// Licensed under the Apache License, Version 2.0 (the "License");
+/// you may not use this file except in compliance with the License.
+/// You may obtain a copy of the License at
+/// 
+///         http://www.apache.org/licenses/LICENSE-2.0
+/// 
+/// Unless required by applicable law or agreed to in writing, software
+/// distributed under the License is distributed on an "AS IS" BASIS,
+/// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+/// See the License for the specific language governing permissions and
+/// limitations under the License.
+/// 
+/// ]]>
+
+using Cysharp.Threading.Tasks;
+using System;
+
+namespace ServiceCore.Modding
+{
+    /// <inheritdoc cref="Mod"/>
+    /// <typeparam name="T">Type of the mod.</typeparam>
+    public abstract class Mod<T> where T : Mod, new()
+    {
+        /// <summary>
+        /// Instance of a mod class.
+        /// </summary>
+        /// <remarks>
+        /// As long as dependency tree is built correctly, no other mod or engine itself should be accessing instance before it was initialized.
+        /// At least in theory. We might introduce special callback, like "ResolveDependencies" method, which will be fired after <see cref="Mod.Initialized"/> method.
+        /// </remarks>
+        public static readonly T Instance = new();
+    }
+
+    // TODO: Add thrust checker, which stores "Do you thrust the mod?" flag somewhere.
+    //  Later - store this data both locally and on the server for each user (if authenticated), so mods cannot tamper with this data.
+    //  Any assemblies should not be loaded (as well as textures and AssetBundles) if they were found and mod wasn't approved/trusted.
+    //  However, we might introduce a public mod listing with trusted mods.
+    //  This is a security question after all. We need to protect users here if we can.
+    /// <summary>
+    /// Class describes all the mod data it can have.
+    /// AssetBundles, assemblies, and other resources are described here with wrappers around dictionaries and resource addresses.
+    /// </summary>
+    /// <remarks>
+    /// For our community mods: you are free to develop mods for the game, but they won't be used in public events before approval.
+    /// Approval requires you to expose mod code to the public (i.e. via GitHub), and make the last update 2-3 days before the event (in most cases).
+    /// Our team will go through the code and verify its contents.
+    /// <para>
+    /// If mod was already verified and you have a hotfix - we can make a quick verification, but you need to contact out team for that.
+    /// This section applies only to those, who's mods were selected for usage in any of the upcoming events.
+    /// </para>
+    /// Keep in mind that ALL the mods that use BepInEx and Harmony will be disqualified outside of the special cases.
+    /// If your mod is large enough, we will consider verifying it, but otherwise - they won't be accepted.
+    /// And it doesn't matter that we have a support for BepInEx and Harmony in code - it was made for ease in modding, not for our public events.
+    /// Refer to the modding guide to grasp all the tools available for you as a mod-maker by default (that's a lot btw, with native C# support, dw)
+    /// <para>
+    /// TL;DR:
+    /// <para>- Try to use native modding tools for creating verifiable code instead of BepInEx and Harmony.</para>
+    /// <para>- Contact us to request new features.</para>
+    /// <para>- BepInEx and Harmony mods wont be accepted (for events) outside of special circumstances.</para>
+    /// (This message is from Dark)
+    /// </para>
+    /// </remarks>
+    public abstract class Mod : IEngineModDirectAccess
+    {
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                                Constructors
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Default mod name to be used.
+        /// </summary>
+        public const string EmptyModName = "";
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                              Public Properties
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        // Delegates:
+
+        // Events:
+
+        // Properties:
+        /// <summary>
+        /// Whether mod was enabled by the user.
+        /// </summary>
+        /// <remarks>
+        /// At the moment, initialization callbacks will still run. This has to be changed (TODO).
+        /// </remarks>
+        public bool IsEnabled { get; set; } = true;
+        
+        /// <summary>
+        /// Whether mod is loaded or not.
+        /// </summary>
+        public bool IsLoaded { get; set; } = false;
+        
+        /// <summary>
+        /// Internal name of the mod.
+        /// </summary>
+        public virtual string Name => EmptyModName;
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                               Private Fields
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        // Static Fields:
+
+        // Encapsulated Fields:
+
+        // Local Fields:
+        private IEngineModDirectAccess.Callback m_SkippedCallbacks = IEngineModDirectAccess.Callback.Unloading | IEngineModDirectAccess.Callback.Unloaded;
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                                Constructors
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                               Implementations
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        UniTask IEngineModDirectAccess.EngineInvokeInitializing()
+        {
+            if ((m_SkippedCallbacks & IEngineModDirectAccess.Callback.Initializing) == IEngineModDirectAccess.Callback.None)
+            {
+                m_SkippedCallbacks |= IEngineModDirectAccess.Callback.Initializing;
+                return Initializing();
+            }
+
+            return UniTask.CompletedTask;
+        }
+
+        UniTask IEngineModDirectAccess.EngineInvokeInitialized()
+        {
+            if ((m_SkippedCallbacks & IEngineModDirectAccess.Callback.Initialized) == IEngineModDirectAccess.Callback.None)
+            {
+                m_SkippedCallbacks |= IEngineModDirectAccess.Callback.Initialized;
+                return Initialized();
+            }
+
+            return UniTask.CompletedTask;
+        }
+
+        UniTask IEngineModDirectAccess.EngineInvokeGameLoaded()
+        {
+            if ((m_SkippedCallbacks & IEngineModDirectAccess.Callback.GameLoaded) == IEngineModDirectAccess.Callback.None)
+            {
+                m_SkippedCallbacks |= IEngineModDirectAccess.Callback.GameLoaded;
+                return EngineLoaded();
+            }
+
+            return UniTask.CompletedTask;
+        }
+
+        UniTask IEngineModDirectAccess.EngineInvokeUnloading()
+        {
+            if ((m_SkippedCallbacks & IEngineModDirectAccess.Callback.Unloading) == IEngineModDirectAccess.Callback.None)
+            {
+                m_SkippedCallbacks |= IEngineModDirectAccess.Callback.Unloading;
+                return Unloading();
+            }
+
+            return UniTask.CompletedTask;
+        }
+
+        UniTask IEngineModDirectAccess.EngineInvokeUnloaded()
+        {
+            if ((m_SkippedCallbacks & IEngineModDirectAccess.Callback.Unloaded) == IEngineModDirectAccess.Callback.None)
+            {
+                m_SkippedCallbacks = IEngineModDirectAccess.Callback.Unloading | IEngineModDirectAccess.Callback.Unloaded;
+                return Unloaded();
+            }
+
+            return UniTask.CompletedTask;
+        }
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                               Public Methods
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                              Protected Methods
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Called synchronously when mod is first loaded, before any services are initialized. 
+        /// </summary>
+        /// <remarks>
+        /// Other services might not be available at this point.
+        /// </remarks>
+        protected virtual UniTask Initializing() => UniTask.CompletedTask;
+
+        /// <summary>
+        /// Called synchronously when all mod data and services were loaded.
+        /// </summary>
+        /// <remarks>
+        /// Services from next mods in a queue will not be accessible at this point.
+        /// </remarks>
+        protected virtual UniTask Initialized() => UniTask.CompletedTask;
+
+        /// <summary>
+        /// Called synchronously when all mods in the entire game was successfully initialized.
+        /// </summary>
+        protected virtual UniTask EngineLoaded() => UniTask.CompletedTask;
+
+        /// <summary>
+        /// Called synchronously when mod and services is right about to be unloaded. 
+        /// </summary>
+        /// <remarks>
+        /// Unloading order is reversed to the loading order. Do not expect any service to be available at this point.
+        /// </remarks>
+        protected virtual UniTask Unloading() => UniTask.CompletedTask;
+
+        /// <summary>
+        /// Called synchronously when all mod data and services were unloaded.
+        /// </summary>
+        /// <remarks>
+        /// Unloading order is reversed to the loading order. Do not expect any service to be available at this point.
+        /// </remarks>
+        protected virtual UniTask Unloaded() => UniTask.CompletedTask;
+    }
+
+    // TODO: Review important callbacks and when they are called.
+    /// <summary>
+    /// Interface for direct control over the mod.
+    /// You should not use this interface. It should only be used by the <see cref="Engine"/> itself.
+    /// </summary>
+    /// <remarks>
+    /// That's said - you can cast <see cref="Mod"/> to this interface to access hidden (declared explicitly) methods.
+    /// </remarks>
+    public interface IEngineModDirectAccess
+    {
+        /// <summary>
+        /// Describes which callbacks was already fired and thus - should not be fired again on method call.
+        /// Serves as protection in case other mods will attempt to run those methods without unloading the mods first.
+        /// </summary>
+        [Flags]
+        public enum Callback : byte
+        {
+            /// <summary>
+            /// No callbacks were fired yet.
+            /// </summary>
+            None = 0b0000_0000,
+
+            /// <summary>
+            /// Indicates that <see cref="EngineInvokeInitializing"/> was fired.
+            /// </summary>
+            Initializing = 0b0000_0001,
+
+            /// <summary>
+            /// Indicates that <see cref="EngineInvokeInitialized"/> was fired.
+            /// </summary>
+            Initialized = 0b0000_0010,
+
+            /// <summary>
+            /// Indicates that <see cref="EngineInvokeGameLoaded"/> was fired.
+            /// </summary>
+            GameLoaded = 0b0000_0100,
+
+            /// <summary>
+            /// Indicates that <see cref="EngineInvokeUnloading"/> was fired.
+            /// </summary>
+            Unloading = 0b0000_1000,
+
+            /// <summary>
+            /// Indicates that <see cref="EngineInvokeUnloaded"/> was fired.
+            /// </summary>
+            Unloaded = 0b0001_0000,
+        }
+
+        // Methods don't have cancellation tokens, as even if you stop the engine mid-loading - it should only quit after service loaded/unloaded.
+        /// <inheritdoc cref="Mod.Initializing"/>
+        UniTask EngineInvokeInitializing();
+
+        /// <inheritdoc cref="Mod.Initialized"/>
+        UniTask EngineInvokeInitialized();
+
+        /// <inheritdoc cref="Mod.EngineLoaded"/>
+        UniTask EngineInvokeGameLoaded();
+
+        /// <inheritdoc cref="Mod.Unloading"/>
+        UniTask EngineInvokeUnloading();
+
+        /// <inheritdoc cref="Mod.Unloaded"/>
+        UniTask EngineInvokeUnloaded();
+    }
+}

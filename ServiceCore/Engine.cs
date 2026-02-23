@@ -1,0 +1,872 @@
+﻿/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
+/// 
+/// Licensed under the Apache License, Version 2.0 (the "License");
+/// you may not use this file except in compliance with the License.
+/// You may obtain a copy of the License at
+/// 
+///         http://www.apache.org/licenses/LICENSE-2.0
+/// 
+/// Unless required by applicable law or agreed to in writing, software
+/// distributed under the License is distributed on an "AS IS" BASIS,
+/// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+/// See the License for the specific language governing permissions and
+/// limitations under the License.
+/// 
+/// ]]>
+
+using Cysharp.Threading.Tasks;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using UnityEngine;
+
+namespace ServiceCore
+{
+    /// <summary>
+    /// Main class for <see cref="ServiceCore"/> Foundation Library.
+    /// </summary>
+    public static partial class Engine
+    {
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                                 Constants
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Prefix for console messages sent from this class.
+        /// </summary>
+        public const string LogPrefix = "[" + nameof(ServiceCore) + "]";
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                                   Events
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Invoked right after <see cref="Initialize"/> is called.
+        /// </summary>
+        public static event Action? OnEngineInitializing;
+        /// <summary>
+        /// Invoked when all engine systems, including <see cref="Services"/>, were fully initialized.
+        /// </summary>
+        public static event Action? OnEngineInitialized;
+        /// <summary>
+        /// Invoked right after <see cref="Terminate"/> is called.
+        /// </summary>
+        public static event Action? OnEngineTerminating;
+        /// <summary>
+        /// Invoked when entire <see cref="Engine"/> were terminated.
+        /// </summary>
+        public static event Action? OnEngineTerminated;
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                              Auto-fire Events
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// <inheritdoc cref="OnEngineInitializing"/>
+        /// </summary>
+        /// <remarks>
+        /// If <see cref="OnEngineInitializing"/> event was already fired - immediately fires attaching callback.
+        /// <para>
+        /// To get consistent callback, you can use <see cref="EclipseInitializeAttribute"/> on custom static methods.
+        /// </para>
+        /// </remarks>
+        public static event Action? FireWithEngineInitializing
+        {
+            remove => OnEngineInitializing -= value;
+            add
+            {
+                if (value is null) return;
+                if ((m_Status & EngineStatus.Initializing) == EngineStatus.Initializing)
+                {
+                    value();
+                }
+
+                OnEngineInitializing += value;
+            }
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="OnEngineInitializing"/>
+        /// </summary>
+        /// <remarks>
+        /// If <see cref="OnEngineInitialized"/> event was already fired - immediately fires attaching callback.
+        /// <para>
+        /// To get consistent callback, you can use <see cref="EclipseInitializeAttribute"/> on custom static methods.
+        /// </para>
+        /// </remarks>
+        public static event Action? FireWithEngineInitialized
+        {
+            remove => OnEngineInitialized -= value;
+            add
+            {
+                if (value is null) return;
+                if ((m_Status & EngineStatus.Initialized) == EngineStatus.Initialized)
+                {
+                    value();
+                }
+
+                OnEngineInitialized += value;
+            }
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="OnEngineTerminating"/>
+        /// </summary>
+        /// <remarks>
+        /// If <see cref="OnEngineTerminating"/> event was already fired - immediately fires attaching callback.
+        /// <para>
+        /// To get consistent callback, you can use <see cref="EclipseInitializeAttribute"/> on custom static methods.
+        /// </para>
+        /// </remarks>
+        public static event Action? FireWithEngineTerminating
+        {
+            remove => OnEngineTerminating -= value;
+            add
+            {
+                if (value is null) return;
+                if ((m_Status & EngineStatus.Terminating) == EngineStatus.Terminating)
+                {
+                    value();
+                }
+
+                OnEngineTerminating += value;
+            }
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="OnEngineTerminated"/>
+        /// </summary>
+        /// <remarks>
+        /// If <see cref="OnEngineTerminated"/> event was already fired - immediately fires attaching callback.
+        /// <para>
+        /// To get consistent callback, you can use <see cref="EclipseInitializeAttribute"/> on custom static methods.
+        /// </para>
+        /// </remarks>
+        public static event Action? FireWithEngineTerminated
+        {
+            remove => OnEngineTerminated -= value;
+            add
+            {
+                if (value is null) return;
+                if ((m_Status & EngineStatus.Terminated) == EngineStatus.Terminated)
+                {
+                    value();
+                }
+
+                OnEngineTerminated += value;
+            }
+        }
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                              Public Properties
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Status of the engine.
+        /// </summary>
+        /// <remarks>
+        /// <para>Set to <see cref="EngineStatus.Terminated"/> - by default.</para>
+        /// <para>Set to <see cref="EngineStatus.Initializing"/> - during initialization (after calling <see cref="Initialize"/>).</para>
+        /// <para>Set to <see cref="EngineStatus.Initialized"/> - when <see cref="Engine"/> and <see cref="Modding.Mod"/>s are fully initialized!</para>
+        /// <para>Set to <see cref="EngineStatus.Terminating"/> - during unloading (after <see cref="Terminate"/>/automatically by <see cref="QuitHandler"/>)</para>
+        /// <para>Set to <see cref="EngineStatus.InitializationBroken"/> - if engine got irreversibly broken during initialization.</para>
+        /// <para>Set to <see cref="EngineStatus.TerminationBroken"/> - if engine got irreversibly broken during unloading.</para>
+        /// </remarks>
+        public static EngineStatus Status => m_Status;
+
+        /// <summary>
+        /// Lists all Assemblies referencing <see cref="Engine"/>.
+        /// Such Assemblies are considered "Native" and will be automatically loaded first on <see cref="Initialize"/> call.
+        /// </summary>
+        public static IReadOnlyList<Assembly> NativeAssemblies => m_NativeAssemblies;
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                               Static Fields
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        private static readonly List<Assembly> m_NativeAssemblies = []; //
+        private static readonly AssemblyStorage m_Assemblies = new(64); // Absolutely in love with this square-shaped var declaration. 
+        private static EngineStatus m_Status = EngineStatus.Terminated; //
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                       Unity Initialization Callbacks
+        /// .                                TODO: Add Editor-time initialization methods.
+        /// .                                   TODO: Move to ServiceCore.UnityEngine.dll
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void OnSubsystemRegistration()
+        {
+            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.SubsystemRegistration)
+            {
+                Initialize().Forget();
+            }
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnAfterAssembliesLoaded()
+        {
+            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.AfterAssembliesLoaded)
+            {
+                Initialize().Forget();
+            }
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
+        static void OnBeforeSplashScreen()
+        {
+            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.BeforeSplashScreen)
+            {
+                Initialize().Forget();
+            }
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        static void OnBeforeSceneLoad()
+        {
+            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.BeforeSceneLoad)
+            {
+                Initialize().Forget();
+            }
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        static void OnAfterSceneLoad()
+        {
+            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.AfterSceneLoad)
+            {
+                Initialize().Forget();
+            }
+        }
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                              Fast-Access API
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Throws "Not modifiable" exception if called when <see cref="Status"/> is anything but <see cref="EngineStatus.Initializing"/>.
+        /// This is usually when core systems are still modifiable.
+        /// Assets and other resources, however, usually still modifiable at runtime to some degree (depends on type).
+        /// </summary>
+        /// <remarks>
+        /// (Hmm... Is it a good idea to lock systems behind such limitation though?)
+        /// <para>
+        /// (Use it in a non-performance critical code, like class setters that usually never called, or initialization-only setters, etc.)
+        /// </para>
+        /// </remarks>
+        public static void AssertModifiable([CallerFilePath] string caller = "")
+        {
+            if (m_Status != EngineStatus.Initializing)
+            {
+                throw new Exception($"Cannot modify ('{Path.GetFileNameWithoutExtension(caller)}') outside of the engine initialization stage.");
+            }
+        }
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                                 Termination
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Unloads entire engine, all initialized services.
+        /// </summary>
+        /// <remarks>
+        /// Will not unload mod Assemblies from the memory, as it is impossible.
+        /// </remarks>
+        public static async UniTask Terminate()
+        {
+            // Only already initialized engine can be unloaded.
+            // (TODO) Note: should we introduce unloading of a partially loaded engine? Something to think about later.
+            if (Status != EngineStatus.Initialized)
+            {
+                return;
+            }
+
+            SetStatus(EngineStatus.Terminating);
+            // TODO: Hold callers in await block until engine is fully unloaded.
+            try
+            {
+                using (Services.Unsafe.Terminate())
+                {
+                    foreach (var service in Services.List)
+                    {
+                        // TODO: Terminate asynchronously if possible.
+                        await service.InvokeTerminate();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                m_Assemblies.Clear();
+                EclipseLogger.LogException(ex);
+                EclipseLogger.LogError($"{LogPrefix} {nameof(ServiceCore)} was broken during termination!");
+                SetStatus(EngineStatus.TerminationBroken);
+                return;
+            }
+
+            m_Assemblies.Clear();
+            SetStatus(EngineStatus.Terminating | EngineStatus.Terminated);
+        }
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                               Initialization
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Initializes the entire engine: <see cref="IService"/>s, <see cref="Modding.Mod"/>s, and so on.
+        /// </summary>
+        public static async UniTask Initialize()
+        {
+            if (Status != EngineStatus.Terminated)
+            {
+                EclipseLogger.LogWarning($"{LogPrefix} Cannot initialize non-idle engine.");
+                return;
+            }
+
+            if (!Application.isPlaying)
+            {
+                EclipseLogger.LogWarning($"Attempted to initialize the Engine in the editor! It's yet to be supported.");
+                return;
+            }
+
+            SetStatus(EngineStatus.Initializing);
+            // TODO: Decide what to do with service unloading when in the Editor.
+            //  Maybe provide special UNITY_EDITOR-only methods?
+            //  We can keep them in the code so people can restore Editor's tools more easily.
+            //  Although, a lot of it will be gate-kept behind Application.isEditor anyway.
+            //Application.quitting += ResetState;
+
+            try
+            {
+                await LoadInternal(NativeAssemblies);
+            }
+            catch (Exception ex)
+            {
+                EclipseLogger.LogException(ex);
+                EclipseLogger.LogError($"{LogPrefix} {nameof(ServiceCore)} was broken during initialization!");
+                SetStatus(EngineStatus.InitializationBroken);
+                return;
+            }
+
+            SetStatus(EngineStatus.Initializing | EngineStatus.Initialized);
+        }
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                              Selective Loading
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Loads all data from an assembly. It includes: <see cref="Modding.Mod"/>s, <see cref="IService"/>s, etc.
+        /// </summary>
+        /// <remarks>
+        /// Will run (TODO: add entry point method) on assembly load, so it can run some initialization methods.
+        /// (Note: might not be implemented in favor of using mod initialization order instead and <see cref="Modding.Mod.Initializing"/>)
+        /// </remarks>
+        public static async UniTask Load(Assembly assembly)
+        {
+            try
+            {
+                await LoadInternal(Provider());
+            }
+            catch (Exception ex)
+            {
+                EclipseLogger.LogException(ex);
+            }
+
+            IEnumerable<Assembly> Provider() { yield return assembly; }
+        }
+
+        /// <summary>
+        /// Loads all data from a list of assemblies. Will fire global updates only after iterating over all <paramref name="assemblies"/>.
+        /// </summary>
+        public static async UniTask Load(IEnumerable<Assembly> assemblies)
+        {
+            try
+            {
+                await LoadInternal(assemblies);
+            }
+            catch (Exception ex)
+            {
+                EclipseLogger.LogException(ex);
+            }
+        }
+
+        /// <summary>
+        /// Not supported. To support it, we will need to add AppDomain reloading.
+        /// There was no experiments with it yet.
+        /// </summary>
+        /// <exception cref="NotSupportedException">Assembly unloading via AppDomain change is yet to be supported.</exception>
+        public static async UniTask Unload(Assembly assembly)
+        {
+            await UniTask.CompletedTask;
+            throw new NotSupportedException("Assembly unloading is not supported yet.");
+        }
+
+        /// <summary>
+        /// Not supported. To support it, we will need to add AppDomain reloading.
+        /// There was no experiments with it yet.
+        /// </summary>
+        /// <exception cref="NotSupportedException">Assembly unloading via AppDomain change is yet to be supported.</exception>
+        public static async UniTask Unload(IEnumerable<Assembly> assemblies)
+        {
+            await UniTask.CompletedTask;
+            throw new NotSupportedException("Assembly unloading is not supported yet.");
+        }
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                                Constructors
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        static Engine()
+        {
+            List<Assembly> assemblies = m_NativeAssemblies;
+            Assembly engine = typeof(Engine).Assembly;
+
+            assemblies.Add(engine);
+            string current = engine.FullName;
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                foreach (AssemblyName reference in assembly.GetReferencedAssemblies())
+                {
+                    // Filters assemblies who use Engine directly.
+                    // Should reduce memory usage by a lot, since GC won't collect assemblies defined here.
+                    if (string.Equals(reference.FullName, current, StringComparison.Ordinal))
+                    {
+                        assemblies.Add(assembly);
+                        break;
+                    }
+                }
+            }
+        }
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                               Private Methods
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsNative(Assembly assembly)
+        {
+            return m_NativeAssemblies.Any(c => c.FullName.Equals(assembly.FullName, StringComparison.Ordinal));
+        }
+        private static void SetStatus(EngineStatus status)
+        {
+            EngineStatus diff = (m_Status ^ status) & status; // Checks which bits have changed.
+
+            // Order is: (initializing) -> (initialized) -> (terminating) -> terminated.
+            if ((diff & EngineStatus.Initializing) != EngineStatus.Invalid && !TryFireCallback(ref OnEngineInitializing))
+            {
+                EclipseLogger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineInitializing)}' event thrown exceptions! Look above for errors.");
+            }
+
+            if ((diff & EngineStatus.Initialized) != EngineStatus.Invalid && !TryFireCallback(ref OnEngineInitialized))
+            {
+                EclipseLogger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineInitialized)}' event thrown exceptions! Look above for errors.");
+            }
+
+            if ((diff & EngineStatus.Terminating) != EngineStatus.Invalid && !TryFireCallback(ref OnEngineTerminating))
+            {
+                EclipseLogger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineTerminating)}' event thrown exceptions! Look above for errors.");
+            }
+
+            if ((diff & EngineStatus.Terminated) != EngineStatus.Invalid && !TryFireCallback(ref OnEngineTerminated))
+            {
+                EclipseLogger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineTerminated)}' event thrown exceptions! Look above for errors.");
+            }
+
+            m_Status = status;
+
+            // Handles explicit status errors just in case.
+            if ((diff & EngineStatus.InitializationBroken) != EngineStatus.Invalid)
+            {
+                EclipseLogger.LogError($"{LogPrefix} {nameof(Engine)} was irreversibly broken during initialization. You will need to restart your app to fix this.");
+            }
+
+            if ((diff & EngineStatus.TerminationBroken) != EngineStatus.Invalid)
+            {
+                EclipseLogger.LogError($"{LogPrefix} {nameof(Engine)} was irreversibly broken during unloading. You will need to restart your app to fix this.");
+            }
+        }
+
+        /// <remarks>Whether callbacks was fired without any exceptions.</remarks>
+        static bool TryFireCallback(ref Action? callbacks)
+        {
+            if (callbacks is null)
+            {
+                return true;
+            }
+
+            Delegate[] delegates = callbacks.GetInvocationList();
+            callbacks = null;
+
+            // Callback list should not be modifiable at this point, since after IsInitialized is set to true - callbacks are auto fired immediately.
+            // Because of that, we don't need any locks, AFAIK.
+            bool exceptions = false;
+            foreach (var callback in delegates)
+            {
+                try
+                {
+                    callback?.DynamicInvoke();
+                }
+                catch (Exception ex)
+                {
+                    EclipseLogger.LogException(ex);
+                    exceptions |= true;
+                }
+            }
+
+            return !exceptions;
+        }
+
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                               Initialization
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        private readonly struct ServiceSummary(ServiceAttribute attribute, Type service)
+        {
+            public readonly ServiceAttribute attribute = attribute;
+            public readonly Type service = service;
+            public readonly List<MethodSummary<BeforeServiceInitializedAttribute>> preload = [];
+            public readonly List<MethodSummary<AfterServiceInitializedAttribute>> afterload = [];
+        }
+
+        private readonly struct MethodSummary<T>(T attribute, MethodInfo method) where T : Attribute
+        {
+            public readonly T attribute = attribute;
+            public readonly MethodInfo method = method;
+        }
+
+        private readonly struct LoadingContext()
+        {
+            public readonly List<ServiceSummary> Services = [];
+            public readonly List<MethodSummary<BeforeServiceInitializedAttribute>> Preload = [];
+            public readonly List<MethodSummary<AfterServiceInitializedAttribute>> Afterload = [];
+            public readonly Dictionary<Type, ServiceSummary> Mapping = [];
+        }
+
+        private static async UniTask UnloadInternal(IEnumerable<Assembly> assemblies)
+        {
+            await UniTask.CompletedTask;
+            throw new NotSupportedException("Partial termination is not supported yet.");
+        }
+
+        private static async UniTask LoadInternal(IEnumerable<Assembly> assemblies)
+        {
+            // TODO: Avoid context allocation if all input assemblies are loaded.
+            LoadingContext context = new();
+
+            // Extracts all important information in all assemblies.
+            foreach (var assembly in assemblies)
+            {
+                if (!m_Assemblies.Register(assembly))
+                {
+                    EclipseLogger.LogWarning($"Skipping already initialized assemblies.");
+                    continue;
+                }
+
+                await Extract(assembly, context);
+            }
+
+            await ConstructServices(context);
+            await InitializeServices(context);
+        }
+
+        /// <summary>
+        /// Extracts all important information from an <paramref name="assembly"/> to the <paramref name="context"/>.
+        /// </summary>
+        /// <exception cref="NotSupportedException">Throws when <paramref name="assembly"/> is not amongst <see cref="NativeAssemblies"/>.</exception>
+        private static async UniTask Extract(Assembly assembly, LoadingContext context)
+        {
+            if (!IsNative(assembly))
+            {
+                throw new NotSupportedException("You can't load assemblies not from current AppDomain yet.");
+            }
+
+            // TODO: Support services defined inside other classes (?)
+            List<ServiceSummary> services = context.Services;
+            List<MethodSummary<BeforeServiceInitializedAttribute>> preload = context.Preload;
+            List<MethodSummary<AfterServiceInitializedAttribute>> afterload = context.Afterload;
+            foreach (Type? type in assembly.GetTypes())
+            {
+                // TODO: Benchmark if storing typeof result in stack is more optimized.
+                // TODO: Also benchmark which order of checks is more performant.
+                if (!type.IsAbstract && type.IsDefined(typeof(ServiceAttribute)))
+                {
+                    if (typeof(IService).IsAssignableFrom(type))
+                    {
+                        ServiceAttribute attribute = type.GetCustomAttribute<ServiceAttribute>(inherit: false);
+                        // TODO: Add prioritizing, based on length of the inheritance tree, maybe?
+                        //  Or maybe throw if there are two service declarations for the same type within one assembly?
+                        //  So assembly loading order can be enforced.
+                        //  What about "Service selection", when you can select a service to use from a menu and such?
+                        //  So many things to think about...
+                        services.Add(new(attribute, service: type));
+                    }
+                    else
+                    {
+                        EclipseLogger.LogError($"Class ({type.Name}) defines {nameof(ServiceAttribute)} but does not implement {nameof(IService)}<>!");
+                    }
+                }
+
+                foreach (var method in type.GetMethods())
+                {
+                    if (!method.IsStatic) continue;
+                    foreach (var attribute in method.GetCustomAttributes<BeforeServiceInitializedAttribute>(inherit: false))
+                    {
+                        preload.Add(new MethodSummary<BeforeServiceInitializedAttribute>(attribute, method));
+                    }
+
+                    foreach (var attribute in method.GetCustomAttributes<AfterServiceInitializedAttribute>(inherit: false))
+                    {
+                        afterload.Add(new MethodSummary<AfterServiceInitializedAttribute>(attribute, method));
+                    }
+                }
+            }
+
+            await UniTask.CompletedTask;
+        }
+
+        private static async UniTask ConstructServices(LoadingContext context)
+        {
+            List<ServiceSummary> services = context.Services;
+
+            // How much more space to reserve in dictionary for associations with the same services.
+            const float ResizeSafetyMargin = 1.75f;
+            context.Mapping.EnsureCapacity(Mathf.NextPowerOfTwo((int)(services.Count * ResizeSafetyMargin)));
+
+            using (Services.Unsafe.Rebind())
+            {
+                foreach (ServiceSummary summary in services)
+                {
+                    // Note: would of been nice to make mapping of m_Services and class activation execute it
+                    // in parallel with passes below, in a background thread.
+                    // Maybe by adding some kind of internal temporary reference table?
+                    // 
+                    // Right now activation is synced with a main thread, but it doesn't have to.
+                    // This code will be moved to background thread later.
+                    // You should use EngineService Initialize for executing code on a main thread instead.
+                    IService service = (IService)Activator.CreateInstance(summary.service);
+                    Services.ServiceEntry entry = Services.ServiceEntry.Construct(service);
+                    Services.Unsafe.Set(entry); // TODO: Terminate service on overwriting.
+
+                    // Registers all associations with current service.
+                    for (int j = 0; j < entry.associations.Length; j++)
+                    {
+                        context.Mapping[entry.associations[j]] = summary;
+                    }
+                }
+            }
+
+            await UniTask.CompletedTask;
+        }
+
+        private static async UniTask InitializeServices(LoadingContext context)
+        {
+            List<ServiceSummary> services = context.Services;
+            var preload = context.Preload;
+            var afterload = context.Afterload;
+            var mapping = context.Mapping;
+            using (Services.Unsafe.Initialize())
+            {
+                // No reason to parallelize this one - it will just create unnecessary overhead.
+                // We will have at max 50-100 services with mods, I assume   - Dark
+                // (Note: I wonder if it will even work in WebGL XD   - Dark)
+                // TODO: Sort the array based on execution mode and iterate through it in 3 branchless passes.
+                int before = 0, normal = 0, after = 0;
+                ServiceSummary[] buffer = [.. services]; // We need an array later, so why not form and use it earlier?
+                for (int i = 0; i < buffer.Length; i++)
+                {
+                    switch (buffer[i].attribute.ExecutionMode)
+                    {
+                        case IService.ThreadExecutionMode.MainThread: normal++; break;
+                        case IService.ThreadExecutionMode.ThreadedBeforeMain: before++; break;
+                        case IService.ThreadExecutionMode.ThreadedAfterMain: after++; break;
+                    }
+                }
+
+                // Adds all methods to a referenced services.
+                // Also creates instances of the services (Note: because of that .ctor of services are not thread-safe)
+                await UniTask.WhenAll(
+                    UniTask.Run(() =>
+                    {
+                        foreach (MethodSummary<BeforeServiceInitializedAttribute> callback in preload)
+                        {
+                            // Note: 'TryGetValue' checks are mandatory, as some of the MethodSummaries might reference removed service.
+                            // TODO: Move all references attached to an removed service to its replacement, somehow.
+                            // (Maybe provide service map to the 'LoadServices' after all, and link multiple types to the same service? Account for multiple replacing)
+                            if (mapping.TryGetValue(callback.attribute.Service, out var summary))
+                            {
+                                summary.preload.Add(callback);
+                            }
+                        }
+                    }),
+
+                    UniTask.Run(() =>
+                    {
+                        foreach (MethodSummary<AfterServiceInitializedAttribute> callback in afterload)
+                        {
+                            // Note: 'TryGetValue' checks are mandatory, as some of the MethodSummaries might reference removed service.
+                            // TODO: Move all references attached to an removed service to its replacement, somehow.
+                            // (Maybe provide service map to the 'LoadServices' after all, and link multiple types to the same service? Account for multiple replacing)
+                            if (mapping.TryGetValue(callback.attribute.Service, out var summary))
+                            {
+                                summary.afterload.Add(callback);
+                            }
+                        }
+                    })
+                );
+
+                // Note: 'preload' and 'afterload' lists should NOT be used with m_Services after this section without TryGetValue checks.
+                // Some of the MethodSummaries might reference a non-existing service.
+                // Use 'ServiceSummary.preload' and 'ServiceSummary.afterload' from 'summaries' or 'mapping' instead.
+                preload.Clear();
+                afterload.Clear();
+
+                // Sorts everything by the execution/initialization order.
+                await UniTask.WhenAll(
+                    UniTask.Run(() => Array.ForEach(buffer, s => s.preload.Sort((a, b) => a.attribute.InvokeOrder.CompareTo(b.attribute.InvokeOrder)))),
+                    UniTask.Run(() => Array.ForEach(buffer, s => s.afterload.Sort((a, b) => a.attribute.InvokeOrder.CompareTo(b.attribute.InvokeOrder)))),
+                    UniTask.Run(() => services.Sort((a, b) => a.attribute.ExecutionOrder.CompareTo(b.attribute.ExecutionOrder)))
+                );
+
+                // Updates summaries with sorted data.
+                services.CopyTo(buffer);
+
+                // Executed thread-safe initializations and callbacks before main thread.
+                await RunThreadedInitialization(services, buffer, before, IService.ThreadExecutionMode.ThreadedBeforeMain);
+
+                // Initialization part on a Main Unity thread.
+                if (normal > 0)
+                {
+                    foreach (ServiceSummary summary in services)
+                    {
+                        if (summary.attribute.ExecutionMode != IService.ThreadExecutionMode.MainThread) continue;
+                        summary.preload.ForEach(m => m.method.Invoke(null, null));
+                        await Services.Unsafe.Dictionary[summary.service].service.InvokeInitialize();
+                        summary.afterload.ForEach(m => m.method.Invoke(null, null));
+                    }
+                }
+
+                // Executed thread-safe initializations and callbacks after main thread.
+                await RunThreadedInitialization(services, buffer, after, IService.ThreadExecutionMode.ThreadedAfterMain);
+
+                // Simplifications:
+                static async UniTask RunThreadedInitialization(List<ServiceSummary> services, ServiceSummary[] buffer, int allocation, IService.ThreadExecutionMode mode)
+                {
+                    // Runs services that are thread-safe and should be executed before main thread in parallel.
+                    // Note: using m_Services[ServiceSummary.service] here should never produce an exception.
+                    //  I believe this is ensured by filtering in 'LoadServices' method.   - Dark
+                    // Note #2: Down the line, we can group executions by the order:
+                    // - Services with the same execution order will execute in parallel.
+                    // - And services in different groups will be executed sequentially.
+                    // Because as of right now, execution order on threaded services is ignored.
+                    if (allocation <= 0)
+                    {
+                        return;
+                    }
+
+                    int buffered = 0;
+                    foreach (var set in services)
+                    {
+                        if (set.attribute.ExecutionMode == mode)
+                        {
+                            buffer[buffered++] = set;
+                            if (buffered >= allocation) break;
+                        }
+                    }
+
+                    // Runs non-thread-safe 'preload' method callbacks.
+                    for (int i = 0; i < buffered; i++)
+                    {
+                        buffer[i].preload.ForEach(static pre =>
+                        {
+                            if (!pre.attribute.ThreadSafe) pre.method.Invoke(null, null);
+                        });
+                    }
+
+                    // Executes all thread-safe methods and handlers in a right order.
+                    UniTask[] tasks = new UniTask[buffered];
+                    for (int i = 0; i < buffered; i++)
+                    {
+                        tasks[i] = UniTask.Run(async () =>
+                        {
+                            var set = buffer[i];
+                            set.preload.ForEach(static pre =>
+                            {
+                                if (pre.attribute.ThreadSafe) pre.method.Invoke(null, null);
+                            });
+
+                            await Services.Unsafe.Dictionary[set.service].service.InvokeInitialize();
+                            set.afterload.ForEach(static after =>
+                            {
+                                if (after.attribute.ThreadSafe) after.method.Invoke(null, null);
+                            });
+                        });
+                    }
+
+                    await UniTask.WhenAll(tasks);
+
+                    // Runs non-thread-safe 'afterload' method callbacks.
+                    for (int i = 0; i < buffered; i++)
+                    {
+                        buffer[i].afterload.ForEach(static after =>
+                        {
+                            if (!after.attribute.ThreadSafe) after.method.Invoke(null, null);
+                        });
+                    }
+                }
+            }
+        }
+    }
+}
