@@ -1,38 +1,14 @@
-﻿/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
-/// 
-/// Licensed under the Apache License, Version 2.0 (the "License");
-/// you may not use this file except in compliance with the License.
-/// You may obtain a copy of the License at
-/// 
-///         http://www.apache.org/licenses/LICENSE-2.0
-/// 
-/// Unless required by applicable law or agreed to in writing, software
-/// distributed under the License is distributed on an "AS IS" BASIS,
-/// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-/// See the License for the specific language governing permissions and
-/// limitations under the License.
-/// 
-/// ]]>
-
-using Cysharp.Threading.Tasks;
-using System;
+﻿using Cysharp.Threading.Tasks;
 using System.Runtime.CompilerServices;
+using static ServiceCore.IService;
 
 namespace ServiceCore
 {
     /// <summary>
-    /// Provides fast, type-safe null-safe access to game services registered during initialization.
+    /// Base for services which are not meant to be changed at runtime.
     /// </summary>
     /// <remarks>
-    /// <see cref="Instance"/> property should only be available from interface declaration.
-    /// While it will make development a bit harder, it will automatically enforce code structure, needed for proper modding.
-    /// (i.e. mod developers will be able to completely override how service behaves)
-    /// (Service provider, highest in a dependency tree, will be prioritized)
-    /// (Note: Mod developers should refrain from overwriting services though for compatibility)
-    /// (Note: Only mod-pack developers working with older game versions should use it, to back-port stuff)
-    /// <para>
     /// When deciding whether to use <see cref="Service{T}"/> or <see cref="IService{T}"/>, ask yourself:
-    /// </para>
     /// <para>
     /// 1. Are you prototyping right now? If yes - use <see cref="Service{T}"/>.
     /// You don't need to care about modding at this stage. You can just turn it into a Service + <see cref="IService{T}"/> set later.
@@ -48,9 +24,9 @@ namespace ServiceCore
     /// Using interfaces might be harder for you, but might help modders if service has any reason, at all, to be overwritten or expanded on.
     /// </para>
     /// </remarks>
-    /// <typeparam name="T">The type of the service to retrieve. Must inherit from <see cref="IService{TService}"/>.</typeparam>
-    [IgnoreService] // Were added to allow child services to implement this attribute as well.
-    public interface IService<T> : IService where T : class, IService<T>
+    /// <typeparam name="T">Service implementing this abstract class.</typeparam>
+    [IgnoreServiceBranch]
+    public abstract class Service<T> : IService where T : Service<T>
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -74,7 +50,7 @@ namespace ServiceCore
         /// Might be <c>false</c> during initialization.
         /// Note: Services are initialized base on <see cref="ServiceAttribute.ExecutionOrder"/>.
         /// </remarks>
-        public static new bool Initialized => m_Initialized;
+        public static bool Initialized => m_Initialized;
 
         /// <summary>
         /// Flag implementation to access static <see cref="Initialized"/> field.
@@ -110,7 +86,7 @@ namespace ServiceCore
         /// .                                           Initialization / Reset
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        static IService()
+        static Service()
         {
             Services.Unsafe.RebindServices += RebindService;
             //m_Instance = Services.Get<T>(); // No need, since services instance is provided after RebindService callback.
@@ -147,7 +123,7 @@ namespace ServiceCore
         /// Doesn't change <see cref="Initialized"/>.
         /// Use <see cref="IService.InvokeInitialize()"/> to change it.
         /// </returns>
-        UniTask Initialize();
+        protected abstract UniTask Initialize();
 
         /// <summary>
         /// Called when <see cref="Engine"/> terminates all the code and resources from the memory.
@@ -157,7 +133,7 @@ namespace ServiceCore
         /// Doesn't change <see cref="Initialized"/>.
         /// Use <see cref="IService.InvokeTerminate()"/> to change it.
         /// </remarks>
-        UniTask Terminate();
+        protected abstract UniTask Terminate();
 
 
 
@@ -190,84 +166,5 @@ namespace ServiceCore
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Exist() => m_Instance is not null;
-    }
-
-
-
-
-    /// <summary>
-    /// Basic interface for a service.
-    /// </summary>
-    /// <remarks>
-    /// For custom services, please use <see cref="IService{TService}"/> interface instead.
-    /// This interface is needed only for internal usage and listing in <see cref="Services.List"/>.
-    /// </remarks>
-    [IgnoreService]
-    public partial interface IService
-    {
-        /// <summary>
-        /// Flags whether <see cref="InvokeInitialize"/> was called on a service or not.
-        /// </summary>
-        public bool Initialized { get; protected set; }
-
-        /// <summary>
-        /// Used to hide this method from <see cref="IService"/> users.
-        /// Invokes <see cref="IService{T}.Initialize"/>.
-        /// </summary>
-        protected UniTask InternalInitialize();
-
-        /// <summary>
-        /// Used to hide this method from <see cref="IService"/> users.
-        /// Invokes <see cref="IService{T}.Terminate"/>.
-        /// </summary>
-        protected UniTask InternalTerminate();
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                               Static Methods
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <summary>
-        /// Calls <see cref="IService{T}.Initialize"/> if service is not <see cref="Initialized"/>.
-        /// </summary>
-        public async UniTask InvokeInitialize()
-        {
-            if (!Initialized)
-            {
-                try
-                {
-                    await InternalInitialize();
-                }
-                catch (Exception ex)
-                {
-                    ServiceCoreLogger.LogException(new Exception($"Failed to initialize {GetType().Name} service!", ex));
-                }
-
-                Initialized = true;
-            }
-        }
-
-        /// <summary>
-        /// Calls <see cref="IService{T}.Terminate"/> is service is <see cref="Initialized"/>.
-        /// </summary>
-        public async UniTask InvokeTerminate()
-        {
-            if (Initialized)
-            {
-                try
-                {
-                    await InternalTerminate();
-                }
-                catch (Exception ex)
-                {
-                    ServiceCoreLogger.LogException(new Exception($"Failed to terminate {GetType().Name} service!", ex));
-                }
-
-                Initialized = false;
-            }
-        }
     }
 }

@@ -9,8 +9,7 @@
     ".NETStandard,Version=v2.1/": {
       "ServiceCore/0.4.0.0": {
         "dependencies": {
-          "UniTask": "2.5.10",
-          "UnityEngine": "0.0.0.0"
+          "UniTask": "2.5.10"
         },
         "runtime": {
           "ServiceCore.dll": {}
@@ -45,14 +44,6 @@
             "fileVersion": "2.5.10.0"
           }
         }
-      },
-      "UnityEngine/0.0.0.0": {
-        "runtime": {
-          "UnityEngine.dll": {
-            "assemblyVersion": "0.0.0.0",
-            "fileVersion": "0.0.0.0"
-          }
-        }
       }
     }
   },
@@ -82,11 +73,6 @@
       "sha512": "sha512-Ykx4+upma5Mg9Y4RhiN04vWh7ignHwJkyyWXPYJODl0fE39cHNKie//9pbheRmtJV8fEfnFAeRDlyfMZQ6UjjQ==",
       "path": "unitask/2.5.10",
       "hashPath": "unitask.2.5.10.nupkg.sha512"
-    },
-    "UnityEngine/0.0.0.0": {
-      "type": "reference",
-      "serviceable": false,
-      "sha512": ""
     }
   }
 }

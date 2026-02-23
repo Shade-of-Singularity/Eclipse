@@ -15,8 +15,8 @@
 /// ]]>
 
 using Cysharp.Threading.Tasks;
-using ServiceCore.Configuration.Parameters;
 using ServiceCore.Configuration.Storages;
+using ServiceCore.Parameters;
 using System;
 
 namespace ServiceCore.Configuration
@@ -105,7 +105,7 @@ namespace ServiceCore.Configuration
                     }
                     catch (Exception ex)
                     {
-                        EclipseLogger.LogException(ex);
+                        ServiceCoreLogger.LogException(ex);
                     }
                 }
             }
@@ -137,7 +137,7 @@ namespace ServiceCore.Configuration
                     }
                     catch (Exception ex)
                     {
-                        EclipseLogger.LogException(ex);
+                        ServiceCoreLogger.LogException(ex);
                     }
                 }
             }
@@ -166,7 +166,7 @@ namespace ServiceCore.Configuration
                     }
                     catch (Exception ex)
                     {
-                        EclipseLogger.LogException(ex);
+                        ServiceCoreLogger.LogException(ex);
                     }
                 }
             }
@@ -195,7 +195,7 @@ namespace ServiceCore.Configuration
                     }
                     catch (Exception ex)
                     {
-                        EclipseLogger.LogException(ex);
+                        ServiceCoreLogger.LogException(ex);
                     }
                 }
             }
@@ -224,7 +224,7 @@ namespace ServiceCore.Configuration
                     }
                     catch (Exception ex)
                     {
-                        EclipseLogger.LogException(ex);
+                        ServiceCoreLogger.LogException(ex);
                     }
                 }
             }
@@ -253,7 +253,7 @@ namespace ServiceCore.Configuration
                     }
                     catch (Exception ex)
                     {
-                        EclipseLogger.LogException(ex);
+                        ServiceCoreLogger.LogException(ex);
                     }
                 }
             }

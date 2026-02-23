@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace ServiceCore.Configuration.Parameters
+namespace ServiceCore.Parameters
 {
     /// <summary>
     /// Manages all parameters in the application.

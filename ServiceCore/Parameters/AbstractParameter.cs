@@ -14,10 +14,10 @@
 /// 
 /// ]]>
 
-namespace ServiceCore.Configuration.Parameters
+namespace ServiceCore.Parameters
 {
     /// <summary>
-    /// Base parameter which can be serialized to- or deserialized from <see cref="Storages.IDataStorage"/> via <see cref="DefaultConfigurationService"/>.
+    /// Base parameter which can be serialized or deserialized.
     /// </summary>
     public abstract class AbstractParameter(string id)
     {
@@ -62,7 +62,7 @@ namespace ServiceCore.Configuration.Parameters
         /// similar to <see cref="Parameter{TValue}.OnValueApplied"/> even when nothing has changed.
         /// </summary>
         /// <remarks>
-        /// <see cref="DefaultConfigurationService"/> will use <see cref="ApplyChangesForceFireCallbacks"/> after <see cref="Engine.OnEngineInitialized"/>.
+        /// Default ConfigurationService will use <see cref="ApplyChangesForceFireCallbacks"/> after <see cref="Engine.OnEngineInitialized"/>.
         /// </remarks>
         public abstract void ApplyChangesForceFireCallbacks();
 

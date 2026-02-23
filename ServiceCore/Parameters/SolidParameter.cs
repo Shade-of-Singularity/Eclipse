@@ -17,9 +17,8 @@
 using ServiceCore.Serialization;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
-namespace ServiceCore.Configuration.Parameters
+namespace ServiceCore.Parameters
 {
     /// <summary>
     /// Solid parameters can only be changed with Engine reload.
@@ -217,7 +216,7 @@ namespace ServiceCore.Configuration.Parameters
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"Parameter {ID} ({typeof(TValue).Name}]) was not able to deserialize properly. Default value ({m_DefaultValue}) will be used instead.\nFailed data: {raw}\nException: {ex}");
+                ServiceCoreLogger.LogWarning($"Parameter {ID} ({typeof(TValue).Name}]) was not able to deserialize properly. Default value ({m_DefaultValue}) will be used instead.\nFailed data: {raw}\nException: {ex}");
             }
         }
 

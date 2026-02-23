@@ -17,7 +17,6 @@
 using ServiceCore.Configuration;
 using System;
 using System.IO;
-using UnityEngine;
 
 namespace ServiceCore
 {
@@ -31,34 +30,6 @@ namespace ServiceCore
     /// </remarks>
     public static partial class Specs
     {
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                               Static Fields
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <summary>
-        /// Whether user system is a Desktop device (Windows, Linux, macOS, etc.)
-        /// </summary>
-        public static readonly bool IsDesktop = SystemInfo.deviceType == DeviceType.Desktop;
-
-        /// <summary>
-        /// Whether user system is a Handheld device (Android, iPhone, etc.)
-        /// </summary>
-        public static readonly bool IsHandheld = SystemInfo.deviceType == DeviceType.Handheld;
-
-        /// <summary>
-        /// Whether user system is a Console device (XBox, etc.)
-        /// </summary>
-        public static readonly bool IsConsole = SystemInfo.deviceType == DeviceType.Console;
-
-        /// <summary>
-        /// Any other type of device, other than <see cref="IsDesktop"/>, <see cref="IsHandheld"/> and <see cref="IsConsole"/>.
-        /// </summary>
-        public static readonly bool IsUnknownDevice = SystemInfo.deviceType == DeviceType.Unknown;
-
-
-
-
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
         /// .                                                   Extra
@@ -486,7 +457,7 @@ namespace ServiceCore
             /// <summary>
             /// Name of the partition where all dynamic data is stored (settings, temp files, etc.)
             /// </summary>
-            public static char DataDiskPartition { get; }
+            public static char DataDiskPartition { get; } = 'C';
 
             /// <summary>
             /// Reading speed of a data disk (bytes/s).
@@ -523,7 +494,7 @@ namespace ServiceCore
             /// <summary>
             /// Name of the partition where game files are stored (levels, scenes, StreamingAssets, etc.)
             /// </summary>
-            public static char GameDiskPartition { get; }
+            public static char GameDiskPartition { get; } = 'C';
 
             /// <summary>
             /// Reading speed of a game disk (bytes/s).
@@ -596,28 +567,14 @@ namespace ServiceCore
             {
                 // TODO: Replace with compiler arguments instead.
                 // Determines which setting keys should be used for the parameters.
-                if (IsDesktop)
-                {
-                    DataDiskPartition = GetPartitionName(AppContext.BaseDirectory);
-                    DataDiskReadingSpeedKey = string.Concat("@", DataDiskPartition, "|ReadingSpeed");
-                    DataDiskWritingSpeedKey = string.Concat("@", DataDiskPartition, "|WritingSpeed");
+                DataDiskPartition = GetPartitionName(AppContext.BaseDirectory);
+                DataDiskReadingSpeedKey = string.Concat("@", DataDiskPartition, "|ReadingSpeed");
+                DataDiskWritingSpeedKey = string.Concat("@", DataDiskPartition, "|WritingSpeed");
 
-                    GameDiskPartition = GetPartitionName(DefaultConfigurationService.ConfigurationPath);
-                    GameDiskReadingSpeedKey = string.Concat("@", GameDiskPartition, "|ReadingSpeed");
-                    GameDiskWritingSpeedKey = string.Concat("@", GameDiskPartition, "|WritingSpeed");
-                }
-                else
-                {
-                    // Handheld devices and consoles usually write to the same disk.
-                    const string DiskReadingSpeedKey = "@DiskReadingSpeed";
-                    const string DiskWritingSpeedKey = "@DiskWritingSpeed";
-                    DataDiskReadingSpeedKey = DiskReadingSpeedKey;
-                    DataDiskWritingSpeedKey = DiskWritingSpeedKey;
-                    GameDiskReadingSpeedKey = DiskReadingSpeedKey;
-                    GameDiskWritingSpeedKey = DiskWritingSpeedKey;
-                    DataDiskPartition = default;
-                    GameDiskPartition = default;
-                }
+                // TODO: Provide ways to serialize data in different places - locally and in cloud with steam, etc.
+                GameDiskPartition = GetPartitionName(DefaultConfigurationService.ConfigurationPath);
+                GameDiskReadingSpeedKey = string.Concat("@", GameDiskPartition, "|ReadingSpeed");
+                GameDiskWritingSpeedKey = string.Concat("@", GameDiskPartition, "|WritingSpeed");
             }
 
             [AfterServiceInitialized(typeof(DefaultConfigurationService))]
@@ -661,8 +618,8 @@ namespace ServiceCore
                 catch (Exception ex)
                 {
                     // TODO: Remove after debugging.
-                    EclipseLogger.LogError(ex);
-                    EclipseLogger.LogWarning($"Cannot retrieve partition name for path: ({path}). Default value will be used instead.");
+                    ServiceCoreLogger.LogError(ex);
+                    ServiceCoreLogger.LogWarning($"Cannot retrieve partition name for path: ({path}). Default value will be used instead.");
                 }
 
                 return GetDefault();

@@ -14,7 +14,7 @@
 /// 
 /// ]]>
 
-using ServiceCore.Configuration.Parameters;
+using ServiceCore.Parameters;
 using UnityEngine;
 
 namespace ServiceCore.Configuration.Storages

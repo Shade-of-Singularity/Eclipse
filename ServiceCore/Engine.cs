@@ -21,12 +21,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 
 namespace ServiceCore
 {
     /// <summary>
-    /// Main class for <see cref="ServiceCore"/> Foundation Library.
+    /// Main class for <see cref="ServiceCore"/> Library.
     /// </summary>
     public static partial class Engine
     {
@@ -213,88 +212,6 @@ namespace ServiceCore
 
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
-        /// .                                       Unity Initialization Callbacks
-        /// .                                TODO: Add Editor-time initialization methods.
-        /// .                                   TODO: Move to ServiceCore.UnityEngine.dll
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void OnSubsystemRegistration()
-        {
-            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.SubsystemRegistration)
-            {
-                Initialize().Forget();
-            }
-        }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-        static void OnAfterAssembliesLoaded()
-        {
-            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.AfterAssembliesLoaded)
-            {
-                Initialize().Forget();
-            }
-        }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
-        static void OnBeforeSplashScreen()
-        {
-            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.BeforeSplashScreen)
-            {
-                Initialize().Forget();
-            }
-        }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        static void OnBeforeSceneLoad()
-        {
-            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.BeforeSceneLoad)
-            {
-                Initialize().Forget();
-            }
-        }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        static void OnAfterSceneLoad()
-        {
-            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.AfterSceneLoad)
-            {
-                Initialize().Forget();
-            }
-        }
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                              Fast-Access API
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <summary>
-        /// Throws "Not modifiable" exception if called when <see cref="Status"/> is anything but <see cref="EngineStatus.Initializing"/>.
-        /// This is usually when core systems are still modifiable.
-        /// Assets and other resources, however, usually still modifiable at runtime to some degree (depends on type).
-        /// </summary>
-        /// <remarks>
-        /// (Hmm... Is it a good idea to lock systems behind such limitation though?)
-        /// <para>
-        /// (Use it in a non-performance critical code, like class setters that usually never called, or initialization-only setters, etc.)
-        /// </para>
-        /// </remarks>
-        public static void AssertModifiable([CallerFilePath] string caller = "")
-        {
-            if (m_Status != EngineStatus.Initializing)
-            {
-                throw new Exception($"Cannot modify ('{Path.GetFileNameWithoutExtension(caller)}') outside of the engine initialization stage.");
-            }
-        }
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
         /// .                                                 Termination
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
@@ -329,8 +246,8 @@ namespace ServiceCore
             catch (Exception ex)
             {
                 m_Assemblies.Clear();
-                EclipseLogger.LogException(ex);
-                EclipseLogger.LogError($"{LogPrefix} {nameof(ServiceCore)} was broken during termination!");
+                ServiceCoreLogger.LogException(ex);
+                ServiceCoreLogger.LogError($"{LogPrefix} {nameof(ServiceCore)} was broken during termination!");
                 SetStatus(EngineStatus.TerminationBroken);
                 return;
             }
@@ -354,13 +271,7 @@ namespace ServiceCore
         {
             if (Status != EngineStatus.Terminated)
             {
-                EclipseLogger.LogWarning($"{LogPrefix} Cannot initialize non-idle engine.");
-                return;
-            }
-
-            if (!Application.isPlaying)
-            {
-                EclipseLogger.LogWarning($"Attempted to initialize the Engine in the editor! It's yet to be supported.");
+                ServiceCoreLogger.LogWarning($"{LogPrefix} Cannot initialize non-idle engine.");
                 return;
             }
 
@@ -377,8 +288,8 @@ namespace ServiceCore
             }
             catch (Exception ex)
             {
-                EclipseLogger.LogException(ex);
-                EclipseLogger.LogError($"{LogPrefix} {nameof(ServiceCore)} was broken during initialization!");
+                ServiceCoreLogger.LogException(ex);
+                ServiceCoreLogger.LogError($"{LogPrefix} {nameof(ServiceCore)} was broken during initialization!");
                 SetStatus(EngineStatus.InitializationBroken);
                 return;
             }
@@ -409,7 +320,7 @@ namespace ServiceCore
             }
             catch (Exception ex)
             {
-                EclipseLogger.LogException(ex);
+                ServiceCoreLogger.LogException(ex);
             }
 
             IEnumerable<Assembly> Provider() { yield return assembly; }
@@ -426,7 +337,7 @@ namespace ServiceCore
             }
             catch (Exception ex)
             {
-                EclipseLogger.LogException(ex);
+                ServiceCoreLogger.LogException(ex);
             }
         }
 
@@ -495,6 +406,7 @@ namespace ServiceCore
         {
             return m_NativeAssemblies.Any(c => c.FullName.Equals(assembly.FullName, StringComparison.Ordinal));
         }
+
         private static void SetStatus(EngineStatus status)
         {
             EngineStatus diff = (m_Status ^ status) & status; // Checks which bits have changed.
@@ -502,22 +414,22 @@ namespace ServiceCore
             // Order is: (initializing) -> (initialized) -> (terminating) -> terminated.
             if ((diff & EngineStatus.Initializing) != EngineStatus.Invalid && !TryFireCallback(ref OnEngineInitializing))
             {
-                EclipseLogger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineInitializing)}' event thrown exceptions! Look above for errors.");
+                ServiceCoreLogger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineInitializing)}' event thrown exceptions! Look above for errors.");
             }
 
             if ((diff & EngineStatus.Initialized) != EngineStatus.Invalid && !TryFireCallback(ref OnEngineInitialized))
             {
-                EclipseLogger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineInitialized)}' event thrown exceptions! Look above for errors.");
+                ServiceCoreLogger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineInitialized)}' event thrown exceptions! Look above for errors.");
             }
 
             if ((diff & EngineStatus.Terminating) != EngineStatus.Invalid && !TryFireCallback(ref OnEngineTerminating))
             {
-                EclipseLogger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineTerminating)}' event thrown exceptions! Look above for errors.");
+                ServiceCoreLogger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineTerminating)}' event thrown exceptions! Look above for errors.");
             }
 
             if ((diff & EngineStatus.Terminated) != EngineStatus.Invalid && !TryFireCallback(ref OnEngineTerminated))
             {
-                EclipseLogger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineTerminated)}' event thrown exceptions! Look above for errors.");
+                ServiceCoreLogger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineTerminated)}' event thrown exceptions! Look above for errors.");
             }
 
             m_Status = status;
@@ -525,12 +437,12 @@ namespace ServiceCore
             // Handles explicit status errors just in case.
             if ((diff & EngineStatus.InitializationBroken) != EngineStatus.Invalid)
             {
-                EclipseLogger.LogError($"{LogPrefix} {nameof(Engine)} was irreversibly broken during initialization. You will need to restart your app to fix this.");
+                ServiceCoreLogger.LogError($"{LogPrefix} {nameof(Engine)} was irreversibly broken during initialization. You will need to restart your app to fix this.");
             }
 
             if ((diff & EngineStatus.TerminationBroken) != EngineStatus.Invalid)
             {
-                EclipseLogger.LogError($"{LogPrefix} {nameof(Engine)} was irreversibly broken during unloading. You will need to restart your app to fix this.");
+                ServiceCoreLogger.LogError($"{LogPrefix} {nameof(Engine)} was irreversibly broken during unloading. You will need to restart your app to fix this.");
             }
         }
 
@@ -556,7 +468,7 @@ namespace ServiceCore
                 }
                 catch (Exception ex)
                 {
-                    EclipseLogger.LogException(ex);
+                    ServiceCoreLogger.LogException(ex);
                     exceptions |= true;
                 }
             }
@@ -611,7 +523,7 @@ namespace ServiceCore
             {
                 if (!m_Assemblies.Register(assembly))
                 {
-                    EclipseLogger.LogWarning($"Skipping already initialized assemblies.");
+                    ServiceCoreLogger.LogWarning($"Skipping already initialized assemblies.");
                     continue;
                 }
 
@@ -655,7 +567,7 @@ namespace ServiceCore
                     }
                     else
                     {
-                        EclipseLogger.LogError($"Class ({type.Name}) defines {nameof(ServiceAttribute)} but does not implement {nameof(IService)}<>!");
+                        ServiceCoreLogger.LogError($"Class ({type.Name}) defines {nameof(ServiceAttribute)} but does not implement {nameof(IService)}<>!");
                     }
                 }
 
@@ -682,8 +594,8 @@ namespace ServiceCore
             List<ServiceSummary> services = context.Services;
 
             // How much more space to reserve in dictionary for associations with the same services.
-            const float ResizeSafetyMargin = 1.75f;
-            context.Mapping.EnsureCapacity(Mathf.NextPowerOfTwo((int)(services.Count * ResizeSafetyMargin)));
+            const int ResizeSafetyMargin = 2;
+            context.Mapping.EnsureCapacity(services.Count * ResizeSafetyMargin);
 
             using (Services.Unsafe.Rebind())
             {

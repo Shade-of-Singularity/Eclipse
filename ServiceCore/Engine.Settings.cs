@@ -14,8 +14,7 @@
 /// 
 /// ]]>
 
-using ServiceCore.Configuration;
-using ServiceCore.Configuration.Parameters;
+using ServiceCore.Parameters;
 
 namespace ServiceCore
 {
@@ -42,14 +41,14 @@ namespace ServiceCore
             /// .                                                Constructors
             /// .
             /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            [AfterServiceInitialized(typeof(IConfigurationService))]
-            internal static void Initialize()
-            {
-                if (Flags.StreamerMode)
-                {
-                    StreamerMode.DefaultValue = StreamerMode.Value = true;
-                }
-            }
+            //[AfterServiceInitialized(typeof(IConfigurationService))]
+            //internal static void Initialize()
+            //{
+            //    if (Flags.StreamerMode)
+            //    {
+            //        StreamerMode.DefaultValue = StreamerMode.Value = true;
+            //    }
+            //}
         }
     }
 }

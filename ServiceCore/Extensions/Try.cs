@@ -24,9 +24,9 @@ namespace ServiceCore.Extensions
     public static class Try
     {
         /// <summary>
-        /// Invokes given <paramref name="action"/> with default logger <see cref="EclipseLogger.LogException(Exception)"/>.
+        /// Invokes given <paramref name="action"/> with default logger <see cref="ServiceCoreLogger.LogException(Exception)"/>.
         /// </summary>
-        public static void WithLog(Action? action) => Invoke(action, EclipseLogger.LogException);
+        public static void WithLog(Action? action) => Invoke(action, ServiceCoreLogger.LogException);
 
         /// <summary>
         /// Invokes given <paramref name="action"/> with using <paramref name="callback"/> handler for exception handling.

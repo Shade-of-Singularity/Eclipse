@@ -17,9 +17,8 @@
 using ServiceCore.Serialization;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
-namespace ServiceCore.Configuration.Parameters
+namespace ServiceCore.Parameters
 {
     /// <summary>
     /// Parameter for the settings of the game.
@@ -220,7 +219,7 @@ namespace ServiceCore.Configuration.Parameters
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"Parameter {ID} ({typeof(TValue).Name}]) was not able to deserialize properly. Default value ({m_DefaultValue}) will be used instead.\nFailed data: {raw}\nException: {ex}");
+                ServiceCoreLogger.LogWarning($"Parameter {ID} ({typeof(TValue).Name}]) was not able to deserialize properly. Default value ({m_DefaultValue}) will be used instead.\nFailed data: {raw}\nException: {ex}");
             }
         }
 

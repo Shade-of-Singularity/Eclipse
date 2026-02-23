@@ -16,13 +16,12 @@
 
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace ServiceCore.Serialization
 {
     /// <summary>
     /// Holder of an (de)serializers for a specific value type.
-    /// Used in <see cref="Configuration.Parameters.Parameter{TValue}"/> to provide type-specific serialization.
+    /// Used in <see cref="Parameters.Parameter{TValue}"/> to provide type-specific serialization.
     /// </summary>
     /// <typeparam name="TValue">Target type which an serializer is handling.</typeparam>
     public static class Serializers<TValue>
@@ -123,8 +122,8 @@ namespace ServiceCore.Serialization
         /// .                                               Private Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private static string DefaultSerializer(TValue value) => JsonUtility.ToJson(value, prettyPrint: true);
-        private static TValue DefaultDeserializer(string raw) => JsonUtility.FromJson<TValue>(raw);
+        private static string DefaultSerializer(TValue value) => Serializers.DefaultSerializer(value);
+        private static TValue DefaultDeserializer(string raw) => (TValue)Serializers.DefaultDeserializer(raw, typeof(TValue));
     }
 
 
@@ -145,6 +144,28 @@ namespace ServiceCore.Serialization
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         private static readonly Dictionary<Type, object> m_Serializers = [];
         private static readonly Dictionary<Type, object> m_Deserializers = [];
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                                 Delegates
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        public delegate string Serialize(object? target);
+        public delegate object Deserialize(string raw, Type type);
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                              Public Properties
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        public static Serialize DefaultSerializer { get; set; } = (target) => throw new NotImplementedException();
+        public static Deserialize DefaultDeserializer { get; set; } = (raw, type) => throw new NotImplementedException();
 
 
 

@@ -146,7 +146,7 @@ namespace ServiceCore
             {
                 if (service is null)
                 {
-                    EclipseLogger.LogWarning($"{LogPrefix} Attempted to register null service.");
+                    ServiceCoreLogger.LogWarning($"{LogPrefix} Attempted to register null service.");
                     return;
                 }
 
@@ -165,7 +165,7 @@ namespace ServiceCore
             {
                 if (entry.service is null)
                 {
-                    EclipseLogger.LogWarning($"{LogPrefix} Attempted to register null service.");
+                    ServiceCoreLogger.LogWarning($"{LogPrefix} Attempted to register null service.");
                     return;
                 }
 
@@ -212,7 +212,7 @@ namespace ServiceCore
                 }
                 catch (Exception ex)
                 {
-                    EclipseLogger.LogException(ex);
+                    ServiceCoreLogger.LogException(ex);
                 }
             }
 
@@ -224,7 +224,7 @@ namespace ServiceCore
                 }
                 catch (Exception ex)
                 {
-                    EclipseLogger.LogException(ex);
+                    ServiceCoreLogger.LogException(ex);
                 }
             }
 
@@ -236,7 +236,7 @@ namespace ServiceCore
                 }
                 catch (Exception ex)
                 {
-                    EclipseLogger.LogException(ex);
+                    ServiceCoreLogger.LogException(ex);
                 }
             }
 

@@ -21,7 +21,7 @@ namespace ServiceCore
     /// <summary>
     /// Provides ways for you to change how engine logs messages.
     /// </summary>
-    public static class EclipseLogger
+    public static class ServiceCoreLogger
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -70,7 +70,7 @@ namespace ServiceCore
         /// .                                                Constructors
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        static EclipseLogger()
+        static ServiceCoreLogger()
         {
             InformationReceived += (message) =>
             {

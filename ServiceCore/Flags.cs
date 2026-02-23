@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace ServiceCore
 {
@@ -120,8 +119,8 @@ namespace ServiceCore
             static void RetrieveArgs(out Dictionary<string, string[]> flags, out string process)
             {
                 string[] args = Environment.GetCommandLineArgs();
-                Debug.Log("Logging environment args:");
-                Array.ForEach(args, Debug.Log);
+                ServiceCoreLogger.Log("Logging environment args:");
+                Array.ForEach(args, ServiceCoreLogger.Log);
 
                 // Isolates process name.
                 flags = [];
@@ -165,11 +164,11 @@ namespace ServiceCore
 
             static void LogFlags(in Dictionary<string, string[]> args)
             {
-                Debug.Log("Logging Command line args:");
+                ServiceCoreLogger.Log("Logging Command line args:");
                 uint counter = 0;
                 foreach (var pair in args)
                 {
-                    Debug.Log($"[{counter++}] {pair.Key}: {string.Join(", ", pair.Value)}");
+                    ServiceCoreLogger.Log($"[{counter++}] {pair.Key}: {string.Join(", ", pair.Value)}");
                 }
             }
         }

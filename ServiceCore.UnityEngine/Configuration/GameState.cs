@@ -63,7 +63,7 @@ namespace ServiceCore.Configuration
     }
 
     /// <summary>
-    /// Custom class for your settings, which doesn't use <see cref="Parameters.AbstractParameter"/>.
+    /// Custom class for your settings, which doesn't use <see cref="ServiceCore.Parameters.AbstractParameter"/>.
     /// </summary>
     /// <remarks>
     /// Works similarly to Naninovel, if you familiar with it.
