@@ -134,9 +134,9 @@ namespace ServiceCore.Modding
             _ => throw new NotSupportedException($"{Engine.LogPrefix} Cannot use '!' and '?' tokens in a dependency declaration."),
         };
 
-        /// <inheritdoc cref="TryGetType(ReadOnlySpan{char}, out VersionDependencyType)"/>
+        /// <inheritdoc cref="TryParseType(ReadOnlySpan{char}, out VersionDependencyType)"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryGetType(string raw, out VersionDependencyType type) => TryGetType(raw.AsSpan(), out type);
+        public static bool TryParseType(string raw, out VersionDependencyType type) => TryParseType(raw.AsSpan(), out type);
 
         /// <summary>
         /// Tries to retrieve <see cref="VersionDependencyType"/> from a raw declaration in text (e.g. "?>=", "!==")
@@ -144,7 +144,7 @@ namespace ServiceCore.Modding
         /// <param name="raw">Raw declaration <b>without</b> anything extra: spaces (on both sides), other symbols, etc.</param>
         /// <param name="type">Retrieved <see cref="VersionDependencyType"/>.</param>
         /// <returns><c>true</c> when type was successfully retrieved and <paramref name="type"/> was provided. <c>false</c> otherwise.</returns>
-        public static bool TryGetType(ReadOnlySpan<char> raw, out VersionDependencyType type)
+        public static bool TryParseType(ReadOnlySpan<char> raw, out VersionDependencyType type)
         {
             /* Learned lessons (GPT):
              * Early on, you were optimizing:

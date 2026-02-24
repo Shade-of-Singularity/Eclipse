@@ -106,7 +106,7 @@ namespace ServiceCore.Modding
         /// <param name="raw">Raw version declaration.</param>
         /// <param name="version">Parsed version or <see cref="Zero"/> when returns <c>false</c>.</param>
         /// <returns><c>true</c> when <paramref name="raw"/> was parsed to <paramref name="version"/> successfully. <c>false</c> otherwise.</returns>
-        public static bool TryParse(Span<char> raw, out Version version)
+        public static bool TryParse(ReadOnlySpan<char> raw, out Version version)
         {
             if (raw.IsEmpty)
             {
@@ -125,7 +125,7 @@ namespace ServiceCore.Modding
                 return true;
             }
 
-            Span<char> second = raw[(splitA + 1)..];
+            ReadOnlySpan<char> second = raw[(splitA + 1)..];
             int splitB = second.IndexOf('.');
             if (splitB == -1)
             {
