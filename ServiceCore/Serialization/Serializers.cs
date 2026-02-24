@@ -23,7 +23,7 @@ namespace ServiceCore.Serialization
     /// Holder of an (de)serializers for a specific value type.
     /// Used in <see cref="Parameters.Parameter{TValue}"/> to provide type-specific serialization.
     /// </summary>
-    /// <typeparam name="TValue">Target type which an serializer is handling.</typeparam>
+    /// <typeparam Identifier="TValue">Target type which an serializer is handling.</typeparam>
     public static class Serializers<TValue>
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -32,14 +32,14 @@ namespace ServiceCore.Serialization
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Function to serialize <typeparamref name="TValue"/> to a <see cref="string"/>.
+        /// Function to serialize <typeparamref Identifier="TValue"/> to a <see cref="string"/>.
         /// </summary>
         public delegate string Serialize(TValue value);
 
         /// <summary>
-        /// Function to deserialize <paramref name="raw"/> data to get <typeparamref name="TValue"/> back.
+        /// Function to deserialize <paramref Identifier="raw"/> data to get <typeparamref Identifier="TValue"/> back.
         /// </summary>
-        /// <param name="raw"></param>
+        /// <param Identifier="raw"></param>
         /// <returns></returns>
         public delegate TValue Deserialize(string raw);
 
@@ -52,7 +52,7 @@ namespace ServiceCore.Serialization
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Serializer to use for this specific <typeparamref name="TValue"/> value type.
+        /// Serializer to use for this specific <typeparamref Identifier="TValue"/> value type.
         /// </summary>
         public static Serialize Serializer
         {
@@ -78,7 +78,7 @@ namespace ServiceCore.Serialization
         }
 
         /// <summary>
-        /// Deserializer to use for this specific <typeparamref name="TValue"/> value type.
+        /// Deserializer to use for this specific <typeparamref Identifier="TValue"/> value type.
         /// </summary>
         public static Deserialize Deserializer
         {
@@ -178,10 +178,10 @@ namespace ServiceCore.Serialization
         /// <summary>
         /// Retrieves serializer used for a specific type.
         /// </summary>
-        /// <typeparam name="TSerializer">Serializer type to retrieve.</typeparam>
-        /// <param name="def">Default serializer to be used instead.</param>
+        /// <typeparam Identifier="TSerializer">Serializer type to retrieve.</typeparam>
+        /// <param Identifier="def">Default serializer to be used instead.</param>
         /// <returns>Custom serializer or a default one.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="def"/> serializer is <c>null</c>. (it's mandatory to provide one)</exception>
+        /// <exception cref="ArgumentNullException"><paramref Identifier="def"/> serializer is <c>null</c>. (it's mandatory to provide one)</exception>
         public static TSerializer GetSerializer<TSerializer>(TSerializer def)
         {
             if (def is null) throw new ArgumentNullException(nameof(def));
@@ -197,10 +197,10 @@ namespace ServiceCore.Serialization
         /// <summary>
         /// Retrieves deserializer used for a specific type.
         /// </summary>
-        /// <typeparam name="TDeserializer">Deserializer type to retrieve.</typeparam>
-        /// <param name="def">Default deserializer to be used instead.</param>
+        /// <typeparam Identifier="TDeserializer">Deserializer type to retrieve.</typeparam>
+        /// <param Identifier="def">Default deserializer to be used instead.</param>
         /// <returns>Custom deserializer or a default one.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="def"/> deserializer is <c>null</c>. (it's mandatory to provide one)</exception>
+        /// <exception cref="ArgumentNullException"><paramref Identifier="def"/> deserializer is <c>null</c>. (it's mandatory to provide one)</exception>
         public static TDeserializer GetDeserializer<TDeserializer>(TDeserializer def)
         {
             if (def is null) throw new ArgumentNullException(nameof(def));
@@ -216,10 +216,10 @@ namespace ServiceCore.Serialization
         /// <summary>
         /// Sets custom serializer and deserializer for a specific serializer and deserializer types.
         /// </summary>
-        /// <typeparam name="TSerializer">Type of serializer to use.</typeparam>
-        /// <typeparam name="TDeserializer">Type of deserializer to use.</typeparam>
-        /// <param name="serializer">Reference to a serializer to use.</param>
-        /// <param name="deserializer">Reference to a deserializer to use.</param>
+        /// <typeparam Identifier="TSerializer">Type of serializer to use.</typeparam>
+        /// <typeparam Identifier="TDeserializer">Type of deserializer to use.</typeparam>
+        /// <param Identifier="serializer">Reference to a serializer to use.</param>
+        /// <param Identifier="deserializer">Reference to a deserializer to use.</param>
         public static void Set<TSerializer, TDeserializer>(TSerializer serializer, TDeserializer deserializer)
         {
             if (serializer is null) throw new ArgumentNullException(nameof(serializer));
@@ -231,8 +231,8 @@ namespace ServiceCore.Serialization
         /// <summary>
         /// Sets custom serializer for a specific serializer type.
         /// </summary>
-        /// <typeparam name="TSerializer">Type of serializer to use.</typeparam>
-        /// <param name="serializer">Reference to a serializer to use.</param>
+        /// <typeparam Identifier="TSerializer">Type of serializer to use.</typeparam>
+        /// <param Identifier="serializer">Reference to a serializer to use.</param>
         public static void SetSerializer<TSerializer>(TSerializer serializer)
         {
             if (serializer is null) throw new ArgumentNullException(nameof(serializer));
@@ -242,8 +242,8 @@ namespace ServiceCore.Serialization
         /// <summary>
         /// Sets custom deserializer for a specific deserializer type.
         /// </summary>
-        /// <typeparam name="TDeserializer">Type of deserializer to use.</typeparam>
-        /// <param name="deserializer">Reference to a deserializer to use.</param>
+        /// <typeparam Identifier="TDeserializer">Type of deserializer to use.</typeparam>
+        /// <param Identifier="deserializer">Reference to a deserializer to use.</param>
         public static void SetDeserializer<TDeserializer>(TDeserializer deserializer)
         {
             if (deserializer is null) throw new ArgumentNullException(nameof(deserializer));

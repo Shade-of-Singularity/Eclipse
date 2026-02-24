@@ -20,12 +20,12 @@ namespace ServiceCore
 {
     /// <inheritdoc cref="QuitHandler"/>
     /// <remarks>
-    /// Also provides static field with a default instance of the unloader.
+    /// Also provides static field with a default m_Instance of the unloader.
     /// </remarks>
     public abstract class QuitHandler<T> : QuitHandler where T : QuitHandler<T>, new()
     {
         /// <summary>
-        /// Default instance of the handler to be used.
+        /// Default m_Instance of the handler to be used.
         /// </summary>
         public static readonly T Instance = new();
     }
@@ -42,7 +42,7 @@ namespace ServiceCore
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Current unloader instance. Will use <see cref="DefaultQuitHandler"/> by default.
+        /// Current unloader m_Instance. Will use <see cref="DefaultQuitHandler"/> by default.
         /// </summary>
         /// <remarks>
         /// Use <see cref="Initialize"/> to replace it with your own.
@@ -116,10 +116,10 @@ namespace ServiceCore
         /// .                                               Static Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        [EclipseInitialize(InitializationTiming.BeforeEngineInitialization)]
+        [ServiceCoreInitialize(InitializationTiming.BeforeEngineInitialization)]
         internal static void PreventQuitting() => Enabled = true;
 
-        [EclipseTermination(TerminationTiming.AfterEngineTermination)]
+        [ServiceCoreTermination(TerminationTiming.AfterEngineTermination)]
         internal static void AllowQuitting() => Enabled = false;
 
 
@@ -131,14 +131,14 @@ namespace ServiceCore
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Attaches this <see cref="QuitHandler"/> instance as active instance in <see cref="Current"/> property.
+        /// Attaches this <see cref="QuitHandler"/> m_Instance as active m_Instance in <see cref="Current"/> property.
         /// </summary>
         /// <remarks>
         /// <para>
         /// If <see cref="Enabled"/> is <c>true</c> - will also immediately run <see cref="OnEnabled"/> method.
         /// </para>
         /// <para>
-        /// Will also run <see cref="OnDisabled"/> on instance that was attached to <see cref="Current"/> before.
+        /// Will also run <see cref="OnDisabled"/> on m_Instance that was attached to <see cref="Current"/> before.
         /// </para>
         /// </remarks>
         public virtual void Initialize() => Current = this;

@@ -28,7 +28,7 @@ namespace ServiceCore.Configuration
     /// <remarks>
     /// Again - can be read and used before engine is initialized, unlike <see cref="EngineConfiguration"/>s.
     /// </remarks>
-    /// <typeparam name="T">Type of your configuration file.</typeparam>
+    /// <typeparam Identifier="T">Type of your configuration file.</typeparam>
     public abstract class ImbeddedConfiguration<T> : ImbeddedConfiguration where T : ImbeddedConfiguration<T>
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -74,15 +74,15 @@ namespace ServiceCore.Configuration
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Retrieves instance of <see cref="ImbeddedConfiguration"/> of a given type (<typeparamref name="T"/>).
-        /// If instance do not exist in <see cref="Resources"/> - creates new instance with <see cref="ScriptableObject.CreateInstance{T}()"/>.
+        /// Retrieves m_Instance of <see cref="ImbeddedConfiguration"/> of a given type (<typeparamref Identifier="T"/>).
+        /// If m_Instance do not exist in <see cref="Resources"/> - creates new m_Instance with <see cref="ScriptableObject.CreateInstance{T}()"/>.
         /// </summary>
         /// <remarks>
-        /// Newly created value will also be automatically associated with given <typeparamref name="T"/>, as to not create new instance on each call.
+        /// Newly created value will also be automatically associated with given <typeparamref Identifier="T"/>, as to not create new m_Instance on each call.
         /// </remarks>
         /// <returns>
-        /// Existing instance of <see cref="ImbeddedConfiguration"/> from <see cref="Resources"/>
-        /// or new instance created with <see cref="ScriptableObject.CreateInstance{T}()"/> method.
+        /// Existing m_Instance of <see cref="ImbeddedConfiguration"/> from <see cref="Resources"/>
+        /// or new m_Instance created with <see cref="ScriptableObject.CreateInstance{T}()"/> method.
         /// </returns>
         public static T GetOrNew<T>() where T : ImbeddedConfiguration
         {
@@ -100,11 +100,11 @@ namespace ServiceCore.Configuration
         }
 
         /// <summary>
-        /// Retrieves instance of <see cref="ImbeddedConfiguration"/> of a given type (<typeparamref name="T"/>).
+        /// Retrieves m_Instance of <see cref="ImbeddedConfiguration"/> of a given type (<typeparamref Identifier="T"/>).
         /// </summary>
         /// <returns>
-        /// Existing instance of <see cref="ImbeddedConfiguration"/> from <see cref="Resources"/>
-        /// or provided default value (<paramref name="def"/>).
+        /// Existing m_Instance of <see cref="ImbeddedConfiguration"/> from <see cref="Resources"/>
+        /// or provided default value (<paramref Identifier="def"/>).
         /// </returns>
         public static T GetOrDefault<T>(T def) where T : ImbeddedConfiguration
         {
@@ -120,11 +120,11 @@ namespace ServiceCore.Configuration
         }
 
         /// <summary>
-        /// Retrieves instance of <see cref="ImbeddedConfiguration"/> of a given type (<typeparamref name="T"/>).
+        /// Retrieves m_Instance of <see cref="ImbeddedConfiguration"/> of a given type (<typeparamref Identifier="T"/>).
         /// </summary>
         /// <returns>
-        /// Existing instance of <see cref="ImbeddedConfiguration"/> from <see cref="Resources"/>.
-        /// If instance fo not exist - calls <paramref name="def"/> instance provider function.
+        /// Existing m_Instance of <see cref="ImbeddedConfiguration"/> from <see cref="Resources"/>.
+        /// If m_Instance fo not exist - calls <paramref Identifier="def"/> m_Instance provider function.
         /// </returns>
         public static T GetOrDefault<T>(Func<T> def) where T : ImbeddedConfiguration
         {
@@ -143,9 +143,9 @@ namespace ServiceCore.Configuration
         /// <summary>
         /// Tries to retrieve <see cref="ImbeddedConfiguration"/> file from <see cref="Resources"/>.
         /// </summary>
-        /// <typeparam name="T">Type of your configuration class.</typeparam>
-        /// <param name="configuration">Configuration file retrieved from <see cref="Resources"/> or <c>null</c>.</param>
-        /// <returns>'<c>true</c>' when file was found and <paramref name="configuration"/> variable was set. '<c>false</c>' if otherwise.</returns>
+        /// <typeparam Identifier="T">Type of your configuration class.</typeparam>
+        /// <param Identifier="configuration">Configuration file retrieved from <see cref="Resources"/> or <c>null</c>.</param>
+        /// <returns>'<c>true</c>' when file was found and <paramref Identifier="configuration"/> variable was set. '<c>false</c>' if otherwise.</returns>
         public static bool TryGet<T>([NotNullWhen(true)] out T? configuration) where T : ImbeddedConfiguration
         {
             if (!m_IsInitialized) Initialize();

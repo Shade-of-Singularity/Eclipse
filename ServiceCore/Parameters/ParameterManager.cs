@@ -40,6 +40,16 @@ namespace ServiceCore.Parameters
 
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
+        /// .                                                 Delegates
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        public delegate TParameter ParameterConstructor<in TValue, out TParameter>(string id, TValue def);
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
         /// .                                              Public Properties
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
@@ -67,7 +77,7 @@ namespace ServiceCore.Parameters
         /// Registers an parameter in a parameter list.
         /// </summary>
         /// <remarks>
-        /// Does not overwrite parameters under the same name - throws instead.
+        /// Does not overwrite parameters under the same Identifier - throws instead.
         /// </remarks>
         public static void Register(AbstractParameter parameter)
         {
@@ -81,14 +91,15 @@ namespace ServiceCore.Parameters
         }
 
         /// <summary>
-        /// Retrieves an existing parameter of a given <typeparamref name="TParameter"/> type, or creates new one.
+        /// Retrieves an existing parameter of a given <typeparamref Identifier="TParameter"/> type, or creates new one.
         /// </summary>
-        /// <typeparam name="TParameter">Type of the parameter to look for.</typeparam>
-        /// <typeparam name="TValue">Value of a given parameter.</typeparam>
-        /// <param name="id">Full identifier of the expected <typeparamref name="TParameter"/>.</param>
-        /// <param name="constructor">Constructor to create new parameter if one with given <paramref name="id"/> doesn't exist yet.</param>
+        /// <typeparam Identifier="TParameter">Type of the parameter to look for.</typeparam>
+        /// <typeparam Identifier="TValue">Value of a given parameter.</typeparam>
+        /// <param Identifier="id">Full identifier of the expected <typeparamref Identifier="TParameter"/>.</param>
+        /// <param Identifier="constructor">Constructor to create new parameter if one with given <paramref Identifier="id"/> doesn't exist yet.</param>
+        /// <param Identifier="def">Default value provided to <paramref Identifier="constructor"/> in case parameter is missing.</param>
         /// <returns>Either new or already existing parameter.</returns>
-        public static TParameter GetOrNew<TParameter, TValue>(string id, Func<string, TParameter> constructor)
+        public static TParameter GetOrNew<TParameter, TValue>(string id, TValue def, ParameterConstructor<TValue, TParameter> constructor)
             where TParameter : AbstractParameter
             where TValue : IEquatable<TValue>
         {
@@ -102,7 +113,7 @@ namespace ServiceCore.Parameters
                 if (!m_Parameters.TryGetValue(id, out result))
                 {
                     // Creates new parameter if it doesn't exist yet.
-                    result = constructor(id);
+                    result = constructor(id, def);
                     m_Parameters[id] = result;
                     return (TParameter)result;
                 }
@@ -114,32 +125,33 @@ namespace ServiceCore.Parameters
             }
             else
             {
-                throw new Exception($"{LogPrefix} Cannot retrieve parameter ({id}) of a type ({typeof(TParameter).Name}) - Parameter of a type ({result.GetType().Name}) already exist under the same ID.\nHave you forgot to provide a mod name in your parameter ID?");
+                throw new Exception($"{LogPrefix} Cannot retrieve parameter ({id}) of a type ({typeof(TParameter).Name}) - Parameter of a type ({result.GetType().Name}) already exist under the same ID.\nHave you forgot to provide a mod Identifier in your parameter ID?");
             }
         }
 
         /// <summary>
-        /// Retrieves an existing parameter of a given <typeparamref name="TParameter"/> type. Throws if type of the parameter doesn't match or it doesn't exist.
+        /// Retrieves an existing parameter of a given <typeparamref Identifier="TParameter"/> type.
+        /// Throws if type of the parameter doesn't match or it doesn't exist.
         /// </summary>
-        /// <param name="id">Full identifier of the expected <typeparamref name="TParameter"/>.</param>
-        /// <exception cref="KeyNotFoundException">Thrown if there is no parameter with given <paramref name="id"/> (yet, or at all).</exception>
-        /// <exception cref="InvalidCastException">Thrown if parameter was found, but its type is not <typeparamref name="TParameter"/>.</exception>
-        /// <returns>Existing parameter of a type <typeparamref name="TParameter"/>.</returns>
+        /// <param Identifier="id">Full identifier of the expected <typeparamref Identifier="TParameter"/>.</param>
+        /// <exception cref="KeyNotFoundException">Thrown if there is no parameter with given <paramref Identifier="id"/> (yet, or at all).</exception>
+        /// <exception cref="InvalidCastException">Thrown if parameter was found, but its type is not <typeparamref Identifier="TParameter"/>.</exception>
+        /// <returns>Existing parameter of a type <typeparamref Identifier="TParameter"/>.</returns>
         public static TParameter Get<TParameter>(string id) where TParameter : AbstractParameter
         {
-            return (TParameter)m_Parameters[id];
+            lock (m_Parameters) return (TParameter)m_Parameters[id];
         }
 
         /// <summary>
-        /// Attempts to retrieve <typeparamref name="TParameter"/> under given <paramref name="id"/>.
+        /// Attempts to retrieve <typeparamref Identifier="TParameter"/> under given <paramref Identifier="id"/>.
         /// Will fail if it doesn't exist, or if type is different than provided type.
         /// (Currently, there is no way to differentiate those two outcomes other than try-catch blocks on <see cref="Get{TParameter}(string)"/> method.)
         /// (TODO: introduce such method.)
         /// </summary>
-        /// <typeparam name="TParameter">Type of parameter to look for.</typeparam>
-        /// <param name="id">Full identifier of the expected <typeparamref name="TParameter"/>.</param>
-        /// <param name="parameter">Result of the search. Set to <c>null</c> if search failed.</param>
-        /// <returns><c>true</c> if parameter was found and <paramref name="parameter"/> variable was set. <c>false</c> otherwise.</returns>
+        /// <typeparam Identifier="TParameter">Type of parameter to look for.</typeparam>
+        /// <param Identifier="id">Full identifier of the expected <typeparamref Identifier="TParameter"/>.</param>
+        /// <param Identifier="parameter">Result of the search. Set to <c>null</c> if search failed.</param>
+        /// <returns><c>true</c> if parameter was found and <paramref Identifier="parameter"/> variable was set. <c>false</c> otherwise.</returns>
         public static bool TryGet<TParameter>(string id, [NotNullWhen(true)] out TParameter? parameter) where TParameter : AbstractParameter
         {
             // Quick locking to micro-optimize multi-threaded method access.
@@ -166,20 +178,23 @@ namespace ServiceCore.Parameters
         /// <summary>
         /// Retrieves an existing <see cref="AbstractParameter"/>. Throws if type of the parameter doesn't exist.
         /// </summary>
-        /// <param name="id">Full identifier of the expected <see cref="AbstractParameter"/>.</param>
-        /// <exception cref="KeyNotFoundException">Thrown if there is no parameter with given <paramref name="id"/> (yet, or at all).</exception>
+        /// <param Identifier="id">Full identifier of the expected <see cref="AbstractParameter"/>.</param>
+        /// <exception cref="KeyNotFoundException">Thrown if there is no parameter with given <paramref Identifier="id"/> (yet, or at all).</exception>
         /// <returns>Existing <see cref="AbstractParameter"/>.</returns>
-        public static AbstractParameter GetAbstract(string id) => m_Parameters[id];
+        public static AbstractParameter GetAbstract(string id)
+        {
+            lock (m_Parameters) return m_Parameters[id];
+        }
 
         /// <summary>
-        /// Attempts to retrieve <see cref="AbstractParameter"/> under given <paramref name="id"/>.
+        /// Attempts to retrieve <see cref="AbstractParameter"/> under given <paramref Identifier="id"/>.
         /// Will fail if it doesn't exist, or if type is different than provided type.
         /// (Currently, there is no way to differentiate those two outcomes other than try-catch blocks on <see cref="Get{TParameter}(string)"/> method.)
         /// (TODO: introduce such method.)
         /// </summary>
-        /// <param name="id">Full identifier of the <see cref="AbstractParameter"/>.</param>
-        /// <param name="parameter">Result of the search. Set to <c>null</c> if search failed.</param>
-        /// <returns><c>true</c> if parameter was found and <paramref name="parameter"/> variable was set. <c>false</c> otherwise.</returns>
+        /// <param Identifier="id">Full identifier of the <see cref="AbstractParameter"/>.</param>
+        /// <param Identifier="parameter">Result of the search. Set to <c>null</c> if search failed.</param>
+        /// <returns><c>true</c> if parameter was found and <paramref Identifier="parameter"/> variable was set. <c>false</c> otherwise.</returns>
         public static bool TryGetAbstract(string id, [NotNullWhen(true)] out AbstractParameter? parameter)
         {
             lock (m_Parameters)
@@ -189,10 +204,10 @@ namespace ServiceCore.Parameters
         }
 
         /// <summary>
-        /// Checks if <see cref="AbstractParameter"/> under given <paramref name="id"/> exist.
+        /// Checks if <see cref="AbstractParameter"/> under given <paramref Identifier="id"/> exist.
         /// </summary>
-        /// <param name="id">Parameter ID to check.</param>
-        /// <returns><c>true</c> if parameter under given <paramref name="id"/> was found. <c>false</c> otherwise.</returns>
+        /// <param Identifier="id">Parameter ID to check.</param>
+        /// <returns><c>true</c> if parameter under given <paramref Identifier="id"/> was found. <c>false</c> otherwise.</returns>
         public static bool Has(string id)
         {
             lock (m_Parameters)

@@ -85,7 +85,7 @@ namespace ServiceCore
         /// <summary>
         /// Defines <see cref="IService.ThreadExecutionMode"/> for the underlying <see cref="IService{TService}"/>.
         /// </summary>
-        /// <param name="mode">Mode to use. Providing <see cref="IService.ThreadExecutionMode.MainThread"/> works the same as empty .ctor</param>
+        /// <param Identifier="mode">Mode to use. Providing <see cref="IService.ThreadExecutionMode.MainThread"/> works the same as empty .ctor</param>
         public ServiceAttribute(IService.ThreadExecutionMode mode)
         {
             ExecutionMode = mode;

@@ -27,7 +27,7 @@ namespace ServiceCore
     /// Read this as - it will be dangerous to interact with <see cref="IService{T}.Instance"/>s at this point.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    public sealed class EclipseInitializeAttribute(InitializationTiming timing) : Attribute
+    public sealed class ServiceCoreInitializeAttribute(InitializationTiming timing) : Attribute
     {
         /// <summary>
         /// When attribute should be employed.
@@ -46,6 +46,6 @@ namespace ServiceCore
         /// Default constructor. Runs method in the latest possible point during engine initialization.
         /// <para>See also: <see cref="InitializationTiming.AfterEngineInitialization"/>.</para>
         /// </summary>
-        public EclipseInitializeAttribute() : this(InitializationTiming.AfterEngineInitialization) { }
+        public ServiceCoreInitializeAttribute() : this(InitializationTiming.AfterEngineInitialization) { }
     }
 }

@@ -70,7 +70,7 @@ namespace ServiceCore
             /// </summary>
             /// <remarks>
             /// Streamer mode should block any networking functionality, potentially leaking some info during streams, etc.
-            /// Mods which violate this rule will be prohibited from usage on streams.
+            /// Modifications which violate this rule will be prohibited from usage on streams.
             /// </remarks>
             public static bool StreamerMode { get; private set; }
 
@@ -122,7 +122,7 @@ namespace ServiceCore
                 ServiceCoreLogger.Log("Logging environment args:");
                 Array.ForEach(args, ServiceCoreLogger.Log);
 
-                // Isolates process name.
+                // Isolates process Identifier.
                 flags = [];
                 if (args.Length == 0)
                 {

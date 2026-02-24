@@ -17,7 +17,7 @@
 namespace ServiceCore
 {
     /// <summary>
-    /// Indicates when <see cref="EclipseTerminationAttribute"/> should run underlying method.
+    /// Indicates when <see cref="ServiceCoreTerminationAttribute"/> should run underlying method.
     /// </summary>
     /// <remarks>
     /// 

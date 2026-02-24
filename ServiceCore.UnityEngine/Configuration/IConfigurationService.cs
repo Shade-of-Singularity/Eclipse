@@ -329,8 +329,8 @@ namespace ServiceCore.Configuration
         /// <remarks>
         /// Might not support reverting with custom <see cref="IConfigurationService"/> implementation.
         /// </remarks>
-        /// <param name="id">ID of the raw parameter to set. I recommend following "@name" pattern.</param>
-        /// <param name="value">New value to set to a parameter.</param>
+        /// <param Identifier="id">ID of the raw parameter to set. I recommend following "@Identifier" pattern.</param>
+        /// <param Identifier="value">New value to set to a parameter.</param>
         /// <returns>
         /// <c>true</c> if last variable value changed. <c>false</c> otherwise.
         /// (If <see cref="IDataStorage"/> or custom <see cref="IConfigurationService"/> doesn't support value checking,
@@ -382,9 +382,9 @@ namespace ServiceCore.Configuration
         /// <summary>
         /// Retrieves value of an parameter and strictly expects it to be an string.
         /// </summary>
-        /// <param name="id">ID of the raw parameter to set. Usually in a "@name" pattern.</param>
-        /// <param name="value">Value to set.</param>
-        /// <param name="def">Default value to take if there is no set data in storage.</param>
+        /// <param Identifier="id">ID of the raw parameter to set. Usually in a "@Identifier" pattern.</param>
+        /// <param Identifier="value">Value to set.</param>
+        /// <param Identifier="def">Default value to take if there is no set data in storage.</param>
         void Get(string id, out string value, string def = "");
         #endregion
 
@@ -397,17 +397,17 @@ namespace ServiceCore.Configuration
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Checks if any parameter with a given name was changed before <see cref="Apply"/> or <see cref="Revert"/> was used.
+        /// Checks if any parameter with a given Identifier was changed before <see cref="Apply"/> or <see cref="Revert"/> was used.
         /// </summary>
-        /// <param name="id">ID of the raw parameter to set. It is recommended to follow "@name" pattern.</param>
-        /// <returns><c>true</c> if parameter under given <paramref name="id"/> is waiting to be applied.<c>false</c> otherwise.</returns>
+        /// <param Identifier="id">ID of the raw parameter to set. It is recommended to follow "@Identifier" pattern.</param>
+        /// <returns><c>true</c> if parameter under given <paramref Identifier="id"/> is waiting to be applied.<c>false</c> otherwise.</returns>
         abstract bool IsPending(string id);
 
         /// <summary>
-        /// Removes a pending <see cref="Set(string, string)"/> action from a raw parameter under given <paramref name="id"/>.
+        /// Removes a pending <see cref="Set(string, string)"/> action from a raw parameter under given <paramref Identifier="id"/>.
         /// </summary>
-        /// <param name="id">ID of the raw parameter to set. It is recommended to follow "@name" pattern.</param>
-        /// <returns><c>true</c> if parameter under given <paramref name="id"/> was removed from a pending list.<c>false</c> otherwise.</returns>
+        /// <param Identifier="id">ID of the raw parameter to set. It is recommended to follow "@Identifier" pattern.</param>
+        /// <returns><c>true</c> if parameter under given <paramref Identifier="id"/> was removed from a pending list.<c>false</c> otherwise.</returns>
         abstract bool RemovePending(string id);
 
         /// <summary>
@@ -439,7 +439,7 @@ namespace ServiceCore.Configuration
         /// <remarks>
         /// It will be written to the disk immediately, or in a bit later, if <see cref="DefaultConfigurationService"/> is in
         /// </remarks>
-        /// <typeparam name="T">Type of your data.</typeparam>
+        /// <typeparam Identifier="T">Type of your data.</typeparam>
         void Save<T>(T data) where T : GameState, new();
 
         /// <summary>
@@ -449,10 +449,10 @@ namespace ServiceCore.Configuration
         /// You can use it to load game data, such as player positions, inventory data, etc.
         /// </remarks>
         /// <returns>
-        /// New <typeparamref name="T"/> parameter if no configuration file found.
+        /// New <typeparamref Identifier="T"/> parameter if no configuration file found.
         /// Otherwise - loaded data.
         /// </returns>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam Identifier="T"></typeparam>
         T Load<T>() where T : GameState, new();
 
         /// <summary>
@@ -486,17 +486,17 @@ namespace ServiceCore.Configuration
         /// Make sure that <see cref="EngineConfiguration{T}.Instance"/> is NEVER called before you call this one.
         /// </para>
         /// </remarks>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="value"></param>
+        /// <typeparam Identifier="T"></typeparam>
+        /// <param Identifier="value"></param>
         void Set<T>(T value) where T : EngineConfiguration;
 
         /// <summary>
-        /// Retrieves an <see cref="EngineConfiguration"/> file from loaded resources, or creates new instance with <see cref="ScriptableObject.CreateInstance{T}()"/>.
+        /// Retrieves an <see cref="EngineConfiguration"/> file from loaded resources, or creates new m_Instance with <see cref="ScriptableObject.CreateInstance{T}()"/>.
         /// </summary>
         /// <remarks>
         /// Use <see cref="EngineConfiguration{T}.Instance"/> instead - it is WAY more performant.
         /// </remarks>
-        /// <typeparam name="T"><see cref="EngineConfiguration"/> to use.</typeparam>
+        /// <typeparam Identifier="T"><see cref="EngineConfiguration"/> to use.</typeparam>
         /// <returns>Configuration file (existing or default) of a given type.</returns>
         T GetOrNew<T>() where T : EngineConfiguration;
     }

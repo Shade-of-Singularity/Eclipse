@@ -14,25 +14,25 @@
 /// 
 /// ]]>
 
-namespace ServiceCore.Modding
+using System;
+
+namespace ServiceCore
 {
     /// <summary>
-    /// Information about <see cref="Modification"/>, to use before loading it in.
+    /// Runs methods with this attribute when <see cref="ServiceCore"/>.<see cref="Engine"/> terminates.
     /// </summary>
-    /// TODO: Finish.
-    public sealed class ModInfo
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+    public sealed class ServiceCoreTerminationAttribute(TerminationTiming timing) : Attribute
     {
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                              Public Properties
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Assemblies that this mod will try to load-in.
+        /// When attribute should be employed.
         /// </summary>
-        /// <remarks>
-        /// Those are <see cref="System.Reflection.Assembly.FullName"/>s (?).
-        /// </remarks>
-        public string[] Assemblies { get; set; } = [];
+        public readonly TerminationTiming Timing = timing;
+
+        /// <summary>
+        /// Default constructor. Runs method in the latest possible point during engine unloading.
+        /// <para>See also: <see cref="TerminationTiming.AfterEngineTermination"/>.</para>
+        /// </summary>
+        public ServiceCoreTerminationAttribute() : this(TerminationTiming.AfterEngineTermination) { }
     }
 }

@@ -619,7 +619,7 @@ namespace ServiceCore
                 {
                     // TODO: Remove after debugging.
                     ServiceCoreLogger.LogError(ex);
-                    ServiceCoreLogger.LogWarning($"Cannot retrieve partition name for path: ({path}). Default value will be used instead.");
+                    ServiceCoreLogger.LogWarning($"Cannot retrieve partition Identifier for path: ({path}). Default value will be used instead.");
                 }
 
                 return GetDefault();

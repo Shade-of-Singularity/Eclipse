@@ -15,16 +15,17 @@
 /// ]]>
 
 using System;
+using System.Reflection;
 
 namespace ServiceCore.Modding
 {
     /// <summary>
-    /// Stores information about all loaded-in mods.
+    /// Stores information about all loaded-in <see cref="Modification"/>s.
     /// </summary>
     /// <remarks>
     /// (TODO) Also provides a way to dynamically load-in new mods. Beware that mod unloading is not supported at the moment.
     /// </remarks>
-    public static class Mods
+    public static class Modifications
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -71,6 +72,11 @@ namespace ServiceCore.Modding
         /// .                                               Public Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        public static void Load(ModificationInfo modification)
+        {
+
+        }
+        
         public static T GetOrThrow<T>() where T : Modification
         {
             throw new NotImplementedException();

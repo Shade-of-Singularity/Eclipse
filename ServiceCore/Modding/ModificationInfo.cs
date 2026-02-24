@@ -14,36 +14,29 @@
 /// 
 /// ]]>
 
-using System;
-
-namespace ServiceCore
+namespace ServiceCore.Modding
 {
     /// <summary>
-    /// Runs methods with this attribute when <see cref="ServiceCore"/>.<see cref="Engine"/> terminates.
+    /// Information about <see cref="Modification"/>, to use before loading it in.
     /// </summary>
-    /// <remarks>
-    /// Unless <see cref="Engine.Terminate"/> is called, called only on <see cref="UnityEngine.Application.quitting"/>.
-    /// </remarks>
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    public sealed class EclipseTerminationAttribute(TerminationTiming timing) : Attribute
+    /// TODO: Finish.
+    public sealed class ModificationInfo(string identifier)
     {
-        /// <summary>
-        /// When attribute should be employed.
-        /// </summary>
-        public readonly TerminationTiming Timing = timing;
-
-
-
-
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
-        /// .                                                Constructors
+        /// .                                              Public Properties
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Default constructor. Runs method in the latest possible point during engine unloading.
-        /// <para>See also: <see cref="TerminationTiming.AfterEngineTermination"/>.</para>
+        /// Identifier of a <see cref="Modification"/>.
         /// </summary>
-        public EclipseTerminationAttribute() : this(TerminationTiming.AfterEngineTermination) { }
+        public readonly string Identifier = identifier;
+        /// <summary>
+        /// Assemblies that this mod will try to load-in.
+        /// </summary>
+        /// <remarks>
+        /// Those are <see cref="System.Reflection.Assembly.FullName"/>s (?).
+        /// </remarks>
+        public string[] Assemblies { get; set; } = [];
     }
 }

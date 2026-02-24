@@ -14,6 +14,7 @@
 /// 
 /// ]]>
 
+using ServiceCore.Localization;
 using System;
 using System.Collections.Generic;
 
@@ -61,7 +62,7 @@ namespace ServiceCore
                     associations.Clear();
 
                     Type type = service.GetType();
-                    if (type.IsDefined(typeof(IgnoreServiceBranchAttribute), inherit: true))
+                    if (type.IsDefined(typeof(IgnoreServiceChildrenAttribute), inherit: true))
                     {
                         return new(service, [type]); // Temp solution.
                     }

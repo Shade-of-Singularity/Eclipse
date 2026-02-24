@@ -21,7 +21,7 @@ namespace ServiceCore.Configuration.Storages
     public abstract class DataStorage<T> : IDataStorage where T : DataStorage<T>, new()
     {
         /// <summary>
-        /// Static instance of an <see cref="IDataStorage"/> implementation.
+        /// Static m_Instance of an <see cref="IDataStorage"/> implementation.
         /// </summary>
         public static readonly T Instance = new T();
 
@@ -40,13 +40,13 @@ namespace ServiceCore.Configuration.Storages
         /// <summary>
         /// If has any data about it - will call <see cref="AbstractParameter.Deserialize(string)"/> using a raw string data about this parameter.
         /// </summary>
-        /// <param name="parameter">Parameter to be updated.</param>
+        /// <param Identifier="parameter">Parameter to be updated.</param>
         public void Load(AbstractParameter parameter);
 
         /// <summary>
         /// Calls <see cref="AbstractParameter.Serialize"/> method and stores a return value 
         /// </summary>
-        /// <param name="parameter"></param>
+        /// <param Identifier="parameter"></param>
         public void Save(AbstractParameter parameter);
     }
 }

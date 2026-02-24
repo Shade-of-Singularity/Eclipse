@@ -113,7 +113,7 @@ namespace ServiceCore.Editor
             }
 
             // We update the list of assemblies to analyze.
-            // TODO: Only analyze the assembly if it actually present in the game. Use name only as a look-up reference.
+            // TODO: Only analyze the assembly if it actually present in the game. Use Identifier only as a look-up reference.
             var assemblies = CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies);
             var names = new List<string>(assemblies.Length);
             for (int i = 0; i < assemblies.Length; i++)

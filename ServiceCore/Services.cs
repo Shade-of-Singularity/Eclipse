@@ -125,7 +125,7 @@ namespace ServiceCore
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Checks if there is service with requested type <typeparamref name="T"/>.
+        /// Checks if there is service with requested type <typeparamref Identifier="T"/>.
         /// </summary>
         /// <remarks>
         /// Less optimized than strongly-typed <see cref="IService{TService}.Exist"/>.
@@ -136,7 +136,7 @@ namespace ServiceCore
         }
 
         /// <summary>
-        /// Checks if there is a service with requested <paramref name="type"/>.
+        /// Checks if there is a service with requested <paramref Identifier="type"/>.
         /// </summary>
         /// <remarks>
         /// Less optimized than strongly-typed <see cref="IService{TService}.Exist"/>.

@@ -83,160 +83,22 @@
             Reference service to use. Method with this attribute will be executed after this service is initialized.
             </summary>
         </member>
-        <member name="T:ServiceCore.EclipseInitializeAttribute">
+        <member name="T:ServiceCore.ServiceCoreTerminationAttribute">
             <summary>
-            Forces static class to run its static .ctor with <see cref="N:ServiceCore"/>.<see cref="T:ServiceCore.Engine"/>.
-            Or runs a method to which it attribute is attached.
+            Runs methods with this attribute when <see cref="N:ServiceCore"/>.<see cref="T:ServiceCore.Engine"/> terminates.
             </summary>
-            <remarks>
-            Static .ctor will run after <see cref="T:ServiceCore.IService"/>s were instantiated, but BEFORE they were initialized.
-            Read this as - it will be dangerous to interact with <see cref="P:ServiceCore.IService`1.Instance"/>s at this point.
-            </remarks>
         </member>
-        <member name="M:ServiceCore.EclipseInitializeAttribute.#ctor(ServiceCore.InitializationTiming)">
+        <member name="M:ServiceCore.ServiceCoreTerminationAttribute.#ctor(ServiceCore.TerminationTiming)">
             <summary>
-            Forces static class to run its static .ctor with <see cref="N:ServiceCore"/>.<see cref="T:ServiceCore.Engine"/>.
-            Or runs a method to which it attribute is attached.
+            Runs methods with this attribute when <see cref="N:ServiceCore"/>.<see cref="T:ServiceCore.Engine"/> terminates.
             </summary>
-            <remarks>
-            Static .ctor will run after <see cref="T:ServiceCore.IService"/>s were instantiated, but BEFORE they were initialized.
-            Read this as - it will be dangerous to interact with <see cref="P:ServiceCore.IService`1.Instance"/>s at this point.
-            </remarks>
         </member>
-        <member name="F:ServiceCore.EclipseInitializeAttribute.Timing">
+        <member name="F:ServiceCore.ServiceCoreTerminationAttribute.Timing">
             <summary>
             When attribute should be employed.
             </summary>
         </member>
-        <member name="M:ServiceCore.EclipseInitializeAttribute.#ctor">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                                Constructors
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            <summary>
-            Default constructor. Runs method in the latest possible point during engine initialization.
-            <para>See also: <see cref="F:ServiceCore.InitializationTiming.AfterEngineInitialization"/>.</para>
-            </summary>
-        </member>
-        <member name="T:ServiceCore.ServiceCoreLogger">
-            <summary>
-            Provides ways for you to change how engine logs messages.
-            </summary>
-        </member>
-        <member name="T:ServiceCore.ServiceCoreLogger.LogHandler">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                                 Delegates
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            <summary>
-            Handler for handling regular messages.
-            </summary>
-        </member>
-        <member name="T:ServiceCore.ServiceCoreLogger.ExceptionHandler">
-            <summary>
-            Handler for handling <see cref="T:System.Exception"/>s.
-            </summary>
-        </member>
-        <member name="E:ServiceCore.ServiceCoreLogger.InformationReceived">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                                   Events
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            <summary>
-            Handler for regular logs.
-            </summary>
-        </member>
-        <member name="E:ServiceCore.ServiceCoreLogger.WarningReceived">
-            <summary>
-            Handler for warnings. Default logger also draws those messages in yellow.
-            </summary>
-        </member>
-        <member name="E:ServiceCore.ServiceCoreLogger.ErrorReceived">
-            <summary>
-            Handler for errors. Default logger also draws those messages in red.
-            </summary>
-        </member>
-        <member name="E:ServiceCore.ServiceCoreLogger.ExceptionReceived">
-            <summary>
-            Handler for exceptions. Default logger logs <see cref="P:System.Exception.Message"/> and <see cref="P:System.Exception.StackTrace"/>.
-            </summary>
-        </member>
-        <member name="M:ServiceCore.ServiceCoreLogger.#cctor">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                                Constructors
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        </member>
-        <member name="M:ServiceCore.ServiceCoreLogger.Initialize(ServiceCore.ServiceCoreLogger.LogHandler,ServiceCore.ServiceCoreLogger.LogHandler,ServiceCore.ServiceCoreLogger.LogHandler,ServiceCore.ServiceCoreLogger.ExceptionHandler)">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                               Static Methods
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            <summary>
-            Attaches given log handlers to
-            <see cref="E:ServiceCore.ServiceCoreLogger.InformationReceived"/>, <see cref="E:ServiceCore.ServiceCoreLogger.WarningReceived"/>,
-            <see cref="E:ServiceCore.ServiceCoreLogger.ErrorReceived"/> and <see cref="E:ServiceCore.ServiceCoreLogger.ExceptionReceived"/>.
-            </summary>
-            (Dark): Imported from my beloved RiptideNetworking.
-        </member>
-        <member name="M:ServiceCore.ServiceCoreLogger.Log(System.Object)">
-            <summary>
-            Invokes <see cref="E:ServiceCore.ServiceCoreLogger.InformationReceived"/> with given <paramref name="obj"/>.
-            Calls <see cref="M:System.Object.ToString"/> on given <paramref name="obj"/>.
-            </summary>
-        </member>
-        <member name="M:ServiceCore.ServiceCoreLogger.LogWarning(System.Object)">
-            <summary>
-            Invokes <see cref="E:ServiceCore.ServiceCoreLogger.WarningReceived"/> with given <paramref name="obj"/>.
-            Calls <see cref="M:System.Object.ToString"/> on given <paramref name="obj"/>.
-            </summary>
-        </member>
-        <member name="M:ServiceCore.ServiceCoreLogger.LogError(System.Object)">
-            <summary>
-            Invokes <see cref="E:ServiceCore.ServiceCoreLogger.ErrorReceived"/> with given <paramref name="obj"/>.
-            Calls <see cref="M:System.Object.ToString"/> on given <paramref name="obj"/>.
-            </summary>
-        </member>
-        <member name="M:ServiceCore.ServiceCoreLogger.LogException(System.Exception)">
-            <summary>
-            Invokes <see cref="E:ServiceCore.ServiceCoreLogger.ExceptionReceived"/> with given <paramref name="exception"/>.
-            </summary>
-            <remarks>
-            Replaces <paramref name="exception"/> with an empty exception as a fail-safe.
-            </remarks>
-        </member>
-        <member name="T:ServiceCore.EclipseTerminationAttribute">
-            <summary>
-            Runs methods with this attribute when <see cref="N:ServiceCore"/>.<see cref="T:ServiceCore.Engine"/> terminates.
-            </summary>
-            <remarks>
-            Unless <see cref="M:ServiceCore.Engine.Terminate"/> is called, called only on <see cref="!:UnityEngine.Application.quitting"/>.
-            </remarks>
-        </member>
-        <member name="M:ServiceCore.EclipseTerminationAttribute.#ctor(ServiceCore.TerminationTiming)">
-            <summary>
-            Runs methods with this attribute when <see cref="N:ServiceCore"/>.<see cref="T:ServiceCore.Engine"/> terminates.
-            </summary>
-            <remarks>
-            Unless <see cref="M:ServiceCore.Engine.Terminate"/> is called, called only on <see cref="!:UnityEngine.Application.quitting"/>.
-            </remarks>
-        </member>
-        <member name="F:ServiceCore.EclipseTerminationAttribute.Timing">
-            <summary>
-            When attribute should be employed.
-            </summary>
-        </member>
-        <member name="M:ServiceCore.EclipseTerminationAttribute.#ctor">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                                Constructors
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        <member name="M:ServiceCore.ServiceCoreTerminationAttribute.#ctor">
             <summary>
             Default constructor. Runs method in the latest possible point during engine unloading.
             <para>See also: <see cref="F:ServiceCore.TerminationTiming.AfterEngineTermination"/>.</para>
@@ -345,7 +207,7 @@
             <remarks>
             If <see cref="E:ServiceCore.Engine.OnEngineInitializing"/> event was already fired - immediately fires attaching callback.
             <para>
-            To get consistent callback, you can use <see cref="T:ServiceCore.EclipseInitializeAttribute"/> on custom static methods.
+            To get consistent callback, you can use <see cref="T:ServiceCore.ServiceCoreInitializeAttribute"/> on custom static methods.
             </para>
             </remarks>
         </member>
@@ -356,7 +218,7 @@
             <remarks>
             If <see cref="E:ServiceCore.Engine.OnEngineInitialized"/> event was already fired - immediately fires attaching callback.
             <para>
-            To get consistent callback, you can use <see cref="T:ServiceCore.EclipseInitializeAttribute"/> on custom static methods.
+            To get consistent callback, you can use <see cref="T:ServiceCore.ServiceCoreInitializeAttribute"/> on custom static methods.
             </para>
             </remarks>
         </member>
@@ -367,7 +229,7 @@
             <remarks>
             If <see cref="E:ServiceCore.Engine.OnEngineTerminating"/> event was already fired - immediately fires attaching callback.
             <para>
-            To get consistent callback, you can use <see cref="T:ServiceCore.EclipseInitializeAttribute"/> on custom static methods.
+            To get consistent callback, you can use <see cref="T:ServiceCore.ServiceCoreInitializeAttribute"/> on custom static methods.
             </para>
             </remarks>
         </member>
@@ -378,7 +240,7 @@
             <remarks>
             If <see cref="E:ServiceCore.Engine.OnEngineTerminated"/> event was already fired - immediately fires attaching callback.
             <para>
-            To get consistent callback, you can use <see cref="T:ServiceCore.EclipseInitializeAttribute"/> on custom static methods.
+            To get consistent callback, you can use <see cref="T:ServiceCore.ServiceCoreInitializeAttribute"/> on custom static methods.
             </para>
             </remarks>
         </member>
@@ -566,7 +428,7 @@
             </summary>
             <remarks>
             Streamer mode should block any networking functionality, potentially leaking some info during streams, etc.
-            Mods which violate this rule will be prohibited from usage on streams.
+            Modifications which violate this rule will be prohibited from usage on streams.
             </remarks>
         </member>
         <member name="P:ServiceCore.Engine.Flags.ResetMode">
@@ -647,129 +509,23 @@
             that we just can't do anything about it.
             </remarks>
         </member>
-        <member name="T:ServiceCore.Extensions.Naming">
-            <summary>
-            Gives standardized methods for generating string IDs.
-            </summary>
-            Making constants would be better for performance, but it will force all modders to learn one naming standard, adjust if needed.
-            This is hard to make, so we avoid that entirely by introducing helper methods.
-            We might change this later if needed.
-        </member>
-        <member name="F:ServiceCore.Extensions.Naming.Separator">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                                 Constants
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            <summary>
-            Used as separator between mod name and an identifier in localization keys.
-            </summary>
-        </member>
-        <member name="F:ServiceCore.Extensions.Naming.SettingPrefix">
-            <summary>
-            Used as prefix in special parameters, like so:
-            <![CDATA[@eclipse.field-of-view]]>
-            </summary>
-        </member>
-        <member name="M:ServiceCore.Extensions.Naming.Get(System.String,System.String)">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                               Public Methods
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            <summary>
-            Constructs unique parameter ID by putting standard <see cref="F:ServiceCore.Extensions.Naming.Separator"/> between <paramref name="mod"/> and <paramref name="id"/>.
-            </summary>
-            <remarks>
-            You can just use constants if you want though.
-            </remarks>
-        </member>
-        <member name="M:ServiceCore.Extensions.Naming.GetPrefix(System.String)">
-            <summary>
-            Construct unique parameter ID for special parameters by putting <see cref="F:ServiceCore.Extensions.Naming.SettingPrefix"/> before <paramref name="id"/>.
-            </summary>
-            <remarks>
-            Doesn't specify a mod! It's not recommended usually, because it is not intuitive.
-            </remarks>
-            <param name="id">Identifier of a thing.</param>
-        </member>
-        <member name="M:ServiceCore.Extensions.Naming.GetPrefix(System.String,System.String)">
-            <summary>
-            Construct unique parameter ID for special parameters by putting <see cref="F:ServiceCore.Extensions.Naming.SettingPrefix"/> before <paramref name="mod"/> and <paramref name="id"/>.
-            
-            </summary>
-            <remarks>
-            <paramref name="mod"/> and <paramref name="id"/> are combined in the same way as <see cref="M:ServiceCore.Extensions.Naming.Get(System.String,System.String)"/> combines them.
-            </remarks>
-            <param name="mod">Modification name of identifier.</param>
-            <param name="id">Identifier of a thing.</param>
-        </member>
-        <member name="T:ServiceCore.Extensions.StaticInitialization`1">
-            <summary>
-            Helps run methods only once.
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="P:ServiceCore.Extensions.StaticInitialization`1.IsInitialized">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                              Public Properties
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        </member>
-        <member name="F:ServiceCore.Extensions.StaticInitialization`1.m_IsInitialized">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                               Private Fields
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        </member>
-        <member name="M:ServiceCore.Extensions.StaticInitialization`1.Initialize">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                               Public Methods
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            <summary>
-            Sets internal flag to <c>true</c>.
-            </summary>
-        </member>
-        <member name="M:ServiceCore.Extensions.StaticInitialization`1.Reset">
-            <summary>
-            Resets internal flag to <c>false</c>
-            </summary>
-        </member>
-        <member name="T:ServiceCore.Extensions.Try">
-            <summary>
-            Provides extensions to call methods within try block.
-            </summary>
-        </member>
-        <member name="M:ServiceCore.Extensions.Try.WithLog(System.Action)">
-            <summary>
-            Invokes given <paramref name="action"/> with default logger <see cref="M:ServiceCore.ServiceCoreLogger.LogException(System.Exception)"/>.
-            </summary>
-        </member>
-        <member name="M:ServiceCore.Extensions.Try.Invoke(System.Action,System.Action{System.Exception})">
-            <summary>
-            Invokes given <paramref name="action"/> with using <paramref name="callback"/> handler for exception handling.
-            </summary>
-        </member>
         <member name="T:ServiceCore.IgnoreServiceAttribute">
             <summary>
             Defines which services (or service interfaces) should be ignored when constructing service associations.
             </summary>
             <seealso cref="M:ServiceCore.Services.ServiceEntry.Construct(ServiceCore.IService)"/>
         </member>
-        <member name="T:ServiceCore.IgnoreServiceBranchAttribute">
+        <member name="T:ServiceCore.IgnoreServiceChildrenAttribute">
             <summary>
             Defines that all services inheriting this service should be ignored.
             Useful for services with custom initialization.
             </summary>
+            <seealso cref="M:ServiceCore.Services.ServiceEntry.Construct(ServiceCore.IService)"/>
         </member>
         <member name="T:ServiceCore.InitializationTiming">
             <summary>
-            Indicates when <see cref="T:ServiceCore.EclipseInitializeAttribute"/> should run .ctor on static class.
-            If <see cref="T:ServiceCore.EclipseInitializeAttribute"/> is attached to a method - will run method instead.
+            Indicates when <see cref="T:ServiceCore.ServiceCoreInitializeAttribute"/> should run .ctor on static class.
+            If <see cref="T:ServiceCore.ServiceCoreInitializeAttribute"/> is attached to a method - will run method instead.
             </summary>
             <remarks>
             Supports flags to be used with static methods.
@@ -832,7 +588,8 @@
             </para>
             <para>
             3. Are you preparing for release? Consider both options again.
-            Using interfaces might be harder for you, but might help modders if service has any reason, at all, to be overwritten or expanded on.
+            Using <see cref="T:ServiceCore.IService`1"/> interfaces might be harder for you,
+            but might help modders if service has any reason, at all, to be overwritten or expanded on.
             </para>
             </remarks>
             <typeparam name="T">The type of the service to retrieve. Must inherit from <see cref="T:ServiceCore.IService`1"/>.</typeparam>
@@ -898,7 +655,7 @@
             Called when <see cref="T:ServiceCore.Engine"/> initializes all the code and resources from the memory.
             <para>
             Unlike any <see cref="T:ServiceCore.IService"/> .ctor (constructor), this method is thread-safe.
-            (as long as <see cref="P:ServiceCore.ServiceAttribute.ExecutionMode"/> is <see cref="!:ThreadExecutionMode.MainThread"/>)
+            (as long as <see cref="P:ServiceCore.ServiceAttribute.ExecutionMode"/> is <see cref="F:ServiceCore.IService.ThreadExecutionMode.MainThread"/>)
             </para>
             </summary>
             <returns>
@@ -1237,13 +994,13 @@
         <member name="M:ServiceCore.Modding.IEngineModDirectAccess.EngineInvokeUnloaded">
             <inheritdoc cref="M:ServiceCore.Modding.Modification.Unloaded"/>
         </member>
-        <member name="T:ServiceCore.Modding.ModInfo">
+        <member name="T:ServiceCore.Modding.ModificationInfo">
             <summary>
             Information about <see cref="T:ServiceCore.Modding.Modification"/>, to use before loading it in.
             </summary>
             TODO: Finish.
         </member>
-        <member name="P:ServiceCore.Modding.ModInfo.Assemblies">
+        <member name="P:ServiceCore.Modding.ModificationInfo.Assemblies">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                              Public Properties
@@ -1256,15 +1013,15 @@
             Those are <see cref="P:System.Reflection.Assembly.FullName"/>s (?).
             </remarks>
         </member>
-        <member name="T:ServiceCore.Modding.Mods">
+        <member name="T:ServiceCore.Modding.Modifications">
             <summary>
-            Stores information about all loaded-in mods.
+            Stores information about all loaded-in <see cref="T:ServiceCore.Modding.Modification"/>s.
             </summary>
             <remarks>
             (TODO) Also provides a way to dynamically load-in new mods. Beware that mod unloading is not supported at the moment.
             </remarks>
         </member>
-        <member name="M:ServiceCore.Modding.Mods.GetOrThrow``1">
+        <member name="M:ServiceCore.Modding.Modifications.GetOrThrow``1">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                               Public Methods
@@ -1291,7 +1048,7 @@
             Fully qualified ID of the parameter.
             </summary>
             <remarks>
-            You can use <see cref="T:ServiceCore.Extensions.Naming"/> to make those.
+            You can use <see cref="!:Extensions.Naming"/> to make those.
             </remarks>
         </member>
         <member name="P:ServiceCore.Parameters.AbstractParameter.IsDirty">
@@ -1539,6 +1296,13 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
+        <member name="T:ServiceCore.Parameters.ParameterManager.ParameterConstructor`2">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                 Delegates
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
         <member name="P:ServiceCore.Parameters.ParameterManager.Parameters">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
@@ -1566,7 +1330,7 @@
             Does not overwrite parameters under the same name - throws instead.
             </remarks>
         </member>
-        <member name="M:ServiceCore.Parameters.ParameterManager.GetOrNew``2(System.String,System.Func{System.String,``0})">
+        <member name="M:ServiceCore.Parameters.ParameterManager.GetOrNew``2(System.String,``1,ServiceCore.Parameters.ParameterManager.ParameterConstructor{``1,``0})">
             <summary>
             Retrieves an existing parameter of a given <typeparamref name="TParameter"/> type, or creates new one.
             </summary>
@@ -1574,11 +1338,13 @@
             <typeparam name="TValue">Value of a given parameter.</typeparam>
             <param name="id">Full identifier of the expected <typeparamref name="TParameter"/>.</param>
             <param name="constructor">Constructor to create new parameter if one with given <paramref name="id"/> doesn't exist yet.</param>
+            <param name="def">Default value provided to <paramref name="constructor"/> in case parameter is missing.</param>
             <returns>Either new or already existing parameter.</returns>
         </member>
         <member name="M:ServiceCore.Parameters.ParameterManager.Get``1(System.String)">
             <summary>
-            Retrieves an existing parameter of a given <typeparamref name="TParameter"/> type. Throws if type of the parameter doesn't match or it doesn't exist.
+            Retrieves an existing parameter of a given <typeparamref name="TParameter"/> type.
+            Throws if type of the parameter doesn't match or it doesn't exist.
             </summary>
             <param name="id">Full identifier of the expected <typeparamref name="TParameter"/>.</param>
             <exception cref="T:System.Collections.Generic.KeyNotFoundException">Thrown if there is no parameter with given <paramref name="id"/> (yet, or at all).</exception>
@@ -2150,7 +1916,8 @@
             </para>
             <para>
             3. Are you preparing for release? Consider both options again.
-            Using interfaces might be harder for you, but might help modders if service has any reason, at all, to be overwritten or expanded on.
+            Using <see cref="T:ServiceCore.IService`1"/> interfaces might be harder for you,
+            but might help modders if service has any reason, at all, to be overwritten or expanded on.
             </para>
             </remarks>
             <typeparam name="T">Service implementing this abstract class.</typeparam>
@@ -2321,6 +2088,133 @@
             Defines <see cref="T:ServiceCore.IService.ThreadExecutionMode"/> for the underlying <see cref="T:ServiceCore.IService`1"/>.
             </summary>
             <param name="mode">Mode to use. Providing <see cref="F:ServiceCore.IService.ThreadExecutionMode.MainThread"/> works the same as empty .ctor</param>
+        </member>
+        <member name="T:ServiceCore.ServiceCoreInitializeAttribute">
+            <summary>
+            Forces static class to run its static .ctor with <see cref="N:ServiceCore"/>.<see cref="T:ServiceCore.Engine"/>.
+            Or runs a method to which it attribute is attached.
+            </summary>
+            <remarks>
+            Static .ctor will run after <see cref="T:ServiceCore.IService"/>s were instantiated, but BEFORE they were initialized.
+            Read this as - it will be dangerous to interact with <see cref="P:ServiceCore.IService`1.Instance"/>s at this point.
+            </remarks>
+        </member>
+        <member name="M:ServiceCore.ServiceCoreInitializeAttribute.#ctor(ServiceCore.InitializationTiming)">
+            <summary>
+            Forces static class to run its static .ctor with <see cref="N:ServiceCore"/>.<see cref="T:ServiceCore.Engine"/>.
+            Or runs a method to which it attribute is attached.
+            </summary>
+            <remarks>
+            Static .ctor will run after <see cref="T:ServiceCore.IService"/>s were instantiated, but BEFORE they were initialized.
+            Read this as - it will be dangerous to interact with <see cref="P:ServiceCore.IService`1.Instance"/>s at this point.
+            </remarks>
+        </member>
+        <member name="F:ServiceCore.ServiceCoreInitializeAttribute.Timing">
+            <summary>
+            When attribute should be employed.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.ServiceCoreInitializeAttribute.#ctor">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Default constructor. Runs method in the latest possible point during engine initialization.
+            <para>See also: <see cref="F:ServiceCore.InitializationTiming.AfterEngineInitialization"/>.</para>
+            </summary>
+        </member>
+        <member name="T:ServiceCore.ServiceCoreLogger">
+            <summary>
+            Provides ways for you to change how engine logs messages.
+            </summary>
+        </member>
+        <member name="T:ServiceCore.ServiceCoreLogger.LogHandler">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                 Delegates
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Handler for handling regular messages.
+            </summary>
+        </member>
+        <member name="T:ServiceCore.ServiceCoreLogger.ExceptionHandler">
+            <summary>
+            Handler for handling <see cref="T:System.Exception"/>s.
+            </summary>
+        </member>
+        <member name="E:ServiceCore.ServiceCoreLogger.InformationReceived">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                   Events
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Handler for regular logs.
+            </summary>
+        </member>
+        <member name="E:ServiceCore.ServiceCoreLogger.WarningReceived">
+            <summary>
+            Handler for warnings. Default logger also draws those messages in yellow.
+            </summary>
+        </member>
+        <member name="E:ServiceCore.ServiceCoreLogger.ErrorReceived">
+            <summary>
+            Handler for errors. Default logger also draws those messages in red.
+            </summary>
+        </member>
+        <member name="E:ServiceCore.ServiceCoreLogger.ExceptionReceived">
+            <summary>
+            Handler for exceptions. Default logger logs <see cref="P:System.Exception.Message"/> and <see cref="P:System.Exception.StackTrace"/>.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.ServiceCoreLogger.#cctor">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                Constructors
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:ServiceCore.ServiceCoreLogger.Initialize(ServiceCore.ServiceCoreLogger.LogHandler,ServiceCore.ServiceCoreLogger.LogHandler,ServiceCore.ServiceCoreLogger.LogHandler,ServiceCore.ServiceCoreLogger.ExceptionHandler)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Static Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Attaches given log handlers to
+            <see cref="E:ServiceCore.ServiceCoreLogger.InformationReceived"/>, <see cref="E:ServiceCore.ServiceCoreLogger.WarningReceived"/>,
+            <see cref="E:ServiceCore.ServiceCoreLogger.ErrorReceived"/> and <see cref="E:ServiceCore.ServiceCoreLogger.ExceptionReceived"/>.
+            </summary>
+            (Dark): Imported from my beloved RiptideNetworking.
+        </member>
+        <member name="M:ServiceCore.ServiceCoreLogger.Log(System.Object)">
+            <summary>
+            Invokes <see cref="E:ServiceCore.ServiceCoreLogger.InformationReceived"/> with given <paramref name="obj"/>.
+            Calls <see cref="M:System.Object.ToString"/> on given <paramref name="obj"/>.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.ServiceCoreLogger.LogWarning(System.Object)">
+            <summary>
+            Invokes <see cref="E:ServiceCore.ServiceCoreLogger.WarningReceived"/> with given <paramref name="obj"/>.
+            Calls <see cref="M:System.Object.ToString"/> on given <paramref name="obj"/>.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.ServiceCoreLogger.LogError(System.Object)">
+            <summary>
+            Invokes <see cref="E:ServiceCore.ServiceCoreLogger.ErrorReceived"/> with given <paramref name="obj"/>.
+            Calls <see cref="M:System.Object.ToString"/> on given <paramref name="obj"/>.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.ServiceCoreLogger.LogException(System.Exception)">
+            <summary>
+            Invokes <see cref="E:ServiceCore.ServiceCoreLogger.ExceptionReceived"/> with given <paramref name="exception"/>.
+            </summary>
+            <remarks>
+            Replaces <paramref name="exception"/> with an empty exception as a fail-safe.
+            </remarks>
         </member>
         <member name="T:ServiceCore.Services">
             <summary>
@@ -2638,7 +2532,7 @@
         </member>
         <member name="T:ServiceCore.TerminationTiming">
             <summary>
-            Indicates when <see cref="T:ServiceCore.EclipseTerminationAttribute"/> should run underlying method.
+            Indicates when <see cref="T:ServiceCore.ServiceCoreTerminationAttribute"/> should run underlying method.
             </summary>
             <remarks>
             

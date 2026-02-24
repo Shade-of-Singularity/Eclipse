@@ -17,8 +17,8 @@
 namespace ServiceCore
 {
     /// <summary>
-    /// Indicates when <see cref="EclipseInitializeAttribute"/> should run .ctor on static class.
-    /// If <see cref="EclipseInitializeAttribute"/> is attached to a method - will run method instead.
+    /// Indicates when <see cref="ServiceCoreInitializeAttribute"/> should run .ctor on static class.
+    /// If <see cref="ServiceCoreInitializeAttribute"/> is attached to a method - will run method instead.
     /// </summary>
     /// <remarks>
     /// Supports flags to be used with static methods.

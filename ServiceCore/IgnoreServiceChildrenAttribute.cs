@@ -22,6 +22,7 @@ namespace ServiceCore
     /// Defines that all services inheriting this service should be ignored.
     /// Useful for services with custom initialization.
     /// </summary>
+    /// <seealso cref="Services.ServiceEntry.Construct(IService)"/>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface, AllowMultiple = false, Inherited = true)]
-    public sealed class IgnoreServiceBranchAttribute : Attribute { }
+    public sealed class IgnoreServiceChildrenAttribute : Attribute { }
 }

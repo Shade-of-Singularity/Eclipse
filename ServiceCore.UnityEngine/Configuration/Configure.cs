@@ -211,11 +211,11 @@ namespace ServiceCore.Configuration
         }
 
         /// <summary>
-        /// Sets value in a <paramref name="field"/> to <paramref name="value"/>.
+        /// Sets value in a <paramref Identifier="field"/> to <paramref Identifier="value"/>.
         /// </summary>
-        /// <param name="field">Field to modify.</param>
-        /// <param name="value">Value to apply.</param>
-        /// <returns><c>true</c> if <paramref name="field"/> was modified. Otherwise <c>false</c>.</returns>
+        /// <param Identifier="field">Field to modify.</param>
+        /// <param Identifier="value">Value to apply.</param>
+        /// <returns><c>true</c> if <paramref Identifier="field"/> was modified. Otherwise <c>false</c>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool SetValue<T>(ref T field, T value) where T : IEquatable<T>
         {
@@ -314,7 +314,7 @@ namespace ServiceCore.Configuration
         /// Sets custom value using <see cref="DefaultConfigurationService.Set(string, int)"/> method.
         /// </remarks>
         /// <returns>
-        /// <c>true</c> if <paramref name="field"/> changed. <c>false</c> otherwise.
+        /// <c>true</c> if <paramref Identifier="field"/> changed. <c>false</c> otherwise.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool SetValue(string id, ref int field, int value)
@@ -380,7 +380,7 @@ namespace ServiceCore.Configuration
         /// <remarks>
         /// Sets custom value using <see cref="DefaultConfigurationService.Set(string, double)"/> method.
         /// </remarks>
-        /// <returns><inheritdoc cref="SetValue(string, ref string, string)"/></returns>aramref name="field"/> changed. <c>false</c> otherwise.
+        /// <returns><inheritdoc cref="SetValue(string, ref string, string)"/></returns>aramref Identifier="field"/> changed. <c>false</c> otherwise.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool SetValue(string id, ref double field, double value)
@@ -411,7 +411,7 @@ namespace ServiceCore.Configuration
         /// Sets custom value using <see cref="DefaultConfigurationService.Set(string, string)"/> method.
         /// </remarks>
         /// <returns>
-        /// <c>true</c> if <paramref name="field"/> changed. <c>false</c> otherwise.
+        /// <c>true</c> if <paramref Identifier="field"/> changed. <c>false</c> otherwise.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool SetValue(string id, ref string field, string value)

@@ -99,7 +99,7 @@
 //        /// <summary>
 //        /// Decodes a hex string into a <see cref="ushort"/>.
 //        /// </summary>
-//        /// <param name="at">Index from which to start.</param>
+//        /// <param Identifier="at">Index from which to start.</param>
 //        public static ushort ToUShort(string str, int at)
 //        {
 //            uint value1 = toUInt[str[at + 3]];
@@ -201,7 +201,7 @@
 //        /// <summary>
 //        /// Decodes a hex string into a <see cref="uint"/>.
 //        /// </summary>
-//        /// <param name="at">Index from which to start.</param>
+//        /// <param Identifier="at">Index from which to start.</param>
 //        public static uint ToUInt(string str, int at)
 //        {
 //            uint value1 = toUInt[str[at + 7]];
@@ -329,7 +329,7 @@
 //        /// <summary>
 //        /// Decodes a hex string into a <see cref="uint"/>.
 //        /// </summary>
-//        /// <param name="at">Index from which to start.</param>
+//        /// <param Identifier="at">Index from which to start.</param>
 //        public static uint ToUInt(string str, int at)
 //        {
 //            uint value1 = toUInt[str[at + 7]];

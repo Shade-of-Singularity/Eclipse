@@ -21,11 +21,12 @@ namespace ServiceCore
     /// </para>
     /// <para>
     /// 3. Are you preparing for release? Consider both options again.
-    /// Using interfaces might be harder for you, but might help modders if service has any reason, at all, to be overwritten or expanded on.
+    /// Using <see cref="IService{T}"/> interfaces might be harder for you,
+    /// but might help modders if service has any reason, at all, to be overwritten or expanded on.
     /// </para>
     /// </remarks>
-    /// <typeparam name="T">Service implementing this abstract class.</typeparam>
-    [IgnoreServiceBranch]
+    /// <typeparam Identifier="T">Service implementing this abstract class.</typeparam>
+    [IgnoreService]
     public abstract class Service<T> : IService where T : Service<T>
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[

@@ -23,7 +23,7 @@ namespace ServiceCore.Configuration
     /// <summary>
     /// Class holder for your <see cref="GameState"/>.
     /// </summary>
-    /// <typeparam name="T">Type of your <see cref="GameState"/> class.</typeparam>
+    /// <typeparam Identifier="T">Type of your <see cref="GameState"/> class.</typeparam>
     public static class GameState<T> where T : GameState, new()
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -99,7 +99,7 @@ namespace ServiceCore.Configuration
         /// <summary>
         /// Deserializes given data back into a GameState.
         /// </summary>
-        /// <param name="raw">Raw data to deserialize.</param>
+        /// <param Identifier="raw">Raw data to deserialize.</param>
         public virtual void Deserialize(string raw) => JsonUtility.FromJsonOverwrite(raw, this);
     }
 }

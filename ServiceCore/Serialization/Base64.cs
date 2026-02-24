@@ -311,13 +311,13 @@ namespace ServiceCore.Serialization
         }
 
         /// <summary>
-        /// Unpacks long (or lower) value from <paramref name="str"/>.
+        /// Unpacks long (or lower) value from <paramref Identifier="str"/>.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long UnpackLong(string str) => unchecked((long)Unpack(str));
 
         /// <summary>
-        /// Unpacks ulong (or lower) value from <paramref name="str"/>.
+        /// Unpacks ulong (or lower) value from <paramref Identifier="str"/>.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong UnpackULong(string str) => unchecked(Unpack(str));
@@ -420,13 +420,13 @@ namespace ServiceCore.Serialization
         }
 
         /// <summary>
-        /// Unpacks int (or lower) value from <paramref name="str"/>.
+        /// Unpacks int (or lower) value from <paramref Identifier="str"/>.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int UnpackInt(string str) => unchecked((int)UnpackUInt(str));
 
         /// <summary>
-        /// Unpacks uint (or lower) value from <paramref name="str"/>.
+        /// Unpacks uint (or lower) value from <paramref Identifier="str"/>.
         /// </summary>
         public static uint UnpackUInt(string str)
         {
@@ -490,13 +490,13 @@ namespace ServiceCore.Serialization
         }
 
         /// <summary>
-        /// Unpacks short (or lower) value from <paramref name="str"/>.
+        /// Unpacks short (or lower) value from <paramref Identifier="str"/>.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short UnpackShort(string str) => unchecked((short)UnpackUShort(str));
 
         /// <summary>
-        /// Unpacks ushort (or lower) value from <paramref name="str"/>.
+        /// Unpacks ushort (or lower) value from <paramref Identifier="str"/>.
         /// </summary>
         public static ushort UnpackUShort(string str)
         {
@@ -537,13 +537,13 @@ namespace ServiceCore.Serialization
         }
 
         /// <summary>
-        /// Unpacks sbyte value from <paramref name="str"/>.
+        /// Unpacks sbyte value from <paramref Identifier="str"/>.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static sbyte UnpackSByte(string str) => unchecked((sbyte)UnpackByte(str));
 
         /// <summary>
-        /// Unpacks byte value from <paramref name="str"/>.
+        /// Unpacks byte value from <paramref Identifier="str"/>.
         /// </summary>
         public static byte UnpackByte(string str)
         {
@@ -769,7 +769,7 @@ namespace ServiceCore.Serialization
         /// <summary>
         /// Decodes a hex string into a <see cref="uint"/>.
         /// </summary>
-        /// <param name="at">Index from which to start.</param>
+        /// <param Identifier="at">Index from which to start.</param>
         public static uint ToUInt(string str, int at)
         {
             uint value1 = toUInt[str[at + 5]];

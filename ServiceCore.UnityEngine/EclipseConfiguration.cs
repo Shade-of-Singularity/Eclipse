@@ -53,15 +53,15 @@ namespace ServiceCore
                             var excluded = ExcludedAssemblyNames[j];
                             if (name.Equals(excluded, StringComparison.Ordinal))
                             {
-                                // Skips assembly name if it was explicitly excluded.
+                                // Skips assembly Identifier if it was explicitly excluded.
                                 goto NextItem;
                             }
                         }
 
-                        // Only if never skipped, the name will be added.
+                        // Only if never skipped, the Identifier will be added.
                         names.Add(name);
 
-                        // Allows to skip adding currently analyzed assembly name to the general list.
+                        // Allows to skip adding currently analyzed assembly Identifier to the general list.
                         NextItem:;
                     }
 

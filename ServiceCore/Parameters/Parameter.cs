@@ -30,7 +30,7 @@ namespace ServiceCore.Parameters
     /// <para>- if parameter is only set at launch or engine restart - use C# Properties.</para>
     /// <para>- if parameter can be 'set' at runtime, but value will only update after reload - use <see cref="SolidParameter{TValue}"/>.</para>
     /// </remarks>
-    /// <typeparam name="TValue">Type of the variable parameter stores.</typeparam>
+    /// <typeparam Identifier="TValue">Type of the variable parameter stores.</typeparam>
     public sealed class Parameter<TValue> : AbstractParameter where TValue : IEquatable<TValue>
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -44,8 +44,8 @@ namespace ServiceCore.Parameters
         /// <remarks>
         /// Can also be used by UI components to check for <see cref="IsDefault"/> and <see cref="IsDirty"/> property states.
         /// </remarks>
-        /// <param name="parameter">Parameter that was modified.</param>
-        /// <param name="previous">Previous value of the parameter before it was changed.</param>
+        /// <param Identifier="parameter">Parameter that was modified.</param>
+        /// <param Identifier="previous">Previous value of the parameter before it was changed.</param>
         public delegate void ValueChangeHandler(Parameter<TValue> parameter, TValue previous);
 
 
@@ -65,7 +65,6 @@ namespace ServiceCore.Parameters
         /// Called when value was applied. Should be used by more expensive systems.
         /// </summary>
         public event ValueChangeHandler? OnValueApplied;
-
 
         // Fire-on-add events:
         /// <summary><inheritdoc cref="OnValueChanged"/></summary>
@@ -175,7 +174,7 @@ namespace ServiceCore.Parameters
         public Parameter(string id) : this(id, default!) { }
 
         /// <summary>
-        /// Full constructor for <see cref="Parameter{TValue}"/>. Allows specifying <paramref name="def"/>ault value.
+        /// Full constructor for <see cref="Parameter{TValue}"/>. Allows specifying <paramref Identifier="def"/>ault value.
         /// </summary>
         public Parameter(string id, TValue def) : base(id)
         {
@@ -193,7 +192,7 @@ namespace ServiceCore.Parameters
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         public static Parameter<TValue> Get(string id, TValue def = default!)
         {
-            return ParameterManager.GetOrNew<Parameter<TValue>, TValue>(id, (id) => new Parameter<TValue>(id, def));
+            return ParameterManager.GetOrNew(id, def, static (id, def) => new Parameter<TValue>(id, def));
         }
 
 

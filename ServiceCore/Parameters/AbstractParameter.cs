@@ -95,7 +95,7 @@ namespace ServiceCore.Parameters
         /// <remarks>
         /// You can throw here, but it is "safe" in regards that it will just keep the same DefaultValue if deserialization failed.
         /// </remarks>
-        /// <param name="raw">Data which was previously returned by <see cref="Serialize"/> - raw string to deserialize.</param>
+        /// <param Identifier="raw">Data which was previously returned by <see cref="Serialize"/> - raw string to deserialize.</param>
         public abstract void Deserialize(string raw);
 
         /// <summary>

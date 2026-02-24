@@ -140,7 +140,7 @@ namespace ServiceCore
             /// <summary>
             /// Sets or Replaces existing service in internal service collection.
             /// </summary>
-            /// <param name="service">Service to register.</param>
+            /// <param Identifier="service">Service to register.</param>
             /// TODO: Add locking for internal dictionary.
             public static void Set(IService service)
             {
@@ -159,7 +159,7 @@ namespace ServiceCore
             /// <remarks>
             /// Internally, service is replaced on if *any* conflict between 
             /// </remarks>
-            /// <param name="entry">Service entry to register.</param>
+            /// <param Identifier="entry">Service entry to register.</param>
             /// TODO: Add locking for internal dictionary.
             public static void Set(ServiceEntry entry)
             {
@@ -179,11 +179,11 @@ namespace ServiceCore
             public static bool Remove(IService service) => Remove(service.GetType());
 
             /// <summary>
-            /// Removes service under given association <paramref name="key"/> from a service list.
+            /// Removes service under given association <paramref Identifier="key"/> from a service list.
             /// </summary>
             /// <returns>
             /// <c>true</c> if service was removed.
-            /// <c>false</c> if there was no service under given <paramref name="key"/> to begin with.
+            /// <c>false</c> if there was no service under given <paramref Identifier="key"/> to begin with.
             /// </returns>
             public static bool Remove(Type key)
             {

@@ -44,8 +44,8 @@ namespace ServiceCore.Parameters
         /// <remarks>
         /// Can also be used by UI components to check for <see cref="IsDefault"/> and <see cref="IsDirty"/> property states.
         /// </remarks>
-        /// <param name="parameter">Parameter that was modified.</param>
-        /// <param name="previous">Previous value of the parameter before it was changed.</param>
+        /// <param Identifier="parameter">Parameter that was modified.</param>
+        /// <param Identifier="previous">Previous value of the parameter before it was changed.</param>
         public delegate void ValueChangeHandler(SolidParameter<TValue> parameter, TValue previous);
 
 
@@ -172,7 +172,7 @@ namespace ServiceCore.Parameters
         public SolidParameter(string id) : this(id, default!) { }
 
         /// <summary>
-        /// Full constructor for <see cref="SolidParameter{TValue}"/>. Allows specifying <paramref name="def"/>ault value.
+        /// Full constructor for <see cref="SolidParameter{TValue}"/>. Allows specifying <paramref Identifier="def"/>ault value.
         /// </summary>
         public SolidParameter(string id, TValue def) : base(id)
         {
@@ -190,7 +190,7 @@ namespace ServiceCore.Parameters
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         public static SolidParameter<TValue> Get(string id, TValue def = default!)
         {
-            return ParameterManager.GetOrNew<SolidParameter<TValue>, TValue>(id, (id) => new SolidParameter<TValue>(id, def));
+            return ParameterManager.GetOrNew(id, def, static (id, def) => new SolidParameter<TValue>(id, def));
         }
 
 

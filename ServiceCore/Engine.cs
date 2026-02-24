@@ -17,10 +17,10 @@
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace ServiceCore
 {
@@ -38,6 +38,19 @@ namespace ServiceCore
         /// Prefix for console messages sent from this class.
         /// </summary>
         public const string LogPrefix = "[" + nameof(ServiceCore) + "]";
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                                 Delegates
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Sorting function for <see cref="NativeAssemblies"/>.
+        /// </summary>
+        public delegate IEnumerable<Assembly> AssemblySorter(Assembly[] assemblies);
 
 
 
@@ -78,7 +91,7 @@ namespace ServiceCore
         /// <remarks>
         /// If <see cref="OnEngineInitializing"/> event was already fired - immediately fires attaching callback.
         /// <para>
-        /// To get consistent callback, you can use <see cref="EclipseInitializeAttribute"/> on custom static methods.
+        /// To get consistent callback, you can use <see cref="ServiceCoreInitializeAttribute"/> on custom static methods.
         /// </para>
         /// </remarks>
         public static event Action? FireWithEngineInitializing
@@ -102,7 +115,7 @@ namespace ServiceCore
         /// <remarks>
         /// If <see cref="OnEngineInitialized"/> event was already fired - immediately fires attaching callback.
         /// <para>
-        /// To get consistent callback, you can use <see cref="EclipseInitializeAttribute"/> on custom static methods.
+        /// To get consistent callback, you can use <see cref="ServiceCoreInitializeAttribute"/> on custom static methods.
         /// </para>
         /// </remarks>
         public static event Action? FireWithEngineInitialized
@@ -126,7 +139,7 @@ namespace ServiceCore
         /// <remarks>
         /// If <see cref="OnEngineTerminating"/> event was already fired - immediately fires attaching callback.
         /// <para>
-        /// To get consistent callback, you can use <see cref="EclipseInitializeAttribute"/> on custom static methods.
+        /// To get consistent callback, you can use <see cref="ServiceCoreInitializeAttribute"/> on custom static methods.
         /// </para>
         /// </remarks>
         public static event Action? FireWithEngineTerminating
@@ -150,7 +163,7 @@ namespace ServiceCore
         /// <remarks>
         /// If <see cref="OnEngineTerminated"/> event was already fired - immediately fires attaching callback.
         /// <para>
-        /// To get consistent callback, you can use <see cref="EclipseInitializeAttribute"/> on custom static methods.
+        /// To get consistent callback, you can use <see cref="ServiceCoreInitializeAttribute"/> on custom static methods.
         /// </para>
         /// </remarks>
         public static event Action? FireWithEngineTerminated
@@ -267,7 +280,8 @@ namespace ServiceCore
         /// <summary>
         /// Initializes the entire engine: <see cref="IService"/>s, <see cref="Modding.Modification"/>s, and so on.
         /// </summary>
-        public static async UniTask Initialize()
+        /// <param Identifier="sorter">NativeSorter for <see cref="NativeAssemblies"/>, to enforce some initialization order.</param>
+        public static async UniTask Initialize(InitializationContext context = default)
         {
             if (Status != EngineStatus.Terminated)
             {
@@ -282,9 +296,21 @@ namespace ServiceCore
             //  Although, a lot of it will be gate-kept behind Application.isEditor anyway.
             //Application.quitting += ResetState;
 
+            const bool ExpectFrequentReloads = false;
             try
             {
-                await LoadInternal(NativeAssemblies);
+                if (context.NativeSorter is null)
+                {
+                    await LoadInternal(m_NativeAssemblies);
+                }
+                else if (ExpectFrequentReloads)
+                {
+                    throw new NotSupportedException();
+                }
+                else
+                {
+                    await LoadInternal(context.NativeSorter([.. m_NativeAssemblies]));
+                }
             }
             catch (Exception ex)
             {
@@ -327,7 +353,7 @@ namespace ServiceCore
         }
 
         /// <summary>
-        /// Loads all data from a list of assemblies. Will fire global updates only after iterating over all <paramref name="assemblies"/>.
+        /// Loads all data from a list of assemblies. Will fire global updates only after iterating over all <paramref Identifier="assemblies"/>.
         /// </summary>
         public static async UniTask Load(IEnumerable<Assembly> assemblies)
         {
@@ -535,9 +561,9 @@ namespace ServiceCore
         }
 
         /// <summary>
-        /// Extracts all important information from an <paramref name="assembly"/> to the <paramref name="context"/>.
+        /// Extracts all important information from an <paramref Identifier="assembly"/> to the <paramref Identifier="context"/>.
         /// </summary>
-        /// <exception cref="NotSupportedException">Throws when <paramref name="assembly"/> is not amongst <see cref="NativeAssemblies"/>.</exception>
+        /// <exception cref="NotSupportedException">Throws when <paramref Identifier="assembly"/> is not amongst <see cref="NativeAssemblies"/>.</exception>
         private static async UniTask Extract(Assembly assembly, LoadingContext context)
         {
             if (!IsNative(assembly))

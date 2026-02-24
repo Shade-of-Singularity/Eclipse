@@ -128,28 +128,28 @@ namespace ServiceCore
         }
 
         /// <summary>
-        /// Invokes <see cref="InformationReceived"/> with given <paramref name="obj"/>.
-        /// Calls <see cref="object.ToString"/> on given <paramref name="obj"/>.
+        /// Invokes <see cref="InformationReceived"/> with given <paramref Identifier="obj"/>.
+        /// Calls <see cref="object.ToString"/> on given <paramref Identifier="obj"/>.
         /// </summary>
         public static void Log(object? obj = null) => InformationReceived?.Invoke(obj?.ToString() ?? string.Empty);
 
         /// <summary>
-        /// Invokes <see cref="WarningReceived"/> with given <paramref name="obj"/>.
-        /// Calls <see cref="object.ToString"/> on given <paramref name="obj"/>.
+        /// Invokes <see cref="WarningReceived"/> with given <paramref Identifier="obj"/>.
+        /// Calls <see cref="object.ToString"/> on given <paramref Identifier="obj"/>.
         /// </summary>
         public static void LogWarning(object? obj = null) => WarningReceived?.Invoke(obj?.ToString() ?? string.Empty);
 
         /// <summary>
-        /// Invokes <see cref="ErrorReceived"/> with given <paramref name="obj"/>.
-        /// Calls <see cref="object.ToString"/> on given <paramref name="obj"/>.
+        /// Invokes <see cref="ErrorReceived"/> with given <paramref Identifier="obj"/>.
+        /// Calls <see cref="object.ToString"/> on given <paramref Identifier="obj"/>.
         /// </summary>
         public static void LogError(object? obj = null) => ErrorReceived?.Invoke(obj?.ToString() ?? string.Empty);
 
         /// <summary>
-        /// Invokes <see cref="ExceptionReceived"/> with given <paramref name="exception"/>.
+        /// Invokes <see cref="ExceptionReceived"/> with given <paramref Identifier="exception"/>.
         /// </summary>
         /// <remarks>
-        /// Replaces <paramref name="exception"/> with an empty exception as a fail-safe.
+        /// Replaces <paramref Identifier="exception"/> with an empty exception as a fail-safe.
         /// </remarks>
         public static void LogException(Exception? exception = null) => ExceptionReceived?.Invoke(exception ?? new Exception());
     }

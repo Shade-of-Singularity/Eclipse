@@ -20,7 +20,7 @@ using System;
 namespace ServiceCore.Modding
 {
     /// <inheritdoc cref="Modification"/>
-    /// <typeparam name="T">Type of the mod.</typeparam>
+    /// <typeparam Identifier="T">Type of the mod.</typeparam>
     public abstract class Modification<T> where T : Modification, new()
     {
         /// <summary>
@@ -70,7 +70,7 @@ namespace ServiceCore.Modding
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Default mod name to be used.
+        /// Default mod Identifier to be used.
         /// </summary>
         public const string EmptyModName = "";
 
@@ -101,7 +101,7 @@ namespace ServiceCore.Modding
         public bool IsLoaded { get; set; } = false;
         
         /// <summary>
-        /// Internal name of the mod.
+        /// Internal Identifier of the mod.
         /// </summary>
         public virtual string Name => EmptyModName;
 

@@ -45,10 +45,11 @@ namespace ServiceCore
     /// </para>
     /// <para>
     /// 3. Are you preparing for release? Consider both options again.
-    /// Using interfaces might be harder for you, but might help modders if service has any reason, at all, to be overwritten or expanded on.
+    /// Using <see cref="IService{T}"/> interfaces might be harder for you,
+    /// but might help modders if service has any reason, at all, to be overwritten or expanded on.
     /// </para>
     /// </remarks>
-    /// <typeparam name="T">The type of the service to retrieve. Must inherit from <see cref="IService{TService}"/>.</typeparam>
+    /// <typeparam Identifier="T">The type of the service to retrieve. Must inherit from <see cref="IService{TService}"/>.</typeparam>
     [IgnoreService] // Were added to allow child services to implement this attribute as well.
     public interface IService<T> : IService where T : class, IService<T>
     {
@@ -140,7 +141,7 @@ namespace ServiceCore
         /// Called when <see cref="Engine"/> initializes all the code and resources from the memory.
         /// <para>
         /// Unlike any <see cref="IService"/> .ctor (constructor), this method is thread-safe.
-        /// (as long as <see cref="ServiceAttribute.ExecutionMode"/> is <see cref="ThreadExecutionMode.MainThread"/>)
+        /// (as long as <see cref="ServiceAttribute.ExecutionMode"/> is <see cref="IService.ThreadExecutionMode.MainThread"/>)
         /// </para>
         /// </summary>
         /// <returns>

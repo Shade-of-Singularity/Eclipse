@@ -151,11 +151,11 @@
         </member>
         <member name="M:ServiceCore.Configuration.Configure.SetValue``1(``0@,``0)">
             <summary>
-            Sets value in a <paramref name="field"/> to <paramref name="value"/>.
+            Sets value in a <paramref Identifier="field"/> to <paramref Identifier="value"/>.
             </summary>
-            <param name="field">Field to modify.</param>
-            <param name="value">Value to apply.</param>
-            <returns><c>true</c> if <paramref name="field"/> was modified. Otherwise <c>false</c>.</returns>
+            <param Identifier="field">Field to modify.</param>
+            <param Identifier="value">Value to apply.</param>
+            <returns><c>true</c> if <paramref Identifier="field"/> was modified. Otherwise <c>false</c>.</returns>
         </member>
         <member name="M:ServiceCore.Configuration.Configure.SetValue(System.String,System.Boolean@,System.Boolean)">
             <summary><inheritdoc cref="M:ServiceCore.Configuration.Configure.SetValue(System.String,System.String@,System.String)"/></summary>
@@ -205,7 +205,7 @@
             Sets custom value using <see cref="M:ServiceCore.Configuration.DefaultConfigurationService.Set(System.String,System.Int32)"/> method.
             </remarks>
             <returns>
-            <c>true</c> if <paramref name="field"/> changed. <c>false</c> otherwise.
+            <c>true</c> if <paramref Identifier="field"/> changed. <c>false</c> otherwise.
             </returns>
         </member>
         <member name="M:ServiceCore.Configuration.Configure.SetValue(System.String,System.UInt32@,System.UInt32)">
@@ -253,7 +253,7 @@
             Sets custom value using <see cref="M:ServiceCore.Configuration.DefaultConfigurationService.Set(System.String,System.String)"/> method.
             </remarks>
             <returns>
-            <c>true</c> if <paramref name="field"/> changed. <c>false</c> otherwise.
+            <c>true</c> if <paramref Identifier="field"/> changed. <c>false</c> otherwise.
             </returns>
         </member>
         <member name="T:ServiceCore.Configuration.DefaultConfigurationService">
@@ -340,14 +340,14 @@
             <summary>
             Delays given action by a frame, and invokes it afterwards.
             </summary>
-            <param name="wasScheduled">Indicates if this callback was already scheduled or not. Won't schedule if it is <c>true</c>.</param>
-            <param name="action">Action to schedule and run a frame later. Not scheduled it <paramref name="wasScheduled"/> is <c>true</c>.</param>
+            <param Identifier="wasScheduled">Indicates if this callback was already scheduled or not. Won't schedule if it is <c>true</c>.</param>
+            <param Identifier="action">Action to schedule and run a frame later. Not scheduled it <paramref Identifier="wasScheduled"/> is <c>true</c>.</param>
         </member>
         <member name="M:ServiceCore.Configuration.DefaultConfigurationService.Delay(System.Action)">
             <summary>
             Delays given action by a frame, and invokes it afterwards.
             </summary>
-            <param name="action">Action to schedule and run a frame later.</param>
+            <param Identifier="action">Action to schedule and run a frame later.</param>
         </member>
         <member name="M:ServiceCore.Configuration.DefaultConfigurationService.Set(System.String,System.Boolean)">
             <summary><inheritdoc cref="M:ServiceCore.Configuration.DefaultConfigurationService.Set(System.String,System.String)"/></summary>
@@ -395,8 +395,8 @@
             <remarks>
             Might not support reverting with custom <see cref="T:ServiceCore.Configuration.DefaultConfigurationService"/> implementation.
             </remarks>
-            <param name="id">ID of the raw parameter to set. I recommend following "@name" pattern.</param>
-            <param name="value">New value to set to a parameter.</param>
+            <param Identifier="id">ID of the raw parameter to set. I recommend following "@Identifier" pattern.</param>
+            <param Identifier="value">New value to set to a parameter.</param>
             <returns>
             <c>true</c> if last variable value changed. <c>false</c> otherwise.
             (If <see cref="T:ServiceCore.Configuration.Storages.IDataStorage"/> or custom <see cref="T:ServiceCore.Configuration.DefaultConfigurationService"/> doesn't support value checking,
@@ -446,23 +446,23 @@
             <summary>
             Retrieves value of an parameter and strictly expects it to be an string.
             </summary>
-            <param name="id">ID of the raw parameter to set. Usually in a "@name" pattern.</param>
-            <param name="value">Value to set.</param>
-            <param name="def">Default value to take if there is no set data in storage.</param>
+            <param Identifier="id">ID of the raw parameter to set. Usually in a "@Identifier" pattern.</param>
+            <param Identifier="value">Value to set.</param>
+            <param Identifier="def">Default value to take if there is no set data in storage.</param>
         </member>
         <member name="M:ServiceCore.Configuration.DefaultConfigurationService.IsPending(System.String)">
             <summary>
-            Checks if any parameter with a given name was changed before <see cref="M:ServiceCore.Configuration.DefaultConfigurationService.Apply"/> or <see cref="M:ServiceCore.Configuration.DefaultConfigurationService.Revert"/> was used.
+            Checks if any parameter with a given Identifier was changed before <see cref="M:ServiceCore.Configuration.DefaultConfigurationService.Apply"/> or <see cref="M:ServiceCore.Configuration.DefaultConfigurationService.Revert"/> was used.
             </summary>
-            <param name="id">ID of the raw parameter to set. It is recommended to follow "@name" pattern.</param>
-            <returns><c>true</c> if parameter under given <paramref name="id"/> is waiting to be applied.<c>false</c> otherwise.</returns>
+            <param Identifier="id">ID of the raw parameter to set. It is recommended to follow "@Identifier" pattern.</param>
+            <returns><c>true</c> if parameter under given <paramref Identifier="id"/> is waiting to be applied.<c>false</c> otherwise.</returns>
         </member>
         <member name="M:ServiceCore.Configuration.DefaultConfigurationService.RemovePending(System.String)">
             <summary>
-            Removes a pending <see cref="M:ServiceCore.Configuration.DefaultConfigurationService.Set(System.String,System.String)"/> action from a raw parameter under given <paramref name="id"/>.
+            Removes a pending <see cref="M:ServiceCore.Configuration.DefaultConfigurationService.Set(System.String,System.String)"/> action from a raw parameter under given <paramref Identifier="id"/>.
             </summary>
-            <param name="id">ID of the raw parameter to set. It is recommended to follow "@name" pattern.</param>
-            <returns><c>true</c> if parameter under given <paramref name="id"/> was removed from a pending list.<c>false</c> otherwise.</returns>
+            <param Identifier="id">ID of the raw parameter to set. It is recommended to follow "@Identifier" pattern.</param>
+            <returns><c>true</c> if parameter under given <paramref Identifier="id"/> was removed from a pending list.<c>false</c> otherwise.</returns>
         </member>
         <member name="M:ServiceCore.Configuration.DefaultConfigurationService.Apply">
             <summary>
@@ -494,7 +494,7 @@
             <remarks>
             It will be written to the disk immediately, or in a bit later, if <see cref="T:ServiceCore.Configuration.DefaultConfigurationService"/> is in
             </remarks>
-            <typeparam name="T">Type of your data.</typeparam>
+            <typeparam Identifier="T">Type of your data.</typeparam>
         </member>
         <member name="M:ServiceCore.Configuration.DefaultConfigurationService.Load``1">
             <summary>
@@ -504,10 +504,10 @@
             You can use it to load game data, such as player positions, inventory data, etc.
             </remarks>
             <returns>
-            New <typeparamref name="T"/> parameter if no configuration file found.
+            New <typeparamref Identifier="T"/> parameter if no configuration file found.
             Otherwise - loaded data.
             </returns>
-            <typeparam name="T"></typeparam>
+            <typeparam Identifier="T"></typeparam>
         </member>
         <member name="M:ServiceCore.Configuration.DefaultConfigurationService.Serialize">
             <summary>
@@ -525,17 +525,17 @@
             Make sure that <see cref="P:ServiceCore.Configuration.EngineConfiguration`1.Instance"/> is NEVER called before you call this one.
             </para>
             </remarks>
-            <typeparam name="T"></typeparam>
-            <param name="value"></param>
+            <typeparam Identifier="T"></typeparam>
+            <param Identifier="value"></param>
         </member>
         <member name="M:ServiceCore.Configuration.DefaultConfigurationService.GetOrNew``1">
             <summary>
-            Retrieves an <see cref="T:ServiceCore.Configuration.EngineConfiguration"/> file from loaded resources, or creates new instance with <see cref="M:UnityEngine.ScriptableObject.CreateInstance``1"/>.
+            Retrieves an <see cref="T:ServiceCore.Configuration.EngineConfiguration"/> file from loaded resources, or creates new m_Instance with <see cref="M:UnityEngine.ScriptableObject.CreateInstance``1"/>.
             </summary>
             <remarks>
             Use <see cref="P:ServiceCore.Configuration.EngineConfiguration`1.Instance"/> instead - it is WAY more performant.
             </remarks>
-            <typeparam name="T"><see cref="T:ServiceCore.Configuration.EngineConfiguration"/> to use.</typeparam>
+            <typeparam Identifier="T"><see cref="T:ServiceCore.Configuration.EngineConfiguration"/> to use.</typeparam>
             <returns>Configuration file (existing or default) of a given type.</returns>
         </member>
         <member name="M:ServiceCore.Configuration.DefaultConfigurationService.WaitForCompletion">
@@ -593,9 +593,9 @@
             </summary>
             <remarks>
             <seealso cref="T:ServiceCore.Configuration.ImbeddedConfiguration"/> classes provide readonly configurations required to start-up the engine at all.
-            Mods cannot use them.
+            Modifications cannot use them.
             </remarks>
-            <typeparam name="T">The type of the configuration to retrieve. Must inherit from <see cref="T:ServiceCore.Configuration.EngineConfiguration"/>.</typeparam>
+            <typeparam Identifier="T">The type of the configuration to retrieve. Must inherit from <see cref="T:ServiceCore.Configuration.EngineConfiguration"/>.</typeparam>
             TODO: Replace with system, similar to <see cref="P:ServiceCore.IService`1.Instance"/>.
         </member>
         <member name="P:ServiceCore.Configuration.EngineConfiguration`1.Instance">
@@ -605,7 +605,7 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Cached instance of the requested configuration class.
+            Cached m_Instance of the requested configuration class.
             </summary>
         </member>
         <member name="F:ServiceCore.Configuration.EngineConfiguration`1.m_Instance">
@@ -647,7 +647,7 @@
             <summary>
             Class holder for your <see cref="T:ServiceCore.Configuration.GameState"/>.
             </summary>
-            <typeparam name="T">Type of your <see cref="T:ServiceCore.Configuration.GameState"/> class.</typeparam>
+            <typeparam Identifier="T">Type of your <see cref="T:ServiceCore.Configuration.GameState"/> class.</typeparam>
         </member>
         <member name="P:ServiceCore.Configuration.GameState`1.Instance">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -699,7 +699,7 @@
             <summary>
             Deserializes given data back into a GameState.
             </summary>
-            <param name="raw">Raw data to deserialize.</param>
+            <param Identifier="raw">Raw data to deserialize.</param>
         </member>
         <member name="T:ServiceCore.Configuration.IConfigurationService">
             <summary>
@@ -831,8 +831,8 @@
             <remarks>
             Might not support reverting with custom <see cref="T:ServiceCore.Configuration.IConfigurationService"/> implementation.
             </remarks>
-            <param name="id">ID of the raw parameter to set. I recommend following "@name" pattern.</param>
-            <param name="value">New value to set to a parameter.</param>
+            <param Identifier="id">ID of the raw parameter to set. I recommend following "@Identifier" pattern.</param>
+            <param Identifier="value">New value to set to a parameter.</param>
             <returns>
             <c>true</c> if last variable value changed. <c>false</c> otherwise.
             (If <see cref="T:ServiceCore.Configuration.Storages.IDataStorage"/> or custom <see cref="T:ServiceCore.Configuration.IConfigurationService"/> doesn't support value checking,
@@ -882,9 +882,9 @@
             <summary>
             Retrieves value of an parameter and strictly expects it to be an string.
             </summary>
-            <param name="id">ID of the raw parameter to set. Usually in a "@name" pattern.</param>
-            <param name="value">Value to set.</param>
-            <param name="def">Default value to take if there is no set data in storage.</param>
+            <param Identifier="id">ID of the raw parameter to set. Usually in a "@Identifier" pattern.</param>
+            <param Identifier="value">Value to set.</param>
+            <param Identifier="def">Default value to take if there is no set data in storage.</param>
         </member>
         <member name="M:ServiceCore.Configuration.IConfigurationService.IsPending(System.String)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -893,17 +893,17 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Checks if any parameter with a given name was changed before <see cref="M:ServiceCore.Configuration.IConfigurationService.Apply"/> or <see cref="M:ServiceCore.Configuration.IConfigurationService.Revert"/> was used.
+            Checks if any parameter with a given Identifier was changed before <see cref="M:ServiceCore.Configuration.IConfigurationService.Apply"/> or <see cref="M:ServiceCore.Configuration.IConfigurationService.Revert"/> was used.
             </summary>
-            <param name="id">ID of the raw parameter to set. It is recommended to follow "@name" pattern.</param>
-            <returns><c>true</c> if parameter under given <paramref name="id"/> is waiting to be applied.<c>false</c> otherwise.</returns>
+            <param Identifier="id">ID of the raw parameter to set. It is recommended to follow "@Identifier" pattern.</param>
+            <returns><c>true</c> if parameter under given <paramref Identifier="id"/> is waiting to be applied.<c>false</c> otherwise.</returns>
         </member>
         <member name="M:ServiceCore.Configuration.IConfigurationService.RemovePending(System.String)">
             <summary>
-            Removes a pending <see cref="M:ServiceCore.Configuration.IConfigurationService.Set(System.String,System.String)"/> action from a raw parameter under given <paramref name="id"/>.
+            Removes a pending <see cref="M:ServiceCore.Configuration.IConfigurationService.Set(System.String,System.String)"/> action from a raw parameter under given <paramref Identifier="id"/>.
             </summary>
-            <param name="id">ID of the raw parameter to set. It is recommended to follow "@name" pattern.</param>
-            <returns><c>true</c> if parameter under given <paramref name="id"/> was removed from a pending list.<c>false</c> otherwise.</returns>
+            <param Identifier="id">ID of the raw parameter to set. It is recommended to follow "@Identifier" pattern.</param>
+            <returns><c>true</c> if parameter under given <paramref Identifier="id"/> was removed from a pending list.<c>false</c> otherwise.</returns>
         </member>
         <member name="M:ServiceCore.Configuration.IConfigurationService.Apply">
             <summary>
@@ -935,7 +935,7 @@
             <remarks>
             It will be written to the disk immediately, or in a bit later, if <see cref="T:ServiceCore.Configuration.DefaultConfigurationService"/> is in
             </remarks>
-            <typeparam name="T">Type of your data.</typeparam>
+            <typeparam Identifier="T">Type of your data.</typeparam>
         </member>
         <member name="M:ServiceCore.Configuration.IConfigurationService.Load``1">
             <summary>
@@ -945,10 +945,10 @@
             You can use it to load game data, such as player positions, inventory data, etc.
             </remarks>
             <returns>
-            New <typeparamref name="T"/> parameter if no configuration file found.
+            New <typeparamref Identifier="T"/> parameter if no configuration file found.
             Otherwise - loaded data.
             </returns>
-            <typeparam name="T"></typeparam>
+            <typeparam Identifier="T"></typeparam>
         </member>
         <member name="M:ServiceCore.Configuration.IConfigurationService.Serialize">
             <summary>
@@ -982,17 +982,17 @@
             Make sure that <see cref="P:ServiceCore.Configuration.EngineConfiguration`1.Instance"/> is NEVER called before you call this one.
             </para>
             </remarks>
-            <typeparam name="T"></typeparam>
-            <param name="value"></param>
+            <typeparam Identifier="T"></typeparam>
+            <param Identifier="value"></param>
         </member>
         <member name="M:ServiceCore.Configuration.IConfigurationService.GetOrNew``1">
             <summary>
-            Retrieves an <see cref="T:ServiceCore.Configuration.EngineConfiguration"/> file from loaded resources, or creates new instance with <see cref="!:ScriptableObject.CreateInstance&lt;T&gt;()"/>.
+            Retrieves an <see cref="T:ServiceCore.Configuration.EngineConfiguration"/> file from loaded resources, or creates new m_Instance with <see cref="!:ScriptableObject.CreateInstance&lt;T&gt;()"/>.
             </summary>
             <remarks>
             Use <see cref="P:ServiceCore.Configuration.EngineConfiguration`1.Instance"/> instead - it is WAY more performant.
             </remarks>
-            <typeparam name="T"><see cref="T:ServiceCore.Configuration.EngineConfiguration"/> to use.</typeparam>
+            <typeparam Identifier="T"><see cref="T:ServiceCore.Configuration.EngineConfiguration"/> to use.</typeparam>
             <returns>Configuration file (existing or default) of a given type.</returns>
         </member>
         <member name="T:ServiceCore.Configuration.ImbeddedConfiguration`1">
@@ -1003,7 +1003,7 @@
             <remarks>
             Again - can be read and used before engine is initialized, unlike <see cref="T:ServiceCore.Configuration.EngineConfiguration"/>s.
             </remarks>
-            <typeparam name="T">Type of your configuration file.</typeparam>
+            <typeparam Identifier="T">Type of your configuration file.</typeparam>
         </member>
         <member name="P:ServiceCore.Configuration.ImbeddedConfiguration`1.Instance">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -1041,42 +1041,42 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Retrieves instance of <see cref="T:ServiceCore.Configuration.ImbeddedConfiguration"/> of a given type (<typeparamref name="T"/>).
-            If instance do not exist in <see cref="T:UnityEngine.Resources"/> - creates new instance with <see cref="M:UnityEngine.ScriptableObject.CreateInstance``1"/>.
+            Retrieves m_Instance of <see cref="T:ServiceCore.Configuration.ImbeddedConfiguration"/> of a given type (<typeparamref Identifier="T"/>).
+            If m_Instance do not exist in <see cref="T:UnityEngine.Resources"/> - creates new m_Instance with <see cref="M:UnityEngine.ScriptableObject.CreateInstance``1"/>.
             </summary>
             <remarks>
-            Newly created value will also be automatically associated with given <typeparamref name="T"/>, as to not create new instance on each call.
+            Newly created value will also be automatically associated with given <typeparamref Identifier="T"/>, as to not create new m_Instance on each call.
             </remarks>
             <returns>
-            Existing instance of <see cref="T:ServiceCore.Configuration.ImbeddedConfiguration"/> from <see cref="T:UnityEngine.Resources"/>
-            or new instance created with <see cref="M:UnityEngine.ScriptableObject.CreateInstance``1"/> method.
+            Existing m_Instance of <see cref="T:ServiceCore.Configuration.ImbeddedConfiguration"/> from <see cref="T:UnityEngine.Resources"/>
+            or new m_Instance created with <see cref="M:UnityEngine.ScriptableObject.CreateInstance``1"/> method.
             </returns>
         </member>
         <member name="M:ServiceCore.Configuration.ImbeddedConfiguration.GetOrDefault``1(``0)">
             <summary>
-            Retrieves instance of <see cref="T:ServiceCore.Configuration.ImbeddedConfiguration"/> of a given type (<typeparamref name="T"/>).
+            Retrieves m_Instance of <see cref="T:ServiceCore.Configuration.ImbeddedConfiguration"/> of a given type (<typeparamref Identifier="T"/>).
             </summary>
             <returns>
-            Existing instance of <see cref="T:ServiceCore.Configuration.ImbeddedConfiguration"/> from <see cref="T:UnityEngine.Resources"/>
-            or provided default value (<paramref name="def"/>).
+            Existing m_Instance of <see cref="T:ServiceCore.Configuration.ImbeddedConfiguration"/> from <see cref="T:UnityEngine.Resources"/>
+            or provided default value (<paramref Identifier="def"/>).
             </returns>
         </member>
         <member name="M:ServiceCore.Configuration.ImbeddedConfiguration.GetOrDefault``1(System.Func{``0})">
             <summary>
-            Retrieves instance of <see cref="T:ServiceCore.Configuration.ImbeddedConfiguration"/> of a given type (<typeparamref name="T"/>).
+            Retrieves m_Instance of <see cref="T:ServiceCore.Configuration.ImbeddedConfiguration"/> of a given type (<typeparamref Identifier="T"/>).
             </summary>
             <returns>
-            Existing instance of <see cref="T:ServiceCore.Configuration.ImbeddedConfiguration"/> from <see cref="T:UnityEngine.Resources"/>.
-            If instance fo not exist - calls <paramref name="def"/> instance provider function.
+            Existing m_Instance of <see cref="T:ServiceCore.Configuration.ImbeddedConfiguration"/> from <see cref="T:UnityEngine.Resources"/>.
+            If m_Instance fo not exist - calls <paramref Identifier="def"/> m_Instance provider function.
             </returns>
         </member>
         <member name="M:ServiceCore.Configuration.ImbeddedConfiguration.TryGet``1(``0@)">
             <summary>
             Tries to retrieve <see cref="T:ServiceCore.Configuration.ImbeddedConfiguration"/> file from <see cref="T:UnityEngine.Resources"/>.
             </summary>
-            <typeparam name="T">Type of your configuration class.</typeparam>
-            <param name="configuration">Configuration file retrieved from <see cref="T:UnityEngine.Resources"/> or <c>null</c>.</param>
-            <returns>'<c>true</c>' when file was found and <paramref name="configuration"/> variable was set. '<c>false</c>' if otherwise.</returns>
+            <typeparam Identifier="T">Type of your configuration class.</typeparam>
+            <param Identifier="configuration">Configuration file retrieved from <see cref="T:UnityEngine.Resources"/> or <c>null</c>.</param>
+            <returns>'<c>true</c>' when file was found and <paramref Identifier="configuration"/> variable was set. '<c>false</c>' if otherwise.</returns>
         </member>
         <member name="M:ServiceCore.Configuration.ImbeddedConfiguration.Initialize">
             <summary>
@@ -1135,7 +1135,7 @@
         </member>
         <member name="F:ServiceCore.Configuration.Storages.DataStorage`1.Instance">
             <summary>
-            Static instance of an <see cref="T:ServiceCore.Configuration.Storages.IDataStorage"/> implementation.
+            Static m_Instance of an <see cref="T:ServiceCore.Configuration.Storages.IDataStorage"/> implementation.
             </summary>
         </member>
         <member name="M:ServiceCore.Configuration.Storages.DataStorage`1.Load(ServiceCore.Parameters.AbstractParameter)">
@@ -1153,13 +1153,13 @@
             <summary>
             If has any data about it - will call <see cref="M:ServiceCore.Parameters.AbstractParameter.Deserialize(System.String)"/> using a raw string data about this parameter.
             </summary>
-            <param name="parameter">Parameter to be updated.</param>
+            <param Identifier="parameter">Parameter to be updated.</param>
         </member>
         <member name="M:ServiceCore.Configuration.Storages.IDataStorage.Save(ServiceCore.Parameters.AbstractParameter)">
             <summary>
             Calls <see cref="M:ServiceCore.Parameters.AbstractParameter.Serialize"/> method and stores a return value 
             </summary>
-            <param name="parameter"></param>
+            <param Identifier="parameter"></param>
         </member>
         <member name="F:ServiceCore.Configuration.Storages.PlayerPreferenceStorage.Instance">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -1183,7 +1183,7 @@
             When implementing, don't forget that <see cref="P:ServiceCore.Configuration.UI.ParameterUI`1.Parameter"/>s can be modified in the editor, on <see cref="P:UnityEngine.Application.isPlaying"/> == <c>false</c>.
             Account for that by not modifying the UI in such cases, but you can modify the parameters themselves.
             </remarks>
-            <typeparam name="TParameter">Special type of the parameter to try to look for. Specify <see cref="T:ServiceCore.Parameters.AbstractParameter"/> for any type.</typeparam>
+            <typeparam Identifier="TParameter">Special type of the parameter to try to look for. Specify <see cref="T:ServiceCore.Parameters.AbstractParameter"/> for any type.</typeparam>
         </member>
         <member name="P:ServiceCore.Configuration.UI.ParameterUI`1.Parameter">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -1333,15 +1333,97 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
+        <member name="T:ServiceCore.MonoService`1">
+            <summary>
+            Service based on <see cref="T:UnityEngine.MonoBehaviour"/>
+            </summary>
+            <remarks>
+            Essentially just your regular singleton, but initializes in async mode.
+            </remarks>
+            <typeparam Identifier="T"></typeparam>
+        </member>
+        <member name="P:ServiceCore.MonoService`1.Instance">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Cached type-safe null-safe instance of the service. ~x40 times faster than <see cref="M:ServiceCore.Services.Get``1"/>!
+            </summary>
+            <remarks>
+            Might be <c>null</c> when <see cref="T:ServiceCore.Engine"/> is not initialized.
+            </remarks>
+        </member>
+        <member name="P:ServiceCore.MonoService`1.Initialized">
+            <summary>
+            Whether service was initialized or not.
+            Safe to access with <see cref="P:ServiceCore.MonoService`1.Instance"/> set to <c>null</c>.
+            </summary>
+            <remarks>
+            Always <c>true</c> after <see cref="P:ServiceCore.Engine.Status"/> is set to <see cref="F:ServiceCore.EngineStatus.Initialized"/>.
+            Might be <c>false</c> during initialization.
+            Note: Services are initialized base on <see cref="P:ServiceCore.ServiceAttribute.ExecutionOrder"/>.
+            </remarks>
+        </member>
+        <member name="P:ServiceCore.MonoService`1.ServiceCore#IService#Initialized">
+            <summary>
+            Flag implementation to access static <see cref="P:ServiceCore.MonoService`1.Initialized"/> field.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.MonoService`1.m_Initialized">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Static Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:ServiceCore.MonoService`1.Awake">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Unity Callbacks
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Called right after <see cref="T:UnityEngine.MonoBehaviour"/> and its fields were initialized.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.MonoService`1.Destroy">
+            <summary>
+            Called right before <see cref="T:UnityEngine.MonoBehaviour"/> is destroyed.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.MonoService`1.ServiceCore#IService#InternalInitialize">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Implementations
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.MonoService`1.ServiceCore#IService#InternalTerminate">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.MonoService`1.Initialize">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Protected Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <inheritdoc cref="M:ServiceCore.IService`1.Initialize"/>
+        </member>
+        <member name="M:ServiceCore.MonoService`1.Terminate">
+            <inheritdoc cref="M:ServiceCore.IService`1.Terminate"/>
+        </member>
         <member name="T:ServiceCore.QuitHandler`1">
             <inheritdoc cref="T:ServiceCore.QuitHandler"/>
             <remarks>
-            Also provides static field with a default instance of the unloader.
+            Also provides static field with a default m_Instance of the unloader.
             </remarks>
         </member>
         <member name="F:ServiceCore.QuitHandler`1.Instance">
             <summary>
-            Default instance of the handler to be used.
+            Default m_Instance of the handler to be used.
             </summary>
         </member>
         <member name="T:ServiceCore.QuitHandler">
@@ -1357,7 +1439,7 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Current unloader instance. Will use <see cref="T:ServiceCore.DefaultQuitHandler"/> by default.
+            Current unloader m_Instance. Will use <see cref="T:ServiceCore.DefaultQuitHandler"/> by default.
             </summary>
             <remarks>
             Use <see cref="M:ServiceCore.QuitHandler.Initialize"/> to replace it with your own.
@@ -1392,14 +1474,14 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Attaches this <see cref="T:ServiceCore.QuitHandler"/> instance as active instance in <see cref="P:ServiceCore.QuitHandler.Current"/> property.
+            Attaches this <see cref="T:ServiceCore.QuitHandler"/> m_Instance as active m_Instance in <see cref="P:ServiceCore.QuitHandler.Current"/> property.
             </summary>
             <remarks>
             <para>
             If <see cref="P:ServiceCore.QuitHandler.Enabled"/> is <c>true</c> - will also immediately run <see cref="M:ServiceCore.QuitHandler.OnEnabled"/> method.
             </para>
             <para>
-            Will also run <see cref="M:ServiceCore.QuitHandler.OnDisabled"/> on instance that was attached to <see cref="P:ServiceCore.QuitHandler.Current"/> before.
+            Will also run <see cref="M:ServiceCore.QuitHandler.OnDisabled"/> on m_Instance that was attached to <see cref="P:ServiceCore.QuitHandler.Current"/> before.
             </para>
             </remarks>
         </member>

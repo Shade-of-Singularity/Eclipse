@@ -24,9 +24,9 @@ namespace ServiceCore.Configuration
     /// </summary>
     /// <remarks>
     /// <seealso cref="ImbeddedConfiguration"/> classes provide readonly configurations required to start-up the engine at all.
-    /// Mods cannot use them.
+    /// Modifications cannot use them.
     /// </remarks>
-    /// <typeparam name="T">The type of the configuration to retrieve. Must inherit from <see cref="EngineConfiguration"/>.</typeparam>
+    /// <typeparam Identifier="T">The type of the configuration to retrieve. Must inherit from <see cref="EngineConfiguration"/>.</typeparam>
     /// TODO: Replace with system, similar to <see cref="IService{T}.Instance"/>.
     public static class EngineConfiguration<T> where T : EngineConfiguration
     {
@@ -36,7 +36,7 @@ namespace ServiceCore.Configuration
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Cached instance of the requested configuration class.
+        /// Cached m_Instance of the requested configuration class.
         /// </summary>
         public static T Instance
         {
