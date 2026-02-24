@@ -1,11 +1,12 @@
-﻿using ServiceCore.Modding;
+﻿using ServiceCore.Loading;
+using System.Collections.Generic;
 
 namespace ServiceCore
 {
     /// <summary>
     /// Describes how <see cref="Engine"/> should be initialized, and what it should initialize.
     /// </summary>
-    public readonly struct InitializationContext(Engine.AssemblySorter? sorter = default, DependencyMap? dependencies = default)
+    public readonly struct InitializationContext(Engine.AssemblySorter? sorter = null, IEnumerable<ILoadingSource>? sources = null)
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -18,8 +19,8 @@ namespace ServiceCore
         /// <seealso cref="Engine.NativeAssemblies"/>
         public readonly Engine.AssemblySorter? NativeSorter = sorter;
         /// <summary>
-        /// Dependency map of all <see cref="ModificationInfo"/>s.
+        /// All loading sources for <see cref="Engine"/> to initialize.
         /// </summary>
-        public readonly DependencyMap? Dependencies = dependencies;
+        public readonly IEnumerable<ILoadingSource>? Sources = sources;
     }
 }

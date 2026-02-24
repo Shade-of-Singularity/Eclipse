@@ -15,12 +15,12 @@
 /// ]]>
 
 using Cysharp.Threading.Tasks;
+using ServiceCore.Loading;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace ServiceCore
 {
@@ -100,7 +100,8 @@ namespace ServiceCore
             add
             {
                 if (value is null) return;
-                if ((m_Status & EngineStatus.Initializing) == EngineStatus.Initializing)
+                const EngineStatus Combined = EngineStatus.Initializing | EngineStatus.Initialized;
+                if ((m_Status & Combined) != EngineStatus.Invalid)
                 {
                     value();
                 }
@@ -148,7 +149,8 @@ namespace ServiceCore
             add
             {
                 if (value is null) return;
-                if ((m_Status & EngineStatus.Terminating) == EngineStatus.Terminating)
+                const EngineStatus Combined = EngineStatus.Terminating | EngineStatus.Terminated;
+                if ((m_Status & Combined) != EngineStatus.Invalid)
                 {
                     value();
                 }
@@ -203,8 +205,8 @@ namespace ServiceCore
         public static EngineStatus Status => m_Status;
 
         /// <summary>
-        /// Lists all Assemblies referencing <see cref="Engine"/>.
-        /// Such Assemblies are considered "Native" and will be automatically loaded first on <see cref="Initialize"/> call.
+        /// Lists all Dependencies referencing <see cref="Engine"/>.
+        /// Such Dependencies are considered "Native" and will be automatically loaded first on <see cref="Initialize"/> call.
         /// </summary>
         public static IReadOnlyList<Assembly> NativeAssemblies => m_NativeAssemblies;
 
@@ -225,6 +227,76 @@ namespace ServiceCore
 
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
+        /// .                                               Initialization
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Initializes the entire engine: <see cref="IService"/>s, <see cref="Modding.Modification"/>s, and so on.
+        /// </summary>
+        /// <param Identifier="sorter">NativeSorter for <see cref="NativeAssemblies"/>, to enforce some initialization order.</param>
+        public static async UniTask Initialize(InitializationContext context = default)
+        {
+            if (Status != EngineStatus.Terminated)
+            {
+                ServiceCoreLogger.LogWarning($"{LogPrefix} Cannot initialize non-idle engine.");
+                return;
+            }
+
+            SetStatus(EngineStatus.Initializing);
+            // TODO: Decide what to do with service unloading when in the Editor.
+            //  Maybe provide special UNITY_EDITOR-only methods?
+            //  We can keep them in the code so people can restore Editor's tools more easily.
+            //  Although, a lot of it will be gate-kept behind Application.isEditor anyway.
+            //Application.quitting += ResetState;
+
+            const bool ExpectFrequentReloads = false;
+            try
+            {
+                if (ExpectFrequentReloads)
+                {
+                    // Should use caches lists instead of creating them on each call.
+                    throw new NotSupportedException();
+                }
+
+                // Listing built-in assemblies with built-in services.
+                // TODO: Remove allocations if needed.
+                List<ILoadable> loadables = new(m_NativeAssemblies.Count);
+                // TODO: Since assemblies added as loading source at the beginning of the list - they should stay here unless reordering is absolutely needed.
+                // Note: Add tool to see order of initialization of all sources based on "layer orders" - value starting from 0,
+                //  and multiple sources can take the same order, showing you that they are not guaranteed to be executed in a specific order.
+                foreach (var assembly in context.NativeSorter is null ? m_NativeAssemblies : context.NativeSorter([.. m_NativeAssemblies]))
+                {
+                    loadables.Add((LoadableAssemblyReference)assembly);
+                }
+
+                List<ILoadingSource> sources = [new AssemblySource(loadables)];
+
+                // Reserves space for sources, if there is any.
+                // Note: Sources list will also be filled with sorted native assemblies.
+                if (context.Sources is not null)
+                {
+                    sources.AddRange(context.Sources);
+                }
+
+                // Loads-in the engine itself.
+                await LoadInternal(sources);
+            }
+            catch (Exception ex)
+            {
+                ServiceCoreLogger.LogException(ex);
+                ServiceCoreLogger.LogError($"{LogPrefix} {nameof(ServiceCore)} was broken during initialization!");
+                SetStatus(EngineStatus.InitializationBroken);
+                return;
+            }
+
+            SetStatus(EngineStatus.Initialized);
+        }
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
         /// .                                                 Termination
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
@@ -232,7 +304,7 @@ namespace ServiceCore
         /// Unloads entire engine, all initialized services.
         /// </summary>
         /// <remarks>
-        /// Will not unload mod Assemblies from the memory, as it is impossible.
+        /// Will not unload mod Dependencies from the memory, as it is impossible.
         /// </remarks>
         public static async UniTask Terminate()
         {
@@ -266,61 +338,7 @@ namespace ServiceCore
             }
 
             m_Assemblies.Clear();
-            SetStatus(EngineStatus.Terminating | EngineStatus.Terminated);
-        }
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                               Initialization
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <summary>
-        /// Initializes the entire engine: <see cref="IService"/>s, <see cref="Modding.Modification"/>s, and so on.
-        /// </summary>
-        /// <param Identifier="sorter">NativeSorter for <see cref="NativeAssemblies"/>, to enforce some initialization order.</param>
-        public static async UniTask Initialize(InitializationContext context = default)
-        {
-            if (Status != EngineStatus.Terminated)
-            {
-                ServiceCoreLogger.LogWarning($"{LogPrefix} Cannot initialize non-idle engine.");
-                return;
-            }
-
-            SetStatus(EngineStatus.Initializing);
-            // TODO: Decide what to do with service unloading when in the Editor.
-            //  Maybe provide special UNITY_EDITOR-only methods?
-            //  We can keep them in the code so people can restore Editor's tools more easily.
-            //  Although, a lot of it will be gate-kept behind Application.isEditor anyway.
-            //Application.quitting += ResetState;
-
-            const bool ExpectFrequentReloads = false;
-            try
-            {
-                if (context.NativeSorter is null)
-                {
-                    await LoadInternal(m_NativeAssemblies);
-                }
-                else if (ExpectFrequentReloads)
-                {
-                    throw new NotSupportedException();
-                }
-                else
-                {
-                    await LoadInternal(context.NativeSorter([.. m_NativeAssemblies]));
-                }
-            }
-            catch (Exception ex)
-            {
-                ServiceCoreLogger.LogException(ex);
-                ServiceCoreLogger.LogError($"{LogPrefix} {nameof(ServiceCore)} was broken during initialization!");
-                SetStatus(EngineStatus.InitializationBroken);
-                return;
-            }
-
-            SetStatus(EngineStatus.Initializing | EngineStatus.Initialized);
+            SetStatus(EngineStatus.Terminated);
         }
 
 
@@ -332,10 +350,10 @@ namespace ServiceCore
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Loads all data from an assembly. It includes: <see cref="Modding.Modification"/>s, <see cref="IService"/>s, etc.
+        /// Loads all data from an source. It includes: <see cref="Modding.Modification"/>s, <see cref="IService"/>s, etc.
         /// </summary>
         /// <remarks>
-        /// Will run (TODO: add entry point method) on assembly load, so it can run some initialization methods.
+        /// Will run (TODO: add entry point method) on source load, so it can run some initialization methods.
         /// (Note: might not be implemented in favor of using mod initialization order instead and <see cref="Modding.Modification.Initializing"/>)
         /// </remarks>
         public static async UniTask Load(Assembly assembly)
@@ -539,21 +557,29 @@ namespace ServiceCore
             throw new NotSupportedException("Partial termination is not supported yet.");
         }
 
-        private static async UniTask LoadInternal(IEnumerable<Assembly> assemblies)
+        private static async UniTask LoadInternal(IEnumerable<ILoadingSource> sources)
         {
             // TODO: Avoid context allocation if all input assemblies are loaded.
             LoadingContext context = new();
 
             // Extracts all important information in all assemblies.
-            foreach (var assembly in assemblies)
+            foreach (ILoadable? source in sources.SelectMany(s => s.GetLoadables()))
             {
-                if (!m_Assemblies.Register(assembly))
+                if (source is not LoadableAssemblyReference reference)
+                {
+                    // Here we should load-in assemblies from the disk, for example, and stuff like that.
+                    // We might improve on the pattern, because now we will need to change Engine.cs with this one, and devs should have power to change it as well.
+                    ServiceCoreLogger.LogWarning($"{LogPrefix} Loadable type of ({source.GetType().Name}) is not supported.");
+                    continue;
+                }
+
+                if (!m_Assemblies.Register(reference.assembly))
                 {
                     ServiceCoreLogger.LogWarning($"Skipping already initialized assemblies.");
                     continue;
                 }
 
-                await Extract(assembly, context);
+                await Extract(reference.assembly, context);
             }
 
             await ConstructServices(context);
@@ -561,9 +587,9 @@ namespace ServiceCore
         }
 
         /// <summary>
-        /// Extracts all important information from an <paramref Identifier="assembly"/> to the <paramref Identifier="context"/>.
+        /// Extracts all important information from an <paramref Identifier="source"/> to the <paramref Identifier="context"/>.
         /// </summary>
-        /// <exception cref="NotSupportedException">Throws when <paramref Identifier="assembly"/> is not amongst <see cref="NativeAssemblies"/>.</exception>
+        /// <exception cref="NotSupportedException">Throws when <paramref Identifier="source"/> is not amongst <see cref="NativeAssemblies"/>.</exception>
         private static async UniTask Extract(Assembly assembly, LoadingContext context)
         {
             if (!IsNative(assembly))
@@ -585,8 +611,8 @@ namespace ServiceCore
                     {
                         ServiceAttribute attribute = type.GetCustomAttribute<ServiceAttribute>(inherit: false);
                         // TODO: Add prioritizing, based on length of the inheritance tree, maybe?
-                        //  Or maybe throw if there are two service declarations for the same type within one assembly?
-                        //  So assembly loading order can be enforced.
+                        //  Or maybe throw if there are two service declarations for the same type within one source?
+                        //  So source loading order can be enforced.
                         //  What about "Service selection", when you can select a service to use from a menu and such?
                         //  So many things to think about...
                         services.Add(new(attribute, service: type));

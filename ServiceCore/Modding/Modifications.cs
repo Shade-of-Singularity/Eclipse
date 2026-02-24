@@ -15,7 +15,6 @@
 /// ]]>
 
 using System;
-using System.Reflection;
 
 namespace ServiceCore.Modding
 {
@@ -27,6 +26,16 @@ namespace ServiceCore.Modding
     /// </remarks>
     public static class Modifications
     {
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                                 Constants
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        public const string CoreModificationName = "core";
+
+
+
+
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
         /// .                                              Public Properties
