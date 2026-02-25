@@ -47,7 +47,7 @@ namespace ServiceCore.Configuration
         /// Path to configuration files on the disk.
         /// </summary>
         /// <remarks>
-        /// Also path to save files, as <see cref="DefaultConfigurationService"/> also responsible for general serialization.
+        /// Also Path to save files, as <see cref="DefaultConfigurationService"/> also responsible for general serialization.
         /// </remarks>
         public static readonly string ConfigurationPath = $"{Application.persistentDataPath}/Configuration";
         // Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ServiceCore");

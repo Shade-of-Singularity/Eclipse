@@ -23,7 +23,7 @@ namespace ServiceCore.Modding
     /// Information about <see cref="Modification"/>, to use before loading it in.
     /// </summary>
     /// TODO: Finish.
-    public sealed class ModificationInfo(string identifier) : ILoadingSource
+    public sealed class ModificationInfo(string identifier, Version version) : ILoadingSource
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -31,6 +31,7 @@ namespace ServiceCore.Modding
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         string ILoadingSource.Identifier => Identifier;
+        Version ILoadingSource.Version => Version;
         IList<DependencyDeclaration> ILoadingSource.Dependencies => Dependencies;
 
 
@@ -46,6 +47,10 @@ namespace ServiceCore.Modding
         /// </summary>
         public readonly string Identifier = identifier;
         /// <summary>
+        /// Identifier of a <see cref="Modification"/>.
+        /// </summary>
+        public readonly Version Version = version;
+        /// <summary>
         /// Dependencies that this mod declares.
         /// </summary>
         /// <remarks>
@@ -59,5 +64,22 @@ namespace ServiceCore.Modding
         /// <see cref="Engine"/> will load-in all the assemblies first before analyzing them.
         /// </remarks>
         public string[] AssemblyPaths = [];
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                              Implementations
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        public IEnumerable<ILoadable> GetLoadables()
+        {
+            var array = AssemblyPaths;
+            for (int i = 0; i < array.Length; i++)
+            {
+                yield return (LoadableAssembly)array[i];
+            }
+        }
     }
 }

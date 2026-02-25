@@ -269,7 +269,11 @@ namespace ServiceCore
                     loadables.Add((LoadableAssemblyReference)assembly);
                 }
 
-                List<ILoadingSource> sources = [new AssemblySource(loadables)];
+                AssemblySource natives = new(loadables);
+
+                // Note: Looks like it's mandatory for us to have a "core" mod after all in the code.
+                //  It seems to be easier this way. Next time I will implement this, so modding can be supported properly.
+                List<ILoadingSource> sources = [natives];
 
                 // Reserves space for sources, if there is any.
                 // Note: Sources list will also be filled with sorted native assemblies.
@@ -277,6 +281,8 @@ namespace ServiceCore
                 {
                     sources.AddRange(context.Sources);
                 }
+
+                // Resolve dependencies here.
 
                 // Loads-in the engine itself.
                 await LoadInternal(sources);
@@ -360,14 +366,21 @@ namespace ServiceCore
         {
             try
             {
-                await LoadInternal(Provider()); // TODO: Use Reserve().
+                await LoadInternal(Provider(assembly)); // TODO: Use Reserve().
             }
             catch (Exception ex)
             {
                 ServiceCoreLogger.LogException(ex);
             }
 
-            IEnumerable<Assembly> Provider() { yield return assembly; }
+            static IEnumerable<ILoadingSource> Provider(Assembly assembly)
+            {
+                yield return new AssemblySource(Provider(assembly));
+                static IEnumerable<ILoadable> Provider(Assembly assembly)
+                {
+                    yield return (LoadableAssemblyReference)assembly;
+                }
+            }
         }
 
         /// <summary>
@@ -377,11 +390,16 @@ namespace ServiceCore
         {
             try
             {
-                await LoadInternal(assemblies); // TODO: Use Reserve().
+                await LoadInternal(Provider(assemblies)); // TODO: Use Reserve().
             }
             catch (Exception ex)
             {
                 ServiceCoreLogger.LogException(ex);
+            }
+
+            static IEnumerable<ILoadingSource> Provider(IEnumerable<Assembly> assemblies)
+            {
+                yield return new AssemblySource([.. assemblies.Select(a => (LoadableAssemblyReference)a)]);
             }
         }
 

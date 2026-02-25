@@ -280,7 +280,7 @@
             Path to configuration files on the disk.
             </summary>
             <remarks>
-            Also path to save files, as <see cref="T:ServiceCore.Configuration.DefaultConfigurationService"/> also responsible for general serialization.
+            Also Path to save files, as <see cref="T:ServiceCore.Configuration.DefaultConfigurationService"/> also responsible for general serialization.
             </remarks>
         </member>
         <member name="P:ServiceCore.Configuration.DefaultConfigurationService.IsDirty">
@@ -998,7 +998,7 @@
         <member name="T:ServiceCore.Configuration.ImbeddedConfiguration`1">
             <summary>
             Base class for all configuration files that are imbedded into the game.
-            Used by <see cref="N:ServiceCore"/> to retrieve settings that are used before <see cref="M:ServiceCore.Engine.Initialize"/> happens.
+            Used by <see cref="N:ServiceCore"/> to retrieve settings that are used before <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext)"/> happens.
             </summary>
             <remarks>
             Again - can be read and used before engine is initialized, unlike <see cref="T:ServiceCore.Configuration.EngineConfiguration"/>s.

@@ -83,27 +83,6 @@
             Reference service to use. Method with this attribute will be executed after this service is initialized.
             </summary>
         </member>
-        <member name="T:ServiceCore.ServiceCoreTerminationAttribute">
-            <summary>
-            Runs methods with this attribute when <see cref="N:ServiceCore"/>.<see cref="T:ServiceCore.Engine"/> terminates.
-            </summary>
-        </member>
-        <member name="M:ServiceCore.ServiceCoreTerminationAttribute.#ctor(ServiceCore.TerminationTiming)">
-            <summary>
-            Runs methods with this attribute when <see cref="N:ServiceCore"/>.<see cref="T:ServiceCore.Engine"/> terminates.
-            </summary>
-        </member>
-        <member name="F:ServiceCore.ServiceCoreTerminationAttribute.Timing">
-            <summary>
-            When attribute should be employed.
-            </summary>
-        </member>
-        <member name="M:ServiceCore.ServiceCoreTerminationAttribute.#ctor">
-            <summary>
-            Default constructor. Runs method in the latest possible point during engine unloading.
-            <para>See also: <see cref="F:ServiceCore.TerminationTiming.AfterEngineTermination"/>.</para>
-            </summary>
-        </member>
         <member name="T:ServiceCore.Engine">
             <summary>
             Main class for <see cref="N:ServiceCore"/> Library.
@@ -170,6 +149,16 @@
             Prefix for console messages sent from this class.
             </summary>
         </member>
+        <member name="T:ServiceCore.Engine.AssemblySorter">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                 Delegates
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Sorting function for <see cref="P:ServiceCore.Engine.NativeAssemblies"/>.
+            </summary>
+        </member>
         <member name="E:ServiceCore.Engine.OnEngineInitializing">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
@@ -177,7 +166,7 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Invoked right after <see cref="M:ServiceCore.Engine.Initialize"/> is called.
+            Invoked right after <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext)"/> is called.
             </summary>
         </member>
         <member name="E:ServiceCore.Engine.OnEngineInitialized">
@@ -255,7 +244,7 @@
             </summary>
             <remarks>
             <para>Set to <see cref="F:ServiceCore.EngineStatus.Terminated"/> - by default.</para>
-            <para>Set to <see cref="F:ServiceCore.EngineStatus.Initializing"/> - during initialization (after calling <see cref="M:ServiceCore.Engine.Initialize"/>).</para>
+            <para>Set to <see cref="F:ServiceCore.EngineStatus.Initializing"/> - during initialization (after calling <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext)"/>).</para>
             <para>Set to <see cref="F:ServiceCore.EngineStatus.Initialized"/> - when <see cref="T:ServiceCore.Engine"/> and <see cref="T:ServiceCore.Modding.Modification"/>s are fully initialized!</para>
             <para>Set to <see cref="F:ServiceCore.EngineStatus.Terminating"/> - during unloading (after <see cref="M:ServiceCore.Engine.Terminate"/>/automatically by <see cref="!:QuitHandler"/>)</para>
             <para>Set to <see cref="F:ServiceCore.EngineStatus.InitializationBroken"/> - if engine got irreversibly broken during initialization.</para>
@@ -264,8 +253,8 @@
         </member>
         <member name="P:ServiceCore.Engine.NativeAssemblies">
             <summary>
-            Lists all Assemblies referencing <see cref="T:ServiceCore.Engine"/>.
-            Such Assemblies are considered "Native" and will be automatically loaded first on <see cref="M:ServiceCore.Engine.Initialize"/> call.
+            Lists all Dependencies referencing <see cref="T:ServiceCore.Engine"/>.
+            Such Dependencies are considered "Native" and will be automatically loaded first on <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext)"/> call.
             </summary>
         </member>
         <member name="F:ServiceCore.Engine.m_NativeAssemblies">
@@ -274,6 +263,17 @@
             .                                               Static Fields
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Initialization
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Initializes the entire engine: <see cref="T:ServiceCore.IService"/>s, <see cref="T:ServiceCore.Modding.Modification"/>s, and so on.
+            </summary>
+            <param Identifier="sorter">NativeSorter for <see cref="P:ServiceCore.Engine.NativeAssemblies"/>, to enforce some initialization order.</param>
         </member>
         <member name="M:ServiceCore.Engine.Terminate">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -285,18 +285,8 @@
             Unloads entire engine, all initialized services.
             </summary>
             <remarks>
-            Will not unload mod Assemblies from the memory, as it is impossible.
+            Will not unload mod Dependencies from the memory, as it is impossible.
             </remarks>
-        </member>
-        <member name="M:ServiceCore.Engine.Initialize">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                               Initialization
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            <summary>
-            Initializes the entire engine: <see cref="T:ServiceCore.IService"/>s, <see cref="T:ServiceCore.Modding.Modification"/>s, and so on.
-            </summary>
         </member>
         <member name="M:ServiceCore.Engine.Load(System.Reflection.Assembly)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -305,16 +295,16 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Loads all data from an assembly. It includes: <see cref="T:ServiceCore.Modding.Modification"/>s, <see cref="T:ServiceCore.IService"/>s, etc.
+            Loads all data from an source. It includes: <see cref="T:ServiceCore.Modding.Modification"/>s, <see cref="T:ServiceCore.IService"/>s, etc.
             </summary>
             <remarks>
-            Will run (TODO: add entry point method) on assembly load, so it can run some initialization methods.
+            Will run (TODO: add entry point method) on source load, so it can run some initialization methods.
             (Note: might not be implemented in favor of using mod initialization order instead and <see cref="M:ServiceCore.Modding.Modification.Initializing"/>)
             </remarks>
         </member>
         <member name="M:ServiceCore.Engine.Load(System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
             <summary>
-            Loads all data from a list of assemblies. Will fire global updates only after iterating over all <paramref name="assemblies"/>.
+            Loads all data from a list of assemblies. Will fire global updates only after iterating over all <paramref Identifier="assemblies"/>.
             </summary>
         </member>
         <member name="M:ServiceCore.Engine.Unload(System.Reflection.Assembly)">
@@ -364,9 +354,9 @@
         </member>
         <member name="M:ServiceCore.Engine.Extract(System.Reflection.Assembly,ServiceCore.Engine.LoadingContext)">
             <summary>
-            Extracts all important information from an <paramref name="assembly"/> to the <paramref name="context"/>.
+            Extracts all important information from an <paramref Identifier="source"/> to the <paramref Identifier="context"/>.
             </summary>
-            <exception cref="T:System.NotSupportedException">Throws when <paramref name="assembly"/> is not amongst <see cref="P:ServiceCore.Engine.NativeAssemblies"/>.</exception>
+            <exception cref="T:System.NotSupportedException">Throws when <paramref Identifier="source"/> is not amongst <see cref="P:ServiceCore.Engine.NativeAssemblies"/>.</exception>
         </member>
         <member name="T:ServiceCore.Engine.Settings">
             <summary>
@@ -464,7 +454,7 @@
         </member>
         <member name="F:ServiceCore.EngineStatus.Terminated">
             <summary>
-            (Default) Engine is terminated and waits for <see cref="M:ServiceCore.Engine.Initialize"/> to be used.
+            (Default) Engine is terminated and waits for <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext)"/> to be used.
             </summary>
             <remarks>
             If automatic initialization enabled in <see cref="!:EclipseConfiguration"/>
@@ -522,6 +512,42 @@
             </summary>
             <seealso cref="M:ServiceCore.Services.ServiceEntry.Construct(ServiceCore.IService)"/>
         </member>
+        <member name="T:ServiceCore.InitializationArgs">
+            <summary>
+            Arguments used for initializing individual services.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.InitializationArgs.#ctor(System.Boolean)">
+            <summary>
+            Arguments used for initializing individual services.
+            </summary>
+        </member>
+        <member name="T:ServiceCore.InitializationContext">
+            <summary>
+            Describes how <see cref="T:ServiceCore.Engine"/> should be initialized, and what it should initialize.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.InitializationContext.#ctor(ServiceCore.Engine.AssemblySorter,System.Collections.Generic.IEnumerable{ServiceCore.Loading.ILoadingSource})">
+            <summary>
+            Describes how <see cref="T:ServiceCore.Engine"/> should be initialized, and what it should initialize.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.InitializationContext.NativeSorter">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Sorter for native assemblies.
+            </summary>
+            <seealso cref="P:ServiceCore.Engine.NativeAssemblies"/>
+        </member>
+        <member name="F:ServiceCore.InitializationContext.Sources">
+            <summary>
+            All loading sources for <see cref="T:ServiceCore.Engine"/> to initialize.
+            </summary>
+        </member>
         <member name="T:ServiceCore.InitializationTiming">
             <summary>
             Indicates when <see cref="T:ServiceCore.ServiceCoreInitializeAttribute"/> should run .ctor on static class.
@@ -543,8 +569,8 @@
             Runs this callback as soon as mod assembly is loaded.
             </summary>
             <remarks>
-            For built-in assemblies, or assemblies loaded before <see cref="M:ServiceCore.Engine.Initialize"/> is run
-            - <see cref="T:ServiceCore.Engine"/> will run callbacks with this attribute almost immediately on <see cref="M:ServiceCore.Engine.Initialize"/> call.
+            For built-in assemblies, or assemblies loaded before <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext)"/> is run
+            - <see cref="T:ServiceCore.Engine"/> will run callbacks with this attribute almost immediately on <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext)"/> call.
             <para>
             Note: <see cref="F:ServiceCore.InitializationTiming.BeforeEngineInitialization"/> will run only after ALL mods were loaded and ALL <see cref="F:ServiceCore.InitializationTiming.OnAssemblyLoad"/> was run.
             This guarantees that <see cref="F:ServiceCore.InitializationTiming.OnAssemblyLoad"/> will 100%, always, run before any <see cref="F:ServiceCore.InitializationTiming.BeforeEngineInitialization"/> will run.
@@ -592,7 +618,7 @@
             but might help modders if service has any reason, at all, to be overwritten or expanded on.
             </para>
             </remarks>
-            <typeparam name="T">The type of the service to retrieve. Must inherit from <see cref="T:ServiceCore.IService`1"/>.</typeparam>
+            <typeparam Identifier="T">The type of the service to retrieve. Must inherit from <see cref="T:ServiceCore.IService`1"/>.</typeparam>
         </member>
         <member name="P:ServiceCore.IService`1.Instance">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -764,6 +790,115 @@
             Order is reversed during unloading.
             </summary>
         </member>
+        <member name="T:ServiceCore.Loading.AssemblySource">
+            <summary>
+            Source of direct <see cref="T:System.Reflection.Assembly"/> references for <see cref="T:ServiceCore.Engine"/>.
+            </summary>
+            <remarks>
+            By default used for the core of the game.
+            </remarks>
+            <param name="loadable">Collection of loadable items to... Well... Load.</param>
+        </member>
+        <member name="M:ServiceCore.Loading.AssemblySource.#ctor(System.Collections.Generic.IEnumerable{ServiceCore.Loading.ILoadable})">
+            <summary>
+            Source of direct <see cref="T:System.Reflection.Assembly"/> references for <see cref="T:ServiceCore.Engine"/>.
+            </summary>
+            <remarks>
+            By default used for the core of the game.
+            </remarks>
+            <param name="loadable">Collection of loadable items to... Well... Load.</param>
+        </member>
+        <member name="P:ServiceCore.Loading.AssemblySource.Identifier">
+            <inheritdoc/>
+        </member>
+        <member name="P:ServiceCore.Loading.AssemblySource.Version">
+            <inheritdoc/>
+        </member>
+        <member name="P:ServiceCore.Loading.AssemblySource.Dependencies">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Loading.AssemblySource.GetLoadables">
+            <inheritdoc/>
+        </member>
+        <member name="T:ServiceCore.Loading.ILoadable">
+            <summary>
+            Thing that can be loaded-in during <see cref="T:ServiceCore.Engine"/> initialization.
+            </summary>
+            <remarks>
+            Resolved by <see cref="T:ServiceCore.Engine"/> via pattern matching.
+            </remarks>
+        </member>
+        <member name="T:ServiceCore.Loading.ILoadingSource">
+            <summary>
+            Source of data that can be loaded by the engine.
+            </summary>
+        </member>
+        <member name="P:ServiceCore.Loading.ILoadingSource.Identifier">
+            <summary>
+            Identifier of a source.
+            </summary>
+        </member>
+        <member name="P:ServiceCore.Loading.ILoadingSource.Version">
+            <summary>
+            Version of the loadable source.
+            </summary>
+        </member>
+        <member name="P:ServiceCore.Loading.ILoadingSource.Dependencies">
+            <summary>
+            All dependencies for this source.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.Loading.ILoadingSource.GetLoadables">
+            <summary>
+            Loads-in the data regarding loadable things, like <see cref="T:System.Reflection.Assembly"/> locations.
+            </summary>
+        </member>
+        <member name="T:ServiceCore.Loading.LoadableAssembly">
+            <summary>
+            Loadable from a direct <see cref="T:System.Reflection.Assembly"/> reference.
+            </summary>
+            <param name="path">Path of an <see cref="T:System.Reflection.Assembly"/> to load-in.</param>
+        </member>
+        <member name="M:ServiceCore.Loading.LoadableAssembly.#ctor(System.String)">
+            <summary>
+            Loadable from a direct <see cref="T:System.Reflection.Assembly"/> reference.
+            </summary>
+            <param name="path">Path of an <see cref="T:System.Reflection.Assembly"/> to load-in.</param>
+        </member>
+        <member name="F:ServiceCore.Loading.LoadableAssembly.Path">
+            <summary>
+            Assembly to analyze.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.Loading.LoadableAssembly.op_Implicit(System.String)~ServiceCore.Loading.LoadableAssembly">
+            <summary>
+            Creates an <see cref="T:ServiceCore.Loading.ILoadable"/> struct from provided <paramref name="path"/>.
+            </summary>
+            <param name="path">Assembly to analyze.</param>
+        </member>
+        <member name="T:ServiceCore.Loading.LoadableAssemblyReference">
+            <summary>
+            Loadable from a direct <see cref="T:System.Reflection.Assembly"/> reference.
+            </summary>
+            <param name="assembly">Assembly to reflection-analyze.</param>
+        </member>
+        <member name="M:ServiceCore.Loading.LoadableAssemblyReference.#ctor(System.Reflection.Assembly)">
+            <summary>
+            Loadable from a direct <see cref="T:System.Reflection.Assembly"/> reference.
+            </summary>
+            <param name="assembly">Assembly to reflection-analyze.</param>
+        </member>
+        <member name="F:ServiceCore.Loading.LoadableAssemblyReference.assembly">
+            <summary>
+            Assembly to analyze.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.Loading.LoadableAssemblyReference.op_Implicit(System.Reflection.Assembly)~ServiceCore.Loading.LoadableAssemblyReference">
+            <summary>
+            Creates an <see cref="T:ServiceCore.Loading.ILoadable"/> struct from provided <paramref name="assembly"/>.
+            </summary>
+            <param name="assembly">Assembly to analyze.</param>
+        </member>
         <member name="T:ServiceCore.Localization.DefaultLocalizationService">
             <inheritdoc cref="T:ServiceCore.Localization.ILocalizationService"/>
         </member>
@@ -801,9 +936,81 @@
             Prefix for messages sent to the console from this class.
             </summary>
         </member>
+        <member name="T:ServiceCore.Modding.DependencyDeclaration">
+            <summary>
+            Describes a specific dependency.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyDeclaration.#ctor(System.String,System.Boolean,ServiceCore.Modding.Version,ServiceCore.Modding.VersionDependencyType)">
+            <summary>
+            Describes a specific dependency.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.DependencyDeclaration.target">
+            <summary>
+            <para>When <see cref="F:ServiceCore.Modding.DependencyDeclaration.isAssembly"/> is <c>true</c> - <see cref="F:ServiceCore.Modding.DependencyDeclaration.target"/> is name of an assembly.</para>
+            <para>Otherwise - <see cref="F:ServiceCore.Modding.DependencyDeclaration.target"/> is <see cref="F:ServiceCore.Modding.ModificationInfo.Identifier"/>.</para>
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.DependencyDeclaration.isAssembly">
+            <summary>
+            Whether <see cref="F:ServiceCore.Modding.DependencyDeclaration.target"/> is assembly or <see cref="T:ServiceCore.Modding.ModificationInfo"/>.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.DependencyDeclaration.version">
+            <summary>
+            <see cref="T:ServiceCore.Modding.Version"/> on which this declaration depends on.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.DependencyDeclaration.type">
+            <summary>
+            <see cref="T:ServiceCore.Modding.Version"/> dependency type on this declaration depends on.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyDeclaration.TryParse(System.String,ServiceCore.Modding.DependencyDeclaration@)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Static Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <inheritdoc cref="M:ServiceCore.Modding.DependencyDeclaration.TryParse(System.ReadOnlySpan{System.Char},ServiceCore.Modding.DependencyDeclaration@)"/>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyDeclaration.TryParse(System.ReadOnlySpan{System.Char},ServiceCore.Modding.DependencyDeclaration@)">
+            <summary>
+            Parses <paramref name="raw"/> input string of a format "mod ?>= 4.0.0" to a full <see cref="T:ServiceCore.Modding.DependencyDeclaration"/>.
+            </summary>
+            <remarks>
+            Never sets <see cref="F:ServiceCore.Modding.DependencyDeclaration.isAssembly"/> in <paramref name="declaration"/> to <c>true</c>.
+            </remarks>
+            <param name="raw">Raw input.</param>
+            <param name="declaration">Parsed declaration or default value.</param>
+            <returns><c>true</c> when parsed successfully. <c>false</c> when otherwise.</returns>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyDeclaration.ToString">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Implementations
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyDeclaration.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyDeclaration.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyDeclaration.Equals(ServiceCore.Modding.DependencyDeclaration)">
+            <inheritdoc cref="M:ServiceCore.Modding.DependencyDeclaration.Equals(System.Object)"/>
+        </member>
+        <member name="T:ServiceCore.Modding.DependencyMap">
+            <summary>
+            Map of dependencies.
+            </summary>
+        </member>
         <member name="T:ServiceCore.Modding.Modification`1">
             <inheritdoc cref="T:ServiceCore.Modding.Modification"/>
-            <typeparam name="T">Type of the mod.</typeparam>
+            <typeparam Identifier="T">Type of the mod.</typeparam>
         </member>
         <member name="F:ServiceCore.Modding.Modification`1.Instance">
             <summary>
@@ -847,7 +1054,7 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Default mod name to be used.
+            Default mod Identifier to be used.
             </summary>
         </member>
         <member name="P:ServiceCore.Modding.Modification.IsEnabled">
@@ -865,7 +1072,7 @@
         </member>
         <member name="P:ServiceCore.Modding.Modification.Name">
             <summary>
-            Internal name of the mod.
+            Internal Identifier of the mod.
             </summary>
         </member>
         <member name="F:ServiceCore.Modding.Modification.m_SkippedCallbacks">
@@ -1000,18 +1207,56 @@
             </summary>
             TODO: Finish.
         </member>
-        <member name="P:ServiceCore.Modding.ModificationInfo.Assemblies">
+        <member name="M:ServiceCore.Modding.ModificationInfo.#ctor(System.String,ServiceCore.Modding.Version)">
+            <summary>
+            Information about <see cref="T:ServiceCore.Modding.Modification"/>, to use before loading it in.
+            </summary>
+            TODO: Finish.
+        </member>
+        <member name="P:ServiceCore.Modding.ModificationInfo.ServiceCore#Loading#ILoadingSource#Identifier">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="F:ServiceCore.Modding.ModificationInfo.Identifier">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                              Public Properties
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Assemblies that this mod will try to load-in.
+            Identifier of a <see cref="T:ServiceCore.Modding.Modification"/>.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.ModificationInfo.Version">
+            <summary>
+            Identifier of a <see cref="T:ServiceCore.Modding.Modification"/>.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.ModificationInfo.Dependencies">
+            <summary>
+            Dependencies that this mod declares.
             </summary>
             <remarks>
             Those are <see cref="P:System.Reflection.Assembly.FullName"/>s (?).
             </remarks>
+        </member>
+        <member name="F:ServiceCore.Modding.ModificationInfo.AssemblyPaths">
+            <summary>
+            Assemblies that will have to be loaded (in a specified order) before mod can be initialized.
+            </summary>
+            <remarks>
+            <see cref="T:ServiceCore.Engine"/> will load-in all the assemblies first before analyzing them.
+            </remarks>
+        </member>
+        <member name="M:ServiceCore.Modding.ModificationInfo.GetLoadables">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Implementations
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
         <member name="T:ServiceCore.Modding.Modifications">
             <summary>
@@ -1021,12 +1266,313 @@
             (TODO) Also provides a way to dynamically load-in new mods. Beware that mod unloading is not supported at the moment.
             </remarks>
         </member>
-        <member name="M:ServiceCore.Modding.Modifications.GetOrThrow``1">
+        <member name="F:ServiceCore.Modding.Modifications.CoreModificationName">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                                 Constants
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:ServiceCore.Modding.Modifications.Load(ServiceCore.Modding.ModificationInfo)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                               Public Methods
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="T:ServiceCore.Modding.Version">
+            <summary>
+            Describes any version.
+            </summary>
+            <remarks>
+            Follows Semantic Versioning 2.0.0, without extensions: https://semver.org/
+            </remarks>
+            <param name="major">Major version of a thing.</param>
+            <param name="minor">Minor version of a thing.</param>
+            <param name="patch">Patch version of a thing.</param>
+        </member>
+        <member name="M:ServiceCore.Modding.Version.#ctor(System.UInt16,System.UInt16,System.UInt32)">
+            <summary>
+            Describes any version.
+            </summary>
+            <remarks>
+            Follows Semantic Versioning 2.0.0, without extensions: https://semver.org/
+            </remarks>
+            <param name="major">Major version of a thing.</param>
+            <param name="minor">Minor version of a thing.</param>
+            <param name="patch">Patch version of a thing.</param>
+        </member>
+        <member name="F:ServiceCore.Modding.Version.Zero">
+            <summary>
+            Version with all zeros.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.Version.Major">
+            <summary>
+            Major version, according to 2.0.0 version semantics.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.Version.Minor">
+            <summary>
+            Minor version, according to 2.0.0 version semantics.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.Version.Patch">
+            <summary>
+            Patch version, according to 2.0.0 version semantics.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.Version.Packed">
+            <summary>
+            Entire version packed to one <see cref="T:System.UInt64"/>.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.Modding.Version.TryParse(System.String,ServiceCore.Modding.Version@)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Parses version of a format "MAJOR.MINOR.PATCH", following 2.0.0 version semantics, excluding extension: https://semver.org/
+            </summary>
+            <param name="raw">Raw version declaration.</param>
+            <param name="version">Parsed version or <see cref="F:ServiceCore.Modding.Version.Zero"/> when returns <c>false</c>.</param>
+            <returns><c>true</c> when <paramref name="raw"/> was parsed to <paramref name="version"/> successfully. <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:ServiceCore.Modding.Version.TryParse(System.ReadOnlySpan{System.Char},ServiceCore.Modding.Version@)">
+            <summary>
+            Parses version of a format "MAJOR.MINOR.PATCH", following 2.0.0 version semantics, excluding extension: https://semver.org/
+            </summary>
+            <param name="raw">Raw version declaration.</param>
+            <param name="version">Parsed version or <see cref="F:ServiceCore.Modding.Version.Zero"/> when returns <c>false</c>.</param>
+            <returns><c>true</c> when <paramref name="raw"/> was parsed to <paramref name="version"/> successfully. <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:ServiceCore.Modding.Version.ToString">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Implementations
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.Version.CompareTo(ServiceCore.Modding.Version)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.Version.Equals(ServiceCore.Modding.Version)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.Version.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.Version.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.Version.op_Equality(ServiceCore.Modding.Version,ServiceCore.Modding.Version)">
+            <inheritdoc cref="M:ServiceCore.Modding.Version.Equals(System.Object)"/>
+        </member>
+        <member name="M:ServiceCore.Modding.Version.op_Inequality(ServiceCore.Modding.Version,ServiceCore.Modding.Version)">
+            <summary>
+            Inverse of <see cref="M:ServiceCore.Modding.Version.Equals(System.Object)"/>
+            </summary>
+        </member>
+        <member name="M:ServiceCore.Modding.Version.op_LessThan(ServiceCore.Modding.Version,ServiceCore.Modding.Version)">
+            <summary>
+            Checks if <paramref name="left"/> is smaller than <paramref name="right"/>.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.Modding.Version.op_LessThanOrEqual(ServiceCore.Modding.Version,ServiceCore.Modding.Version)">
+            <summary>
+            Checks if <paramref name="left"/> is smaller than or equals to <paramref name="right"/>.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.Modding.Version.op_GreaterThan(ServiceCore.Modding.Version,ServiceCore.Modding.Version)">
+            <summary>
+            Checks if <paramref name="left"/> is larger than <paramref name="right"/>.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.Modding.Version.op_GreaterThanOrEqual(ServiceCore.Modding.Version,ServiceCore.Modding.Version)">
+            <summary>
+            Checks if <paramref name="left"/> is larger than or equals to <paramref name="right"/>.
+            </summary>
+        </member>
+        <member name="T:ServiceCore.Modding.VersionDependencyHelpers">
+            <summary>
+            Helpers for <see cref="T:ServiceCore.Modding.VersionDependencyType"/> enum.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_Any">
+            <inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Any"/>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_Smaller">
+            <inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Smaller"/>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_SmallerOrEqual">
+            <inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.SmallerOrEqual"/>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_Equal">
+            <inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Equal"/>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_EqualAlt">
+            <inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Equal"/>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_LargerOrEqual">
+            <inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.LargerOrEqual"/>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_Larger">
+            <inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Larger"/>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_Optional">
+            <inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Optional"/>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_Incompatible">
+            <inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Incompatible"/>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_OptionalAny">
+            <summary><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Any"/></summary>
+            <remarks><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Optional"/></remarks>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_OptionalSmaller">
+            <summary><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Smaller"/></summary>
+            <remarks><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Optional"/></remarks>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_OptionalSmallerOrEqual">
+            <summary><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.SmallerOrEqual"/></summary>
+            <remarks><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Optional"/></remarks>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_OptionalEqual">
+            <summary><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Equal"/></summary>
+            <remarks><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Optional"/></remarks>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_OptionalEqualAlt">
+            <summary><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Equal"/></summary>
+            <remarks><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Optional"/></remarks>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_OptionalLargerOrEqual">
+            <summary><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.LargerOrEqual"/></summary>
+            <remarks><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Optional"/></remarks>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_OptionalLarger">
+            <summary><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Larger"/></summary>
+            <remarks><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Optional"/></remarks>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_IncompatibleAny">
+            <summary><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Any"/></summary>
+            <remarks><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Incompatible"/></remarks>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_IncompatibleSmaller">
+            <summary><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Smaller"/></summary>
+            <remarks><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Incompatible"/></remarks>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_IncompatibleSmallerOrEqual">
+            <summary><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.SmallerOrEqual"/></summary>
+            <remarks><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Incompatible"/></remarks>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_IncompatibleEqual">
+            <summary><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Equal"/></summary>
+            <remarks><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Incompatible"/></remarks>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_IncompatibleEqualAlt">
+            <summary><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Equal"/></summary>
+            <remarks><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Incompatible"/></remarks>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_IncompatibleLargerOrEqual">
+            <summary><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.LargerOrEqual"/></summary>
+            <remarks><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Incompatible"/></remarks>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.VersionDependencyTypeSymbol_IncompatibleLarger">
+            <summary><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Larger"/></summary>
+            <remarks><inheritdoc cref="F:ServiceCore.Modding.VersionDependencyType.Incompatible"/></remarks>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyHelpers.MaxDeclarationLength">
+            <summary>
+            Max length an "?!>=" token can take.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.Modding.VersionDependencyHelpers.GetSymbol(ServiceCore.Modding.VersionDependencyType)">
+            <summary>
+            Retrieves special symbol used to declare a dependency type (e.g. "!", "?", ">", and even "!>=", "?>")
+            </summary>
+            <param name="type">Type to version dependency type.</param>
+            <returns>Special symbol used to declare this dependency <paramref name="type"/>.</returns>
+            <exception cref="T:System.Runtime.CompilerServices.SwitchExpressionException">
+            Throws when you mess-up comparison declaration (within mask <see cref="F:ServiceCore.Modding.VersionDependencyType.TypeMask"/>).
+            </exception>
+            <exception cref="T:System.NotSupportedException">
+            Throws when you combine "!" and "?".
+            </exception>
+        </member>
+        <member name="M:ServiceCore.Modding.VersionDependencyHelpers.TryParseType(System.String,ServiceCore.Modding.VersionDependencyType@)">
+            <inheritdoc cref="M:ServiceCore.Modding.VersionDependencyHelpers.TryParseType(System.ReadOnlySpan{System.Char},ServiceCore.Modding.VersionDependencyType@)"/>
+        </member>
+        <member name="M:ServiceCore.Modding.VersionDependencyHelpers.TryParseType(System.ReadOnlySpan{System.Char},ServiceCore.Modding.VersionDependencyType@)">
+            <summary>
+            Tries to retrieve <see cref="T:ServiceCore.Modding.VersionDependencyType"/> from a raw declaration in text (e.g. "?>=", "!==")
+            </summary>
+            <param name="raw">Raw declaration <b>without</b> anything extra: spaces (on both sides), other symbols, etc.</param>
+            <param name="type">Retrieved <see cref="T:ServiceCore.Modding.VersionDependencyType"/>.</param>
+            <returns><c>true</c> when type was successfully retrieved and <paramref name="type"/> was provided. <c>false</c> otherwise.</returns>
+        </member>
+        <member name="T:ServiceCore.Modding.VersionDependencyType">
+            <summary>
+            How exactly a thing depends on an <see cref="T:ServiceCore.Modding.Version"/>.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyType.Any">
+            <summary>
+            Any <see cref="T:ServiceCore.Modding.Version"/> - just a dependency should be present.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyType.Smaller">
+            <summary>
+            <see cref="T:ServiceCore.Modding.Version"/> smaller than declared one.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyType.SmallerOrEqual">
+            <summary>
+            <see cref="T:ServiceCore.Modding.Version"/> smaller or equal than declared one.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyType.Equal">
+            <summary>
+            <see cref="T:ServiceCore.Modding.Version"/> equal to declared one.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyType.LargerOrEqual">
+            <summary>
+            <see cref="T:ServiceCore.Modding.Version"/> larger or equal than declared one.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyType.Larger">
+            <summary>
+            <see cref="T:ServiceCore.Modding.Version"/> larger than declared one.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyType.TypeMask">
+            <summary>
+            Mask covering <see cref="F:ServiceCore.Modding.VersionDependencyType.Any"/>, <see cref="F:ServiceCore.Modding.VersionDependencyType.Smaller"/>, <see cref="F:ServiceCore.Modding.VersionDependencyType.SmallerOrEqual"/>,
+            <see cref="F:ServiceCore.Modding.VersionDependencyType.Equal"/>, <see cref="F:ServiceCore.Modding.VersionDependencyType.LargerOrEqual"/>, and <see cref="F:ServiceCore.Modding.VersionDependencyType.Larger"/> types.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyType.Optional">
+            <remarks>
+            Dependency on an <see cref="T:ServiceCore.Modding.Version"/> is optional.
+            <para>
+            Can be used to purposefully alter initialization order.
+            You can declare some library as having optional dependency, but never actually use anything from said library.
+            It will result in said library initializing first.
+            </para>
+            </remarks>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyType.Incompatible">
+            <remarks>
+            Incompatible with an <see cref="T:ServiceCore.Modding.Version"/> or a declaration generally.
+            </remarks>
+        </member>
+        <member name="F:ServiceCore.Modding.VersionDependencyType.ExclusionMask">
+            <remarks>
+            Mask covering <see cref="F:ServiceCore.Modding.VersionDependencyType.Optional"/> and <see cref="F:ServiceCore.Modding.VersionDependencyType.Incompatible"/> states.
+            </remarks>
         </member>
         <member name="T:ServiceCore.Parameters.AbstractParameter">
             <summary>
@@ -1110,7 +1656,7 @@
             <remarks>
             You can throw here, but it is "safe" in regards that it will just keep the same DefaultValue if deserialization failed.
             </remarks>
-            <param name="raw">Data which was previously returned by <see cref="M:ServiceCore.Parameters.AbstractParameter.Serialize"/> - raw string to deserialize.</param>
+            <param Identifier="raw">Data which was previously returned by <see cref="M:ServiceCore.Parameters.AbstractParameter.Serialize"/> - raw string to deserialize.</param>
         </member>
         <member name="M:ServiceCore.Parameters.AbstractParameter.GetValue">
             <summary>
@@ -1134,7 +1680,7 @@
             <para>- if parameter is only set at launch or engine restart - use C# Properties.</para>
             <para>- if parameter can be 'set' at runtime, but value will only update after reload - use <see cref="T:ServiceCore.Parameters.SolidParameter`1"/>.</para>
             </remarks>
-            <typeparam name="TValue">Type of the variable parameter stores.</typeparam>
+            <typeparam Identifier="TValue">Type of the variable parameter stores.</typeparam>
         </member>
         <member name="T:ServiceCore.Parameters.Parameter`1.ValueChangeHandler">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -1148,8 +1694,8 @@
             <remarks>
             Can also be used by UI components to check for <see cref="P:ServiceCore.Parameters.Parameter`1.IsDefault"/> and <see cref="P:ServiceCore.Parameters.Parameter`1.IsDirty"/> property states.
             </remarks>
-            <param name="parameter">Parameter that was modified.</param>
-            <param name="previous">Previous value of the parameter before it was changed.</param>
+            <param Identifier="parameter">Parameter that was modified.</param>
+            <param Identifier="previous">Previous value of the parameter before it was changed.</param>
         </member>
         <member name="E:ServiceCore.Parameters.Parameter`1.OnValueChanged">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -1228,7 +1774,7 @@
         </member>
         <member name="M:ServiceCore.Parameters.Parameter`1.#ctor(System.String,`0)">
             <summary>
-            Full constructor for <see cref="T:ServiceCore.Parameters.Parameter`1"/>. Allows specifying <paramref name="def"/>ault value.
+            Full constructor for <see cref="T:ServiceCore.Parameters.Parameter`1"/>. Allows specifying <paramref Identifier="def"/>ault value.
             </summary>
         </member>
         <member name="M:ServiceCore.Parameters.Parameter`1.Get(System.String,`0)">
@@ -1327,67 +1873,67 @@
             Registers an parameter in a parameter list.
             </summary>
             <remarks>
-            Does not overwrite parameters under the same name - throws instead.
+            Does not overwrite parameters under the same Identifier - throws instead.
             </remarks>
         </member>
         <member name="M:ServiceCore.Parameters.ParameterManager.GetOrNew``2(System.String,``1,ServiceCore.Parameters.ParameterManager.ParameterConstructor{``1,``0})">
             <summary>
-            Retrieves an existing parameter of a given <typeparamref name="TParameter"/> type, or creates new one.
+            Retrieves an existing parameter of a given <typeparamref Identifier="TParameter"/> type, or creates new one.
             </summary>
-            <typeparam name="TParameter">Type of the parameter to look for.</typeparam>
-            <typeparam name="TValue">Value of a given parameter.</typeparam>
-            <param name="id">Full identifier of the expected <typeparamref name="TParameter"/>.</param>
-            <param name="constructor">Constructor to create new parameter if one with given <paramref name="id"/> doesn't exist yet.</param>
-            <param name="def">Default value provided to <paramref name="constructor"/> in case parameter is missing.</param>
+            <typeparam Identifier="TParameter">Type of the parameter to look for.</typeparam>
+            <typeparam Identifier="TValue">Value of a given parameter.</typeparam>
+            <param Identifier="id">Full identifier of the expected <typeparamref Identifier="TParameter"/>.</param>
+            <param Identifier="constructor">Constructor to create new parameter if one with given <paramref Identifier="id"/> doesn't exist yet.</param>
+            <param Identifier="def">Default value provided to <paramref Identifier="constructor"/> in case parameter is missing.</param>
             <returns>Either new or already existing parameter.</returns>
         </member>
         <member name="M:ServiceCore.Parameters.ParameterManager.Get``1(System.String)">
             <summary>
-            Retrieves an existing parameter of a given <typeparamref name="TParameter"/> type.
+            Retrieves an existing parameter of a given <typeparamref Identifier="TParameter"/> type.
             Throws if type of the parameter doesn't match or it doesn't exist.
             </summary>
-            <param name="id">Full identifier of the expected <typeparamref name="TParameter"/>.</param>
-            <exception cref="T:System.Collections.Generic.KeyNotFoundException">Thrown if there is no parameter with given <paramref name="id"/> (yet, or at all).</exception>
-            <exception cref="T:System.InvalidCastException">Thrown if parameter was found, but its type is not <typeparamref name="TParameter"/>.</exception>
-            <returns>Existing parameter of a type <typeparamref name="TParameter"/>.</returns>
+            <param Identifier="id">Full identifier of the expected <typeparamref Identifier="TParameter"/>.</param>
+            <exception cref="T:System.Collections.Generic.KeyNotFoundException">Thrown if there is no parameter with given <paramref Identifier="id"/> (yet, or at all).</exception>
+            <exception cref="T:System.InvalidCastException">Thrown if parameter was found, but its type is not <typeparamref Identifier="TParameter"/>.</exception>
+            <returns>Existing parameter of a type <typeparamref Identifier="TParameter"/>.</returns>
         </member>
         <member name="M:ServiceCore.Parameters.ParameterManager.TryGet``1(System.String,``0@)">
             <summary>
-            Attempts to retrieve <typeparamref name="TParameter"/> under given <paramref name="id"/>.
+            Attempts to retrieve <typeparamref Identifier="TParameter"/> under given <paramref Identifier="id"/>.
             Will fail if it doesn't exist, or if type is different than provided type.
             (Currently, there is no way to differentiate those two outcomes other than try-catch blocks on <see cref="M:ServiceCore.Parameters.ParameterManager.Get``1(System.String)"/> method.)
             (TODO: introduce such method.)
             </summary>
-            <typeparam name="TParameter">Type of parameter to look for.</typeparam>
-            <param name="id">Full identifier of the expected <typeparamref name="TParameter"/>.</param>
-            <param name="parameter">Result of the search. Set to <c>null</c> if search failed.</param>
-            <returns><c>true</c> if parameter was found and <paramref name="parameter"/> variable was set. <c>false</c> otherwise.</returns>
+            <typeparam Identifier="TParameter">Type of parameter to look for.</typeparam>
+            <param Identifier="id">Full identifier of the expected <typeparamref Identifier="TParameter"/>.</param>
+            <param Identifier="parameter">Result of the search. Set to <c>null</c> if search failed.</param>
+            <returns><c>true</c> if parameter was found and <paramref Identifier="parameter"/> variable was set. <c>false</c> otherwise.</returns>
         </member>
         <member name="M:ServiceCore.Parameters.ParameterManager.GetAbstract(System.String)">
             <summary>
             Retrieves an existing <see cref="T:ServiceCore.Parameters.AbstractParameter"/>. Throws if type of the parameter doesn't exist.
             </summary>
-            <param name="id">Full identifier of the expected <see cref="T:ServiceCore.Parameters.AbstractParameter"/>.</param>
-            <exception cref="T:System.Collections.Generic.KeyNotFoundException">Thrown if there is no parameter with given <paramref name="id"/> (yet, or at all).</exception>
+            <param Identifier="id">Full identifier of the expected <see cref="T:ServiceCore.Parameters.AbstractParameter"/>.</param>
+            <exception cref="T:System.Collections.Generic.KeyNotFoundException">Thrown if there is no parameter with given <paramref Identifier="id"/> (yet, or at all).</exception>
             <returns>Existing <see cref="T:ServiceCore.Parameters.AbstractParameter"/>.</returns>
         </member>
         <member name="M:ServiceCore.Parameters.ParameterManager.TryGetAbstract(System.String,ServiceCore.Parameters.AbstractParameter@)">
             <summary>
-            Attempts to retrieve <see cref="T:ServiceCore.Parameters.AbstractParameter"/> under given <paramref name="id"/>.
+            Attempts to retrieve <see cref="T:ServiceCore.Parameters.AbstractParameter"/> under given <paramref Identifier="id"/>.
             Will fail if it doesn't exist, or if type is different than provided type.
             (Currently, there is no way to differentiate those two outcomes other than try-catch blocks on <see cref="M:ServiceCore.Parameters.ParameterManager.Get``1(System.String)"/> method.)
             (TODO: introduce such method.)
             </summary>
-            <param name="id">Full identifier of the <see cref="T:ServiceCore.Parameters.AbstractParameter"/>.</param>
-            <param name="parameter">Result of the search. Set to <c>null</c> if search failed.</param>
-            <returns><c>true</c> if parameter was found and <paramref name="parameter"/> variable was set. <c>false</c> otherwise.</returns>
+            <param Identifier="id">Full identifier of the <see cref="T:ServiceCore.Parameters.AbstractParameter"/>.</param>
+            <param Identifier="parameter">Result of the search. Set to <c>null</c> if search failed.</param>
+            <returns><c>true</c> if parameter was found and <paramref Identifier="parameter"/> variable was set. <c>false</c> otherwise.</returns>
         </member>
         <member name="M:ServiceCore.Parameters.ParameterManager.Has(System.String)">
             <summary>
-            Checks if <see cref="T:ServiceCore.Parameters.AbstractParameter"/> under given <paramref name="id"/> exist.
+            Checks if <see cref="T:ServiceCore.Parameters.AbstractParameter"/> under given <paramref Identifier="id"/> exist.
             </summary>
-            <param name="id">Parameter ID to check.</param>
-            <returns><c>true</c> if parameter under given <paramref name="id"/> was found. <c>false</c> otherwise.</returns>
+            <param Identifier="id">Parameter ID to check.</param>
+            <returns><c>true</c> if parameter under given <paramref Identifier="id"/> was found. <c>false</c> otherwise.</returns>
         </member>
         <member name="T:ServiceCore.Parameters.SolidParameter`1">
             <summary>
@@ -1414,8 +1960,8 @@
             <remarks>
             Can also be used by UI components to check for <see cref="P:ServiceCore.Parameters.SolidParameter`1.IsDefault"/> and <see cref="P:ServiceCore.Parameters.SolidParameter`1.IsDirty"/> property states.
             </remarks>
-            <param name="parameter">Parameter that was modified.</param>
-            <param name="previous">Previous value of the parameter before it was changed.</param>
+            <param Identifier="parameter">Parameter that was modified.</param>
+            <param Identifier="previous">Previous value of the parameter before it was changed.</param>
         </member>
         <member name="E:ServiceCore.Parameters.SolidParameter`1.OnValueChanged">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -1494,7 +2040,7 @@
         </member>
         <member name="M:ServiceCore.Parameters.SolidParameter`1.#ctor(System.String,`0)">
             <summary>
-            Full constructor for <see cref="T:ServiceCore.Parameters.SolidParameter`1"/>. Allows specifying <paramref name="def"/>ault value.
+            Full constructor for <see cref="T:ServiceCore.Parameters.SolidParameter`1"/>. Allows specifying <paramref Identifier="def"/>ault value.
             </summary>
         </member>
         <member name="M:ServiceCore.Parameters.SolidParameter`1.Get(System.String,`0)">
@@ -1645,12 +2191,12 @@
         </member>
         <member name="M:ServiceCore.Serialization.Base64.UnpackLong(System.String)">
             <summary>
-            Unpacks long (or lower) value from <paramref name="str"/>.
+            Unpacks long (or lower) value from <paramref Identifier="str"/>.
             </summary>
         </member>
         <member name="M:ServiceCore.Serialization.Base64.UnpackULong(System.String)">
             <summary>
-            Unpacks ulong (or lower) value from <paramref name="str"/>.
+            Unpacks ulong (or lower) value from <paramref Identifier="str"/>.
             </summary>
         </member>
         <member name="M:ServiceCore.Serialization.Base64.Unpack(System.String)">
@@ -1660,32 +2206,32 @@
         </member>
         <member name="M:ServiceCore.Serialization.Base64.UnpackInt(System.String)">
             <summary>
-            Unpacks int (or lower) value from <paramref name="str"/>.
+            Unpacks int (or lower) value from <paramref Identifier="str"/>.
             </summary>
         </member>
         <member name="M:ServiceCore.Serialization.Base64.UnpackUInt(System.String)">
             <summary>
-            Unpacks uint (or lower) value from <paramref name="str"/>.
+            Unpacks uint (or lower) value from <paramref Identifier="str"/>.
             </summary>
         </member>
         <member name="M:ServiceCore.Serialization.Base64.UnpackShort(System.String)">
             <summary>
-            Unpacks short (or lower) value from <paramref name="str"/>.
+            Unpacks short (or lower) value from <paramref Identifier="str"/>.
             </summary>
         </member>
         <member name="M:ServiceCore.Serialization.Base64.UnpackUShort(System.String)">
             <summary>
-            Unpacks ushort (or lower) value from <paramref name="str"/>.
+            Unpacks ushort (or lower) value from <paramref Identifier="str"/>.
             </summary>
         </member>
         <member name="M:ServiceCore.Serialization.Base64.UnpackSByte(System.String)">
             <summary>
-            Unpacks sbyte value from <paramref name="str"/>.
+            Unpacks sbyte value from <paramref Identifier="str"/>.
             </summary>
         </member>
         <member name="M:ServiceCore.Serialization.Base64.UnpackByte(System.String)">
             <summary>
-            Unpacks byte value from <paramref name="str"/>.
+            Unpacks byte value from <paramref Identifier="str"/>.
             </summary>
         </member>
         <member name="M:ServiceCore.Serialization.Base64.SByte(System.SByte)">
@@ -1719,7 +2265,7 @@
             <summary>
             Decodes a hex string into a <see cref="T:System.UInt32"/>.
             </summary>
-            <param name="at">Index from which to start.</param>
+            <param Identifier="at">Index from which to start.</param>
         </member>
         <member name="M:ServiceCore.Serialization.Base64.Long(System.Int64)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -1774,7 +2320,7 @@
             Holder of an (de)serializers for a specific value type.
             Used in <see cref="T:ServiceCore.Parameters.Parameter`1"/> to provide type-specific serialization.
             </summary>
-            <typeparam name="TValue">Target type which an serializer is handling.</typeparam>
+            <typeparam Identifier="TValue">Target type which an serializer is handling.</typeparam>
         </member>
         <member name="T:ServiceCore.Serialization.Serializers`1.Serialize">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -1783,14 +2329,14 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Function to serialize <typeparamref name="TValue"/> to a <see cref="T:System.String"/>.
+            Function to serialize <typeparamref Identifier="TValue"/> to a <see cref="T:System.String"/>.
             </summary>
         </member>
         <member name="T:ServiceCore.Serialization.Serializers`1.Deserialize">
             <summary>
-            Function to deserialize <paramref name="raw"/> data to get <typeparamref name="TValue"/> back.
+            Function to deserialize <paramref Identifier="raw"/> data to get <typeparamref Identifier="TValue"/> back.
             </summary>
-            <param name="raw"></param>
+            <param Identifier="raw"></param>
             <returns></returns>
         </member>
         <member name="P:ServiceCore.Serialization.Serializers`1.Serializer">
@@ -1800,12 +2346,12 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Serializer to use for this specific <typeparamref name="TValue"/> value type.
+            Serializer to use for this specific <typeparamref Identifier="TValue"/> value type.
             </summary>
         </member>
         <member name="P:ServiceCore.Serialization.Serializers`1.Deserializer">
             <summary>
-            Deserializer to use for this specific <typeparamref name="TValue"/> value type.
+            Deserializer to use for this specific <typeparamref Identifier="TValue"/> value type.
             </summary>
         </member>
         <member name="F:ServiceCore.Serialization.Serializers`1.m_Serializer">
@@ -1861,42 +2407,42 @@
             <summary>
             Retrieves serializer used for a specific type.
             </summary>
-            <typeparam name="TSerializer">Serializer type to retrieve.</typeparam>
-            <param name="def">Default serializer to be used instead.</param>
+            <typeparam Identifier="TSerializer">Serializer type to retrieve.</typeparam>
+            <param Identifier="def">Default serializer to be used instead.</param>
             <returns>Custom serializer or a default one.</returns>
-            <exception cref="T:System.ArgumentNullException"><paramref name="def"/> serializer is <c>null</c>. (it's mandatory to provide one)</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref Identifier="def"/> serializer is <c>null</c>. (it's mandatory to provide one)</exception>
         </member>
         <member name="M:ServiceCore.Serialization.Serializers.GetDeserializer``1(``0)">
             <summary>
             Retrieves deserializer used for a specific type.
             </summary>
-            <typeparam name="TDeserializer">Deserializer type to retrieve.</typeparam>
-            <param name="def">Default deserializer to be used instead.</param>
+            <typeparam Identifier="TDeserializer">Deserializer type to retrieve.</typeparam>
+            <param Identifier="def">Default deserializer to be used instead.</param>
             <returns>Custom deserializer or a default one.</returns>
-            <exception cref="T:System.ArgumentNullException"><paramref name="def"/> deserializer is <c>null</c>. (it's mandatory to provide one)</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref Identifier="def"/> deserializer is <c>null</c>. (it's mandatory to provide one)</exception>
         </member>
         <member name="M:ServiceCore.Serialization.Serializers.Set``2(``0,``1)">
             <summary>
             Sets custom serializer and deserializer for a specific serializer and deserializer types.
             </summary>
-            <typeparam name="TSerializer">Type of serializer to use.</typeparam>
-            <typeparam name="TDeserializer">Type of deserializer to use.</typeparam>
-            <param name="serializer">Reference to a serializer to use.</param>
-            <param name="deserializer">Reference to a deserializer to use.</param>
+            <typeparam Identifier="TSerializer">Type of serializer to use.</typeparam>
+            <typeparam Identifier="TDeserializer">Type of deserializer to use.</typeparam>
+            <param Identifier="serializer">Reference to a serializer to use.</param>
+            <param Identifier="deserializer">Reference to a deserializer to use.</param>
         </member>
         <member name="M:ServiceCore.Serialization.Serializers.SetSerializer``1(``0)">
             <summary>
             Sets custom serializer for a specific serializer type.
             </summary>
-            <typeparam name="TSerializer">Type of serializer to use.</typeparam>
-            <param name="serializer">Reference to a serializer to use.</param>
+            <typeparam Identifier="TSerializer">Type of serializer to use.</typeparam>
+            <param Identifier="serializer">Reference to a serializer to use.</param>
         </member>
         <member name="M:ServiceCore.Serialization.Serializers.SetDeserializer``1(``0)">
             <summary>
             Sets custom deserializer for a specific deserializer type.
             </summary>
-            <typeparam name="TDeserializer">Type of deserializer to use.</typeparam>
-            <param name="deserializer">Reference to a deserializer to use.</param>
+            <typeparam Identifier="TDeserializer">Type of deserializer to use.</typeparam>
+            <param Identifier="deserializer">Reference to a deserializer to use.</param>
         </member>
         <member name="T:ServiceCore.Service`1">
             <summary>
@@ -1920,7 +2466,7 @@
             but might help modders if service has any reason, at all, to be overwritten or expanded on.
             </para>
             </remarks>
-            <typeparam name="T">Service implementing this abstract class.</typeparam>
+            <typeparam Identifier="T">Service implementing this abstract class.</typeparam>
         </member>
         <member name="P:ServiceCore.Service`1.Instance">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -2087,7 +2633,7 @@
             <summary>
             Defines <see cref="T:ServiceCore.IService.ThreadExecutionMode"/> for the underlying <see cref="T:ServiceCore.IService`1"/>.
             </summary>
-            <param name="mode">Mode to use. Providing <see cref="F:ServiceCore.IService.ThreadExecutionMode.MainThread"/> works the same as empty .ctor</param>
+            <param Identifier="mode">Mode to use. Providing <see cref="F:ServiceCore.IService.ThreadExecutionMode.MainThread"/> works the same as empty .ctor</param>
         </member>
         <member name="T:ServiceCore.ServiceCoreInitializeAttribute">
             <summary>
@@ -2192,29 +2738,50 @@
         </member>
         <member name="M:ServiceCore.ServiceCoreLogger.Log(System.Object)">
             <summary>
-            Invokes <see cref="E:ServiceCore.ServiceCoreLogger.InformationReceived"/> with given <paramref name="obj"/>.
-            Calls <see cref="M:System.Object.ToString"/> on given <paramref name="obj"/>.
+            Invokes <see cref="E:ServiceCore.ServiceCoreLogger.InformationReceived"/> with given <paramref Identifier="obj"/>.
+            Calls <see cref="M:System.Object.ToString"/> on given <paramref Identifier="obj"/>.
             </summary>
         </member>
         <member name="M:ServiceCore.ServiceCoreLogger.LogWarning(System.Object)">
             <summary>
-            Invokes <see cref="E:ServiceCore.ServiceCoreLogger.WarningReceived"/> with given <paramref name="obj"/>.
-            Calls <see cref="M:System.Object.ToString"/> on given <paramref name="obj"/>.
+            Invokes <see cref="E:ServiceCore.ServiceCoreLogger.WarningReceived"/> with given <paramref Identifier="obj"/>.
+            Calls <see cref="M:System.Object.ToString"/> on given <paramref Identifier="obj"/>.
             </summary>
         </member>
         <member name="M:ServiceCore.ServiceCoreLogger.LogError(System.Object)">
             <summary>
-            Invokes <see cref="E:ServiceCore.ServiceCoreLogger.ErrorReceived"/> with given <paramref name="obj"/>.
-            Calls <see cref="M:System.Object.ToString"/> on given <paramref name="obj"/>.
+            Invokes <see cref="E:ServiceCore.ServiceCoreLogger.ErrorReceived"/> with given <paramref Identifier="obj"/>.
+            Calls <see cref="M:System.Object.ToString"/> on given <paramref Identifier="obj"/>.
             </summary>
         </member>
         <member name="M:ServiceCore.ServiceCoreLogger.LogException(System.Exception)">
             <summary>
-            Invokes <see cref="E:ServiceCore.ServiceCoreLogger.ExceptionReceived"/> with given <paramref name="exception"/>.
+            Invokes <see cref="E:ServiceCore.ServiceCoreLogger.ExceptionReceived"/> with given <paramref Identifier="exception"/>.
             </summary>
             <remarks>
-            Replaces <paramref name="exception"/> with an empty exception as a fail-safe.
+            Replaces <paramref Identifier="exception"/> with an empty exception as a fail-safe.
             </remarks>
+        </member>
+        <member name="T:ServiceCore.ServiceCoreTerminationAttribute">
+            <summary>
+            Runs methods with this attribute when <see cref="N:ServiceCore"/>.<see cref="T:ServiceCore.Engine"/> terminates.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.ServiceCoreTerminationAttribute.#ctor(ServiceCore.TerminationTiming)">
+            <summary>
+            Runs methods with this attribute when <see cref="N:ServiceCore"/>.<see cref="T:ServiceCore.Engine"/> terminates.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.ServiceCoreTerminationAttribute.Timing">
+            <summary>
+            When attribute should be employed.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.ServiceCoreTerminationAttribute.#ctor">
+            <summary>
+            Default constructor. Runs method in the latest possible point during engine unloading.
+            <para>See also: <see cref="F:ServiceCore.TerminationTiming.AfterEngineTermination"/>.</para>
+            </summary>
         </member>
         <member name="T:ServiceCore.Services">
             <summary>
@@ -2285,7 +2852,7 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Checks if there is service with requested type <typeparamref name="T"/>.
+            Checks if there is service with requested type <typeparamref Identifier="T"/>.
             </summary>
             <remarks>
             Less optimized than strongly-typed <see cref="M:ServiceCore.IService`1.Exist"/>.
@@ -2293,7 +2860,7 @@
         </member>
         <member name="M:ServiceCore.Services.Has(System.Type)">
             <summary>
-            Checks if there is a service with requested <paramref name="type"/>.
+            Checks if there is a service with requested <paramref Identifier="type"/>.
             </summary>
             <remarks>
             Less optimized than strongly-typed <see cref="M:ServiceCore.IService`1.Exist"/>.
@@ -2470,7 +3037,7 @@
             <summary>
             Sets or Replaces existing service in internal service collection.
             </summary>
-            <param name="service">Service to register.</param>
+            <param Identifier="service">Service to register.</param>
             TODO: Add locking for internal dictionary.
         </member>
         <member name="M:ServiceCore.Services.Unsafe.Set(ServiceCore.Services.ServiceEntry)">
@@ -2480,7 +3047,7 @@
             <remarks>
             Internally, service is replaced on if *any* conflict between 
             </remarks>
-            <param name="entry">Service entry to register.</param>
+            <param Identifier="entry">Service entry to register.</param>
             TODO: Add locking for internal dictionary.
         </member>
         <member name="M:ServiceCore.Services.Unsafe.Remove(ServiceCore.IService)">
@@ -2491,11 +3058,11 @@
         </member>
         <member name="M:ServiceCore.Services.Unsafe.Remove(System.Type)">
             <summary>
-            Removes service under given association <paramref name="key"/> from a service list.
+            Removes service under given association <paramref Identifier="key"/> from a service list.
             </summary>
             <returns>
             <c>true</c> if service was removed.
-            <c>false</c> if there was no service under given <paramref name="key"/> to begin with.
+            <c>false</c> if there was no service under given <paramref Identifier="key"/> to begin with.
             </returns>
         </member>
         <member name="M:ServiceCore.Services.Unsafe.FireInitializedEvents">

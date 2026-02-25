@@ -175,7 +175,7 @@ namespace ServiceCore.Modding
              * Use bitwise composition when the domain represents independent dimensions.
              * 
              * General Rule #3
-             * Optimize the hot path, not the initialization path.
+             * Optimize the hot Path, not the initialization Path.
              */
 
             type = VersionDependencyType.Any;
