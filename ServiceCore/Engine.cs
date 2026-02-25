@@ -102,7 +102,7 @@ namespace ServiceCore
             {
                 if (value is null) return;
                 const EngineStatus Combined = EngineStatus.Initializing | EngineStatus.Initialized;
-                if ((m_Status & Combined) != EngineStatus.Invalid)
+                if ((Status & Combined) != EngineStatus.Invalid)
                 {
                     value();
                 }
@@ -126,7 +126,7 @@ namespace ServiceCore
             add
             {
                 if (value is null) return;
-                if ((m_Status & EngineStatus.Initialized) == EngineStatus.Initialized)
+                if ((Status & EngineStatus.Initialized) == EngineStatus.Initialized)
                 {
                     value();
                 }
@@ -151,7 +151,7 @@ namespace ServiceCore
             {
                 if (value is null) return;
                 const EngineStatus Combined = EngineStatus.Terminating | EngineStatus.Terminated;
-                if ((m_Status & Combined) != EngineStatus.Invalid)
+                if ((Status & Combined) != EngineStatus.Invalid)
                 {
                     value();
                 }
@@ -175,7 +175,7 @@ namespace ServiceCore
             add
             {
                 if (value is null) return;
-                if ((m_Status & EngineStatus.Terminated) == EngineStatus.Terminated)
+                if ((Status & EngineStatus.Terminated) == EngineStatus.Terminated)
                 {
                     value();
                 }
@@ -307,7 +307,6 @@ namespace ServiceCore
             catch (Exception ex)
             {
                 ServiceCoreLogger.LogException(ex);
-                ServiceCoreLogger.LogError($"{LogPrefix} {nameof(ServiceCore)} was broken during initialization!");
                 SetStatus(EngineStatus.InitializationBroken);
                 return;
             }
@@ -355,7 +354,6 @@ namespace ServiceCore
             {
                 m_Assemblies.Clear();
                 ServiceCoreLogger.LogException(ex);
-                ServiceCoreLogger.LogError($"{LogPrefix} {nameof(ServiceCore)} was broken during termination!");
                 SetStatus(EngineStatus.TerminationBroken);
                 return;
             }
@@ -410,7 +408,7 @@ namespace ServiceCore
 
         private static void SetStatus(EngineStatus status)
         {
-            EngineStatus diff = (m_Status ^ status) & status; // Checks which bits have changed.
+            EngineStatus diff = (Status ^ status) & status; // Checks which bits have changed.
 
             // Order is: (initializing) -> (initialized) -> (terminating) -> terminated.
             if ((diff & EngineStatus.Initializing) != EngineStatus.Invalid && !TryFireCallback(ref OnEngineInitializing))
@@ -433,7 +431,7 @@ namespace ServiceCore
                 ServiceCoreLogger.LogError($"{LogPrefix} Some callbacks in '{nameof(OnEngineTerminated)}' event thrown exceptions! Look above for errors.");
             }
 
-            m_Status = status;
+            m_State.Status = status;
 
             // Handles explicit status errors just in case.
             if ((diff & EngineStatus.InitializationBroken) != EngineStatus.Invalid)

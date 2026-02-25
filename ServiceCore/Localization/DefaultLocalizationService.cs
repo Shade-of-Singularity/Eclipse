@@ -28,9 +28,9 @@ namespace ServiceCore.Localization
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <inheritdoc/>
-        public virtual UniTask Initialize() => UniTask.CompletedTask;
+        public virtual UniTask Initialize(InitializationArgs args) => UniTask.CompletedTask;
 
         /// <inheritdoc/>
-        public virtual UniTask Terminate() => UniTask.CompletedTask;
+        public virtual UniTask Terminate(TerminationArgs args) => UniTask.CompletedTask;
     }
 }
