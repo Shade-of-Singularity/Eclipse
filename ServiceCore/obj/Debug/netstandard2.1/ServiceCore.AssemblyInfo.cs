@@ -17,7 +17,7 @@ using System.Reflection;
     " custom code.\r\n      Natively supports managed C# modding with custom assembly l" +
     "oader.\r\n    ")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("0.4.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.4.0.0+9b644ed1b8261c7ec05f13af967a44db0f7e76d7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.4.0.0+4b2a60230e4ea68868c1fe7fcab0f3deea5e6975")]
 [assembly: System.Reflection.AssemblyProductAttribute("ServiceCore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ServiceCore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("0.4.0.0")]

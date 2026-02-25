@@ -198,12 +198,17 @@ namespace ServiceCore
         /// <remarks>
         /// <para>Set to <see cref="EngineStatus.Terminated"/> - by default.</para>
         /// <para>Set to <see cref="EngineStatus.Initializing"/> - during initialization (after calling <see cref="Initialize"/>).</para>
-        /// <para>Set to <see cref="EngineStatus.Initialized"/> - when <see cref="Engine"/> and <see cref="Modding.Modification"/>s are fully initialized!</para>
+        /// <para>Set to <see cref="EngineStatus.Initialized"/> - when <see cref="Engine"/> and <see cref="Modification"/>s are fully initialized!</para>
         /// <para>Set to <see cref="EngineStatus.Terminating"/> - during unloading (after <see cref="Terminate"/>/automatically by <see cref="QuitHandler"/>)</para>
         /// <para>Set to <see cref="EngineStatus.InitializationBroken"/> - if engine got irreversibly broken during initialization.</para>
         /// <para>Set to <see cref="EngineStatus.TerminationBroken"/> - if engine got irreversibly broken during unloading.</para>
         /// </remarks>
-        public static EngineStatus Status => m_Status;
+        public static EngineStatus Status => m_State.Status;
+
+        /// <summary>
+        /// Current state of the engine.
+        /// </summary>
+        public static EngineState State => m_State;
 
         /// <summary>
         /// Lists all Dependencies referencing <see cref="Engine"/>.
@@ -219,9 +224,9 @@ namespace ServiceCore
         /// .                                               Static Fields
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private static readonly List<Assembly> m_NativeAssemblies = []; //
-        private static readonly AssemblyStorage m_Assemblies = new(64); // Absolutely in love with this square-shaped var declaration. 
-        private static EngineStatus m_Status = EngineStatus.Terminated; //
+        private static readonly EngineState m_State = new(EngineStatus.Terminated);
+        private static readonly List<Assembly> m_NativeAssemblies = []; // 
+        private static readonly AssemblyStorage m_Assemblies = new(64); // NOOOO! My square field declaration! T^T
 
 
 
@@ -357,84 +362,6 @@ namespace ServiceCore
 
             m_Assemblies.Clear();
             SetStatus(EngineStatus.Terminated);
-        }
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                              Selective Loading
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <summary>
-        /// Loads all data from an source. It includes: <see cref="Modding.Modification"/>s, <see cref="IService"/>s, etc.
-        /// </summary>
-        /// <remarks>
-        /// Will run (TODO: add entry point method) on source load, so it can run some initialization methods.
-        /// (Note: might not be implemented in favor of using mod initialization order instead and <see cref="Modding.Modification.Initializing"/>)
-        /// </remarks>
-        public static async UniTask Load(Assembly assembly)
-        {
-            try
-            {
-                await LoadInternal(Provider(assembly), default); // TODO: Use Reserve().
-            }
-            catch (Exception ex)
-            {
-                ServiceCoreLogger.LogException(ex);
-            }
-
-            static IEnumerable<ILoadingSource> Provider(Assembly assembly)
-            {
-                yield return new AssemblySource(Provider(assembly));
-                static IEnumerable<ILoadable> Provider(Assembly assembly)
-                {
-                    yield return (LoadableAssemblyReference)assembly;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Loads all data from a list of assemblies. Will fire global updates only after iterating over all <paramref Identifier="assemblies"/>.
-        /// </summary>
-        public static async UniTask Load(IEnumerable<Assembly> assemblies)
-        {
-            try
-            {
-                await LoadInternal(Provider(assemblies), default); // TODO: Use Reserve().
-            }
-            catch (Exception ex)
-            {
-                ServiceCoreLogger.LogException(ex);
-            }
-
-            static IEnumerable<ILoadingSource> Provider(IEnumerable<Assembly> assemblies)
-            {
-                yield return new AssemblySource([.. assemblies.Select(a => (LoadableAssemblyReference)a)]);
-            }
-        }
-
-        /// <summary>
-        /// Not supported. To support it, we will need to add AppDomain reloading.
-        /// There was no experiments with it yet.
-        /// </summary>
-        /// <exception cref="NotSupportedException">Assembly unloading via AppDomain change is yet to be supported.</exception>
-        public static async UniTask Unload(Assembly assembly)
-        {
-            await UniTask.CompletedTask;
-            throw new NotSupportedException("Assembly unloading is not supported yet.");
-        }
-
-        /// <summary>
-        /// Not supported. To support it, we will need to add AppDomain reloading.
-        /// There was no experiments with it yet.
-        /// </summary>
-        /// <exception cref="NotSupportedException">Assembly unloading via AppDomain change is yet to be supported.</exception>
-        public static async UniTask Unload(IEnumerable<Assembly> assemblies)
-        {
-            await UniTask.CompletedTask;
-            throw new NotSupportedException("Assembly unloading is not supported yet.");
         }
 
 
