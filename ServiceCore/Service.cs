@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using static ServiceCore.IService;
 
@@ -38,7 +39,7 @@ namespace ServiceCore
         /// Cached type-safe null-safe instance of the service. ~x40 times faster than <see cref="Services.Get{T}()"/>!
         /// </summary>
         /// <remarks>
-        /// Might be <c>null</c> when <see cref="Engine"/> is not initialized.
+        /// Might be <c>null</c> when <see cref="Engine"/> is not initializing/initialized.
         /// </remarks>
         public static T Instance => m_Instance!; // Marks as non-null as it will be non-null after Engine initialization.
 
@@ -122,9 +123,9 @@ namespace ServiceCore
         /// </summary>
         /// <returns>
         /// Doesn't change <see cref="Initialized"/>.
-        /// Use <see cref="IService.InvokeInitialize()"/> to change it.
+        /// Use <see cref="IService.InvokeInitialize(InitializationArgs)"/> to change it.
         /// </returns>
-        protected abstract UniTask Initialize();
+        protected abstract UniTask Initialize(InitializationArgs args);
 
         /// <summary>
         /// Called when <see cref="Engine"/> terminates all the code and resources from the memory.
@@ -132,9 +133,9 @@ namespace ServiceCore
         /// </summary>
         /// <remarks>
         /// Doesn't change <see cref="Initialized"/>.
-        /// Use <see cref="IService.InvokeTerminate()"/> to change it.
+        /// Use <see cref="IService.InvokeTerminate(TerminationArgs)"/> to change it.
         /// </remarks>
-        protected abstract UniTask Terminate();
+        protected abstract UniTask Terminate(TerminationArgs args);
 
 
 
@@ -145,10 +146,10 @@ namespace ServiceCore
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <inheritdoc/>
-        UniTask IService.InternalInitialize() => Initialize();
+        UniTask IService.InternalInitialize(InitializationArgs args) => Initialize(args);
 
         /// <inheritdoc/>
-        UniTask IService.InternalTerminate() => Terminate();
+        UniTask IService.InternalTerminate(TerminationArgs args) => Terminate(args);
 
 
 
@@ -167,5 +168,17 @@ namespace ServiceCore
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Exist() => m_Instance is not null;
+
+        /// <summary>
+        /// Checks if <see cref="Instance"/> exist and returns it as <paramref name="service"/>.
+        /// </summary>
+        /// <param name="service">Returned service or <c>null</c>.</param>
+        /// <returns><c>true</c> when service <see cref="Exist"/>. <c>false</c> otherwise.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool TryGet([NotNullWhen(true)] out T? service)
+        {
+            service = m_Instance;
+            return service is not null;
+        }
     }
 }

@@ -16,6 +16,7 @@
 
 using Cysharp.Threading.Tasks;
 using ServiceCore.Loading;
+using ServiceCore.Modding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -273,19 +274,30 @@ namespace ServiceCore
 
                 // Note: Looks like it's mandatory for us to have a "core" mod after all in the code.
                 //  It seems to be easier this way. Next time I will implement this, so modding can be supported properly.
-                List<ILoadingSource> sources = [natives];
+                DependencyMap dependencies = new([natives]);
 
                 // Reserves space for sources, if there is any.
                 // Note: Sources list will also be filled with sorted native assemblies.
                 if (context.Sources is not null)
                 {
-                    sources.AddRange(context.Sources);
+                    dependencies.List.AddRange(context.Sources);
                 }
 
                 // Resolve dependencies here.
-
-                // Loads-in the engine itself.
-                await LoadInternal(sources);
+                if (dependencies.TryResolve())
+                {
+                    // Loads engine and all dependencies.
+                    await LoadInternal(dependencies, default);
+                }
+                else
+                {
+                    // Loads only native libraries if dependencies cannot be resolved.
+                    await LoadInternal(Provider(natives), new InitializationArgs(IsDependenciesBroken: true));
+                    static IEnumerable<ILoadingSource> Provider(ILoadingSource source)
+                    {
+                        yield return source;
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -330,7 +342,7 @@ namespace ServiceCore
                     foreach (var service in Services.List)
                     {
                         // TODO: Terminate asynchronously if possible.
-                        await service.InvokeTerminate();
+                        await service.InvokeTerminate(default);
                     }
                 }
             }
@@ -366,7 +378,7 @@ namespace ServiceCore
         {
             try
             {
-                await LoadInternal(Provider(assembly)); // TODO: Use Reserve().
+                await LoadInternal(Provider(assembly), default); // TODO: Use Reserve().
             }
             catch (Exception ex)
             {
@@ -390,7 +402,7 @@ namespace ServiceCore
         {
             try
             {
-                await LoadInternal(Provider(assemblies)); // TODO: Use Reserve().
+                await LoadInternal(Provider(assemblies), default); // TODO: Use Reserve().
             }
             catch (Exception ex)
             {
@@ -569,13 +581,13 @@ namespace ServiceCore
             public readonly Dictionary<Type, ServiceSummary> Mapping = [];
         }
 
-        private static async UniTask UnloadInternal(IEnumerable<Assembly> assemblies)
+        private static async UniTask UnloadInternal(IEnumerable<Assembly> assemblies, TerminationArgs args)
         {
             await UniTask.CompletedTask;
             throw new NotSupportedException("Partial termination is not supported yet.");
         }
 
-        private static async UniTask LoadInternal(IEnumerable<ILoadingSource> sources)
+        private static async UniTask LoadInternal(IEnumerable<ILoadingSource> sources, InitializationArgs args)
         {
             // TODO: Avoid context allocation if all input assemblies are loaded.
             LoadingContext context = new();
@@ -601,7 +613,7 @@ namespace ServiceCore
             }
 
             await ConstructServices(context);
-            await InitializeServices(context);
+            await InitializeServices(context, args);
         }
 
         /// <summary>
@@ -693,7 +705,7 @@ namespace ServiceCore
             await UniTask.CompletedTask;
         }
 
-        private static async UniTask InitializeServices(LoadingContext context)
+        private static async UniTask InitializeServices(LoadingContext context, InitializationArgs args)
         {
             List<ServiceSummary> services = context.Services;
             var preload = context.Preload;
@@ -766,7 +778,7 @@ namespace ServiceCore
                 services.CopyTo(buffer);
 
                 // Executed thread-safe initializations and callbacks before main thread.
-                await RunThreadedInitialization(services, buffer, before, IService.ThreadExecutionMode.ThreadedBeforeMain);
+                await RunThreadedInitialization(services, buffer, before, IService.ThreadExecutionMode.ThreadedBeforeMain, args);
 
                 // Initialization part on a Main Unity thread.
                 if (normal > 0)
@@ -775,16 +787,16 @@ namespace ServiceCore
                     {
                         if (summary.attribute.ExecutionMode != IService.ThreadExecutionMode.MainThread) continue;
                         summary.preload.ForEach(m => m.method.Invoke(null, null));
-                        await Services.Unsafe.Dictionary[summary.service].service.InvokeInitialize();
+                        await Services.Unsafe.Dictionary[summary.service].service.InvokeInitialize(args);
                         summary.afterload.ForEach(m => m.method.Invoke(null, null));
                     }
                 }
 
                 // Executed thread-safe initializations and callbacks after main thread.
-                await RunThreadedInitialization(services, buffer, after, IService.ThreadExecutionMode.ThreadedAfterMain);
+                await RunThreadedInitialization(services, buffer, after, IService.ThreadExecutionMode.ThreadedAfterMain, args);
 
                 // Simplifications:
-                static async UniTask RunThreadedInitialization(List<ServiceSummary> services, ServiceSummary[] buffer, int allocation, IService.ThreadExecutionMode mode)
+                static async UniTask RunThreadedInitialization(List<ServiceSummary> services, ServiceSummary[] buffer, int allocation, IService.ThreadExecutionMode mode, InitializationArgs args)
                 {
                     // Runs services that are thread-safe and should be executed before main thread in parallel.
                     // Note: using m_Services[ServiceSummary.service] here should never produce an exception.
@@ -829,7 +841,7 @@ namespace ServiceCore
                                 if (pre.attribute.ThreadSafe) pre.method.Invoke(null, null);
                             });
 
-                            await Services.Unsafe.Dictionary[set.service].service.InvokeInitialize();
+                            await Services.Unsafe.Dictionary[set.service].service.InvokeInitialize(args);
                             set.afterload.ForEach(static after =>
                             {
                                 if (after.attribute.ThreadSafe) after.method.Invoke(null, null);

@@ -1,4 +1,5 @@
 ﻿using ServiceCore.Loading;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -7,49 +8,32 @@ namespace ServiceCore.Modding
     /// <summary>
     /// Map of dependencies.
     /// </summary>
-    public readonly struct DependencyMap : IEnumerable<ILoadingSource>
+    public readonly struct DependencyMap(List<ILoadingSource> list) : IEnumerable<ILoadingSource>
     {
         /// <summary>
         /// List of all dependencies.
         /// </summary>
-        public readonly List<ILoadingSource> List;
+        public readonly List<ILoadingSource> List = list;
 
 
 
 
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
-        /// .                                                Constructors
+        /// .                                               Public Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Default constructor.
+        /// Attempts to resolve all dependencies in <see cref="ILoadingSource"/> <see cref="List"/>.
         /// </summary>
-        public DependencyMap() : this(0, null) { }
-
-        /// <summary>
-        /// Provides initial capacity to the internal <see cref="List"/>.
-        /// </summary>
-        /// <param name="capacity">Initial List capacity.</param>
-        public DependencyMap(int capacity) : this(capacity, null) { }
-
-        /// <summary>
-        /// Provides items for the internal <see cref="List"/>.
-        /// </summary>
-        /// <param name="sources">Initial items to add to the <see cref="List"/>.</param>
-        public DependencyMap(IEnumerable<ILoadingSource>? sources) : this(0, sources) { }
-
-        /// <summary>
-        /// Provides both initial capacity and items to the internal <see cref="List"/>
-        /// </summary>
-        /// <param name="capacity">Initial List capacity.</param>
-        /// <param name="sources">Initial items to add to the <see cref="List"/>.</param>
-        public DependencyMap(int capacity, IEnumerable<ILoadingSource>? sources = null)
+        /// <returns><c>true</c> if all dependencies were resolved successfully. <c>false</c> if dependencies are missing or incompatible.</returns>
+        public bool TryResolve()
         {
-            List = new(capacity);
-
-            if (sources is not null) List.AddRange(sources);
+            // At the moment dependencies are not supported yet.
+            // Returning false will cause Engine to load only Native assemblies - exactly what we need.
+            return false;
         }
+
 
 
 
