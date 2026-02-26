@@ -1118,6 +1118,18 @@
             Direct accessor to an internal <see cref="T:System.Collections.Generic.Dictionary`2"/> with all <see cref="T:ServiceCore.Loading.ILoadingSource"/>s.
             </summary>
         </member>
+        <member name="P:ServiceCore.Modding.DependencyMap.Keys">
+            <inheritdoc/>
+        </member>
+        <member name="P:ServiceCore.Modding.DependencyMap.Values">
+            <inheritdoc/>
+        </member>
+        <member name="P:ServiceCore.Modding.DependencyMap.Count">
+            <inheritdoc/>
+        </member>
+        <member name="P:ServiceCore.Modding.DependencyMap.IsReadOnly">
+            <inheritdoc/>
+        </member>
         <member name="F:ServiceCore.Modding.DependencyMap.m_Map">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
@@ -1133,29 +1145,25 @@
             Ordered sources.
             </summary>
         </member>
-        <member name="P:ServiceCore.Modding.DependencyMap.Count">
-            <inheritdoc/>
-        </member>
-        <member name="P:ServiceCore.Modding.DependencyMap.IsReadOnly">
-            <inheritdoc/>
-        </member>
-        <member name="M:ServiceCore.Modding.DependencyMap.TryResolve(System.Collections.Generic.IReadOnlyList{ServiceCore.Loading.ILoadingSource}@)">
+        <member name="T:ServiceCore.Modding.DependencyMap.Node">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                               Public Methods
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyMap.Node.#ctor(ServiceCore.Loading.ILoadingSource)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyMap.TryResolve(System.Collections.Generic.IReadOnlyList{ServiceCore.Loading.ILoadingSource}@)">
             <summary>
             Attempts to resolve all dependencies. Returns cached <paramref name="sources"/> array if already resolved.
             </summary>
             <returns><c>true</c> if all dependencies were resolved successfully. <c>false</c> if dependencies are missing or incompatible.</returns>
-        </member>
-        <member name="M:ServiceCore.Modding.DependencyMap.Clear">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                               Public Methods
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
         <member name="M:ServiceCore.Modding.DependencyMap.GetEnumerator">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -1164,6 +1172,39 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <inheritdoc cref="M:System.Collections.Generic.IEnumerable`1.GetEnumerator"/>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyMap.System#Collections#IEnumerable#GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyMap.Add(System.String,ServiceCore.Loading.ILoadingSource)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyMap.Clear">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyMap.ContainsKey(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyMap.Remove(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyMap.TryGetValue(System.String,ServiceCore.Loading.ILoadingSource@)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyMap.Add(System.Collections.Generic.KeyValuePair{System.String,ServiceCore.Loading.ILoadingSource})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyMap.Contains(System.Collections.Generic.KeyValuePair{System.String,ServiceCore.Loading.ILoadingSource})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyMap.CopyTo(System.Collections.Generic.KeyValuePair{System.String,ServiceCore.Loading.ILoadingSource}[],System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyMap.Remove(System.Collections.Generic.KeyValuePair{System.String,ServiceCore.Loading.ILoadingSource})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyMap.System#Collections#Generic#IEnumerable{System#Collections#Generic#KeyValuePair{System#String,ServiceCore#Loading#ILoadingSource}}#GetEnumerator">
+            <inheritdoc/>
         </member>
         <member name="T:ServiceCore.Modding.Modification`1">
             <inheritdoc cref="T:ServiceCore.Modding.Modification"/>
@@ -1726,7 +1767,7 @@
             Incompatible with an <see cref="T:ServiceCore.Modding.Version"/> or a declaration generally.
             </remarks>
         </member>
-        <member name="F:ServiceCore.Modding.VersionDependencyType.ExclusionMask">
+        <member name="F:ServiceCore.Modding.VersionDependencyType.BothModifiers">
             <remarks>
             Mask covering <see cref="F:ServiceCore.Modding.VersionDependencyType.Optional"/> and <see cref="F:ServiceCore.Modding.VersionDependencyType.Incompatible"/> states.
             </remarks>
@@ -2463,8 +2504,7 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            One of the first services in the game to be initialized,
-            as core things like <see cref="!:Configuration.DefaultConfigurationService"/> relies on it.
+            One of the first services in the game to be initialized, as core things, like ConfigurationsServices, is meant to depend on it.
             </summary>
         </member>
         <member name="F:ServiceCore.Serialization.ISerializationService.LogPrefix">
@@ -2765,6 +2805,11 @@
             Ignored when <see cref="P:ServiceCore.ServiceAttribute.ExecutionMode"/> is not <see cref="F:ServiceCore.IService.ThreadExecutionMode.MainThread"/>
             (as it will essentially produce race conditions).
             </remarks>
+            TODO: Resolve ordering based on <see cref="P:ServiceCore.Loading.ILoadingSource.Dependencies"/>,
+            and use <see cref="P:ServiceCore.ServiceAttribute.ExecutionOrder"/> for ordering within one <see cref="T:ServiceCore.Loading.ILoadingSource"/> only.
+            TODO: Create an analyzer and code gen which will control dependencies manually by reading the code.
+             And analyzer will warn you if you create mutual dependency within a service.
+             This is a new age of service development, baby!
         </member>
         <member name="P:ServiceCore.ServiceAttribute.ExecutionMode">
             <summary>

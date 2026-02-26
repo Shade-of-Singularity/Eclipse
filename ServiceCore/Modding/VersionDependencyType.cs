@@ -51,6 +51,6 @@
         /// <remarks>
         /// Mask covering <see cref="Optional"/> and <see cref="Incompatible"/> states.
         /// </remarks>
-        ExclusionMask = 0b11_000_000,
+        BothModifiers = 0b11_000_000,
     }
 }

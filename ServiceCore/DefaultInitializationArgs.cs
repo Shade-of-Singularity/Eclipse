@@ -6,7 +6,7 @@ namespace ServiceCore
     /// Default implementation for <see cref="IInitializationArgs"/>.
     /// </summary>
     /// <param name="state">Engine state to apply.</param>
-    public struct DefaultInitializationArgs(EngineState state) : IInitializationArgs
+    public sealed class DefaultInitializationArgs(EngineState state) : IInitializationArgs
     {
         /// <inheritdoc/>
         public EngineStatus Status { get; internal set; } = state.Status;

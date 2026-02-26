@@ -29,23 +29,6 @@ namespace ServiceCore.Modding
             }
         }
 
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                               Private Fields
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <summary>
-        /// Map of all dependencies.
-        /// </summary>
-        private readonly Dictionary<string, ILoadingSource> m_Map = new(StringComparer.Ordinal);
-        /// <summary>
-        /// Ordered sources.
-        /// </summary>
-        private ILoadingSource[]? m_Sources;
-
         /// <inheritdoc/>
         public ICollection<string> Keys => m_Map.Keys;
 
@@ -63,9 +46,45 @@ namespace ServiceCore.Modding
 
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
+        /// .                                               Private Fields
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Map of all dependencies.
+        /// </summary>
+        private readonly Dictionary<string, ILoadingSource> m_Map = new(StringComparer.Ordinal);
+        /// <summary>
+        /// Ordered sources.
+        /// </summary>
+        private ILoadingSource[]? m_Sources = [];
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
         /// .                                               Public Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        private sealed class Node(ILoadingSource source) : IEquatable<Node>
+        {
+            public readonly ILoadingSource Source = source;
+            public readonly HashSet<Node> Children = [];
+            public int InDegree;
+
+            public override string ToString() => $"{Source}";
+            public override int GetHashCode() => RuntimeHelpers.GetHashCode(Source);
+            public override bool Equals(object obj) => obj is Node other && Equals(other);
+            public bool Equals(Node other) => ReferenceEquals(other.Source, Source);
+        }
+
+        private enum DependencyResult : byte
+        {
+            Ignored = 0,
+            Included,
+            Incompatible,
+        }
+
         /// <summary>
         /// Attempts to resolve all dependencies. Returns cached <paramref name="sources"/> array if already resolved.
         /// </summary>
@@ -79,260 +98,162 @@ namespace ServiceCore.Modding
                 return true;
             }
 
-            ILoadingSource[] array = new ILoadingSource[m_Map.Count];
-            m_Map.Values.CopyTo(array, 0);
-            sources = array;
-
-            for (int i = 0; i < array.Length; i++)
+            bool ExpectFrequentReloading = false;
+            if (ExpectFrequentReloading)
             {
-                ILoadingSource source = array[i];
-                string identifier = source.Identifier;
-                int maxIndex = i;
-                foreach (var dependency in source.Dependencies)
-                {
-                    // TODO: Add version checking.
-                    int index;
-                    ILoadingSource target;
-                    switch (dependency.type & VersionDependencyType.ExclusionMask)
-                    {
-                        case VersionDependencyType.Any:
-                            index = Array.FindIndex(array, (src) => string.Equals(identifier, src.Identifier, StringComparison.Ordinal));
-                            if (index == -1)
-                            {
-                                // If specific dependency is not found - invalidate dependencies.
-                                // TODO: Add dependency reporting and continue looking for incompatibilities.
-                                sources = array;
-                                return false;
-                            }
-
-                            target = array[index];
-                            switch (dependency.type & VersionDependencyType.TypeMask)
-                            {
-                                case VersionDependencyType.Smaller:
-                                    if (target.Version < dependency.version)
-                                    {
-                                        maxIndex = Math.Max(maxIndex, index);
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        // TODO: Add dependency reporting and continue looking for incompatibilities.
-                                        sources = array;
-                                        return false;
-                                    }
-
-                                case VersionDependencyType.SmallerOrEqual:
-                                    if (target.Version <= dependency.version)
-                                    {
-                                        maxIndex = Math.Max(maxIndex, index);
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        // TODO: Add dependency reporting and continue looking for incompatibilities.
-                                        sources = array;
-                                        return false;
-                                    }
-
-                                case VersionDependencyType.Equal:
-                                    if (target.Version == dependency.version)
-                                    {
-                                        maxIndex = Math.Max(maxIndex, index);
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        // TODO: Add dependency reporting and continue looking for incompatibilities.
-                                        sources = array;
-                                        return false;
-                                    }
-
-                                case VersionDependencyType.LargerOrEqual:
-                                    if (target.Version >= dependency.version)
-                                    {
-                                        maxIndex = Math.Max(maxIndex, index);
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        // TODO: Add dependency reporting and continue looking for incompatibilities.
-                                        sources = array;
-                                        return false;
-                                    }
-
-                                case VersionDependencyType.Larger:
-                                    if (target.Version > dependency.version)
-                                    {
-                                        maxIndex = Math.Max(maxIndex, index);
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        // TODO: Add dependency reporting and continue looking for incompatibilities.
-                                        sources = array;
-                                        return false;
-                                    }
-
-                                default: // Simply presence of a target is good enough of a reason for dependency invalidation.
-                                case VersionDependencyType.TypeMask: // TODO: Add dependency reporting and continue looking for incompatibilities.
-                                case VersionDependencyType.Any: maxIndex = Math.Max(maxIndex, index); break;
-                            }
-                            break;
-
-                        case VersionDependencyType.ExclusionMask:
-                        case VersionDependencyType.Incompatible:
-                            index = Array.FindIndex(array, (src) => string.Equals(identifier, src.Identifier, StringComparison.Ordinal));
-                            if (index == -1)
-                            {
-                                break;
-                            }
-
-                            target = array[index];
-                            switch (dependency.type & VersionDependencyType.TypeMask)
-                            {
-                                case VersionDependencyType.Smaller:
-                                    if (target.Version < dependency.version)
-                                    {
-                                        // TODO: Add dependency reporting and continue looking for incompatibilities.
-                                        sources = array;
-                                        return false;
-                                    }
-
-                                    break;
-
-                                case VersionDependencyType.SmallerOrEqual:
-                                    if (target.Version <= dependency.version)
-                                    {
-                                        // TODO: Add dependency reporting and continue looking for incompatibilities.
-                                        sources = array;
-                                        return false;
-                                    }
-
-                                    break;
-
-                                case VersionDependencyType.Equal:
-                                    if (target.Version == dependency.version)
-                                    {
-                                        // TODO: Add dependency reporting and continue looking for incompatibilities.
-                                        sources = array;
-                                        return false;
-                                    }
-
-                                    break;
-
-                                case VersionDependencyType.LargerOrEqual:
-                                    if (target.Version >= dependency.version)
-                                    {
-                                        // TODO: Add dependency reporting and continue looking for incompatibilities.
-                                        sources = array;
-                                        return false;
-                                    }
-
-                                    break;
-
-                                case VersionDependencyType.Larger:
-                                    if (target.Version > dependency.version)
-                                    {
-                                        // TODO: Add dependency reporting and continue looking for incompatibilities.
-                                        sources = array;
-                                        return false;
-                                    }
-
-                                    break;
-
-                                default: // Simply presence of a target is good enough of a reason for dependency invalidation.
-                                case VersionDependencyType.TypeMask: // TODO: Add dependency reporting and continue looking for incompatibilities.
-                                case VersionDependencyType.Any: sources = array; return false;
-                            }
-                            break;
-
-                        case VersionDependencyType.Optional:
-                            index = Array.FindIndex(array, (src) => string.Equals(identifier, src.Identifier, StringComparison.Ordinal));
-                            if (index == -1)
-                            {
-                                break;
-                            }
-
-                            target = array[index];
-                            switch (dependency.type & VersionDependencyType.TypeMask)
-                            {
-                                case VersionDependencyType.Smaller:
-                                    if (target.Version < dependency.version)
-                                    {
-                                        maxIndex = Math.Max(maxIndex, index);
-                                    }
-
-                                    break;
-
-                                case VersionDependencyType.SmallerOrEqual:
-                                    if (target.Version <= dependency.version)
-                                    {
-                                        maxIndex = Math.Max(maxIndex, index);
-                                    }
-
-                                    break;
-
-                                case VersionDependencyType.Equal:
-                                    if (target.Version == dependency.version)
-                                    {
-                                        maxIndex = Math.Max(maxIndex, index);
-                                    }
-
-                                    break;
-
-                                case VersionDependencyType.LargerOrEqual:
-                                    if (target.Version >= dependency.version)
-                                    {
-                                        maxIndex = Math.Max(maxIndex, index);
-                                    }
-
-                                    break;
-
-                                case VersionDependencyType.Larger:
-                                    if (target.Version > dependency.version)
-                                    {
-                                        maxIndex = Math.Max(maxIndex, index);
-                                    }
-
-                                    break;
-
-                                default: // Simply presence of a target is good enough of a reason for dependency invalidation.
-                                case VersionDependencyType.TypeMask: // TODO: Add dependency reporting and continue looking for incompatibilities.
-                                case VersionDependencyType.Any: maxIndex = Math.Max(maxIndex, index); break;
-                            }
-                            break;
-
-                        default: throw new SwitchExpressionException("How");
-                    }
-                }
-
-                if (maxIndex <= i)
-                {
-                    // Nothing has moved.
-                    continue;
-                }
-
-                Array.Copy(array, i + 1, array, i, maxIndex - i - 1);
-                array[maxIndex] = source;
+                // TODO: Use cached Queue and Arrays.
+                throw new NotSupportedException("Frequent reloading is not supported.");
             }
 
-            m_Sources = array;
-            sources = array;
-            return true;
+            // Lists all nodes.
+            Node[] nodes = new Node[Count];
+            Dictionary<string, Node> map = new(nodes.Length, StringComparer.Ordinal);
+            int index = 0;
+            foreach (var source in Values)
+            {
+                Node node = new(source);
+                nodes[index++] = node;
+                map[source.Identifier] = node;
+            }
+
+            // Creates associations.
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                Node node = nodes[i];
+                foreach (var dependency in node.Source.Dependencies)
+                {
+                    switch (AnalyzeDependency(map, dependency))
+                    {
+                        case DependencyResult.Ignored: break;
+                        case DependencyResult.Included:
+                            if (map.TryGetValue(dependency.target, out Node target))
+                            {
+                                node.InDegree++;
+                                target.Children.Add(node);
+                            }
+                            break;
+
+                        default:
+                        case DependencyResult.Incompatible:
+                            sources = [];
+                            return false;
+                    }
+                }
+            }
+
+            // Resolves all dependencies.
+            ILoadingSource[] result = new ILoadingSource[nodes.Length];
+            Queue<Node> queue = new(nodes.Length);
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                // Should start from a root.
+                if (nodes[i].InDegree == 0)
+                    queue.Enqueue(nodes[i]);
+            }
+
+            int head = 0;
+            while (queue.TryDequeue(out Node node))
+            {
+                foreach (var child in node.Children)
+                {
+                    if (--child.InDegree == 0)
+                        queue.Enqueue(child);
+                }
+
+
+                result[head++] = node.Source;
+            }
+
+            if (head == result.Length)
+            {
+                sources = result;
+                return true;
+            }
+
+            // Some nodes are in a loop.
+            sources = [];
+            return false;
         }
 
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                               Public Methods
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public void Clear()
+        private static DependencyResult AnalyzeDependency(Dictionary<string, Node> nodes, DependencyDeclaration dependency)
         {
-            m_Map.Clear();
-            m_Sources = null;
+            // TODO: Add version checking.
+            Node target;
+            switch (dependency.type & VersionDependencyType.BothModifiers)
+            {
+                // TODO: Add dependency reporting and continue looking for incompatibilities.
+                // Functional note: Required to be found. Invalidates dependencies if not found.
+                case VersionDependencyType.Any:
+                    if (!nodes.TryGetValue(dependency.target, out target))
+                    {
+                        // If specific dependency is not found - invalidate dependencies.
+                        return DependencyResult.Incompatible;
+                    }
+
+                    return (dependency.type & VersionDependencyType.TypeMask) switch
+                    {
+                        VersionDependencyType.Smaller =>
+                        target.Source.Version < dependency.version ? DependencyResult.Included : DependencyResult.Incompatible,
+                        VersionDependencyType.SmallerOrEqual =>
+                        target.Source.Version <= dependency.version ? DependencyResult.Included : DependencyResult.Incompatible,
+                        VersionDependencyType.Equal =>
+                        target.Source.Version == dependency.version ? DependencyResult.Included : DependencyResult.Incompatible,
+                        VersionDependencyType.LargerOrEqual =>
+                        target.Source.Version >= dependency.version ? DependencyResult.Included : DependencyResult.Incompatible,
+                        VersionDependencyType.Larger =>
+                        target.Source.Version > dependency.version ? DependencyResult.Included : DependencyResult.Incompatible,
+                        _ => DependencyResult.Incompatible,
+                    };
+
+                // Functional note: Invalidates dependencies if found.
+                case VersionDependencyType.BothModifiers:
+                case VersionDependencyType.Incompatible:
+                    if (!nodes.TryGetValue(dependency.target, out target))
+                    {
+                        // If specific dependency is not found - invalidate dependencies.
+                        return DependencyResult.Ignored;
+                    }
+
+                    return (dependency.type & VersionDependencyType.TypeMask) switch
+                    {
+                        VersionDependencyType.Smaller =>
+                        target.Source.Version < dependency.version ? DependencyResult.Incompatible : DependencyResult.Included,
+                        VersionDependencyType.SmallerOrEqual =>
+                        target.Source.Version <= dependency.version ? DependencyResult.Incompatible : DependencyResult.Included,
+                        VersionDependencyType.Equal =>
+                        target.Source.Version == dependency.version ? DependencyResult.Incompatible : DependencyResult.Included,
+                        VersionDependencyType.LargerOrEqual =>
+                        target.Source.Version >= dependency.version ? DependencyResult.Incompatible : DependencyResult.Included,
+                        VersionDependencyType.Larger =>
+                        target.Source.Version > dependency.version ? DependencyResult.Incompatible : DependencyResult.Included,
+                        _ => DependencyResult.Included,
+                    };
+
+                // Functional note: Included only if found.
+                case VersionDependencyType.Optional:
+                    if (!nodes.TryGetValue(dependency.target, out target))
+                    {
+                        // If specific dependency is not found - invalidate dependencies.
+                        return DependencyResult.Ignored;
+                    }
+
+                    return (dependency.type & VersionDependencyType.TypeMask) switch
+                    {
+                        VersionDependencyType.Smaller =>
+                        target.Source.Version < dependency.version ? DependencyResult.Included : DependencyResult.Ignored,
+                        VersionDependencyType.SmallerOrEqual =>
+                        target.Source.Version <= dependency.version ? DependencyResult.Included : DependencyResult.Ignored,
+                        VersionDependencyType.Equal =>
+                        target.Source.Version == dependency.version ? DependencyResult.Included : DependencyResult.Ignored,
+                        VersionDependencyType.LargerOrEqual =>
+                        target.Source.Version >= dependency.version ? DependencyResult.Included : DependencyResult.Ignored,
+                        VersionDependencyType.Larger =>
+                        target.Source.Version > dependency.version ? DependencyResult.Included : DependencyResult.Ignored,
+                        _ => DependencyResult.Ignored,
+                    };
+
+                default: throw new SwitchExpressionException($"{Engine.LogPrefix} How (in DependencyMap)");
+            }
         }
 
 
@@ -351,6 +272,13 @@ namespace ServiceCore.Modding
 
         /// <inheritdoc/>
         public void Add(string key, ILoadingSource value) => m_Map.Add(key, value);
+
+        /// <inheritdoc/>
+        public void Clear()
+        {
+            m_Map.Clear();
+            m_Sources = [];
+        }
 
         /// <inheritdoc/>
         public bool ContainsKey(string key) => m_Map.ContainsKey(key);

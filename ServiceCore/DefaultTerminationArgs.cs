@@ -6,7 +6,7 @@ namespace ServiceCore
     /// Default implementation for <see cref="ITerminationArgs"/>.
     /// </summary>
     /// <param name="state">Engine state to apply.</param>
-    public struct DefaultTerminationArgs(EngineState state) : ITerminationArgs
+    public sealed class DefaultTerminationArgs(EngineState state) : ITerminationArgs
     {
         /// <inheritdoc/>
         public EngineStatus Status { get; internal set; } = state.Status;

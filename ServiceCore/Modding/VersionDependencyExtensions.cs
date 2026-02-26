@@ -95,7 +95,7 @@ namespace ServiceCore.Modding
         /// <exception cref="NotSupportedException">
         /// Throws when you combine "!" and "?".
         /// </exception>
-        public static string GetSymbol(this VersionDependencyType type) => (type & VersionDependencyType.ExclusionMask) switch
+        public static string GetSymbol(this VersionDependencyType type) => (type & VersionDependencyType.BothModifiers) switch
         {
             VersionDependencyType.Any => (type & VersionDependencyType.TypeMask) switch
             {

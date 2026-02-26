@@ -9,12 +9,14 @@
     ".NETStandard,Version=v2.1/": {
       "ServiceCore/0.4.0.0": {
         "dependencies": {
+          "Microsoft.CodeAnalysis.Analyzers": "3.11.0",
           "UniTask": "2.5.10"
         },
         "runtime": {
           "ServiceCore.dll": {}
         }
       },
+      "Microsoft.CodeAnalysis.Analyzers/3.11.0": {},
       "System.Runtime.CompilerServices.Unsafe/4.5.3": {
         "runtime": {
           "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll": {
@@ -52,6 +54,13 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "Microsoft.CodeAnalysis.Analyzers/3.11.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-v/EW3UE8/lbEYHoC2Qq7AR/DnmvpgdtAMndfQNmpuIMx/Mto8L5JnuCfdBYtgvalQOtfNCnxFejxuRrryvUTsg==",
+      "path": "microsoft.codeanalysis.analyzers/3.11.0",
+      "hashPath": "microsoft.codeanalysis.analyzers.3.11.0.nupkg.sha512"
     },
     "System.Runtime.CompilerServices.Unsafe/4.5.3": {
       "type": "package",

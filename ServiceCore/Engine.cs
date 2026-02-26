@@ -296,7 +296,6 @@ namespace ServiceCore
                 }
 
                 // Resolve dependencies here.
-                // TODO: Make it Async.
                 if (dependencies.TryResolve(out IReadOnlyList<ILoadingSource> sources))
                 {
                     // Loads engine and all dependencies.
