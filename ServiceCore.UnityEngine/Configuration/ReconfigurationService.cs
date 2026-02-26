@@ -47,10 +47,10 @@ namespace ServiceCore.Configuration
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <inheritdoc/>
-        public virtual UniTask Initialize() => UniTask.CompletedTask;
+        public virtual UniTask Initialize(IInitializationArgs args) => UniTask.CompletedTask;
 
         /// <inheritdoc/>
-        public virtual UniTask Terminate() => UniTask.CompletedTask;
+        public virtual UniTask Terminate(ITerminationArgs args) => UniTask.CompletedTask;
     }
 
     /// <summary>

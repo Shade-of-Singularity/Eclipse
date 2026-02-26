@@ -147,9 +147,9 @@ namespace ServiceCore
         /// </summary>
         /// <returns>
         /// Doesn't change <see cref="Initialized"/>.
-        /// Use <see cref="IService.InvokeInitialize(InitializationArgs)"/> to change it.
+        /// Use <see cref="IService.InvokeInitialize(IInitializationArgs)"/> to change it.
         /// </returns>
-        UniTask Initialize(InitializationArgs args);
+        UniTask Initialize(IInitializationArgs args);
 
         /// <summary>
         /// Called when <see cref="Engine"/> terminates all the code and resources from the memory.
@@ -157,9 +157,9 @@ namespace ServiceCore
         /// </summary>
         /// <remarks>
         /// Doesn't change <see cref="Initialized"/>.
-        /// Use <see cref="IService.InvokeTerminate(TerminationArgs)"/> to change it.
+        /// Use <see cref="IService.InvokeTerminate(ITerminationArgs)"/> to change it.
         /// </remarks>
-        UniTask Terminate(TerminationArgs args);
+        UniTask Terminate(ITerminationArgs args);
 
 
 
@@ -170,10 +170,10 @@ namespace ServiceCore
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <inheritdoc/>
-        UniTask IService.InternalInitialize(InitializationArgs args) => Initialize(args);
+        UniTask IService.InternalInitialize(IInitializationArgs args) => Initialize(args);
 
         /// <inheritdoc/>
-        UniTask IService.InternalTerminate(TerminationArgs args) => Terminate(args);
+        UniTask IService.InternalTerminate(ITerminationArgs args) => Terminate(args);
 
 
 
@@ -228,13 +228,13 @@ namespace ServiceCore
         /// Used to hide this method from <see cref="IService"/> users.
         /// Invokes <see cref="IService{T}.Initialize"/>.
         /// </summary>
-        protected UniTask InternalInitialize(InitializationArgs args);
+        protected UniTask InternalInitialize(IInitializationArgs args);
 
         /// <summary>
         /// Used to hide this method from <see cref="IService"/> users.
         /// Invokes <see cref="IService{T}.Terminate"/>.
         /// </summary>
-        protected UniTask InternalTerminate(TerminationArgs args);
+        protected UniTask InternalTerminate(ITerminationArgs args);
 
 
 
@@ -247,7 +247,7 @@ namespace ServiceCore
         /// <summary>
         /// Calls <see cref="IService{T}.Initialize"/> if service is not <see cref="Initialized"/>.
         /// </summary>
-        public async UniTask InvokeInitialize(InitializationArgs args)
+        public async UniTask InvokeInitialize(IInitializationArgs args)
         {
             if (!Initialized)
             {
@@ -267,7 +267,7 @@ namespace ServiceCore
         /// <summary>
         /// Calls <see cref="IService{T}.Terminate"/> is service is <see cref="Initialized"/>.
         /// </summary>
-        public async UniTask InvokeTerminate(TerminationArgs args)
+        public async UniTask InvokeTerminate(ITerminationArgs args)
         {
             if (Initialized)
             {

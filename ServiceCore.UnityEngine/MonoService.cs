@@ -70,7 +70,7 @@ namespace ServiceCore
         protected virtual void Awake()
         {
             m_Instance ??= (T)this;
-            ((IService)this).InvokeInitialize().Forget();
+            ((IService)this).InvokeInitialize(Engine.State).Forget(); // TODO: Schedule via Engine. Use custom initialization args.
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace ServiceCore
         /// </summary>
         protected virtual void Destroy()
         {
-            ((IService)this).InvokeTerminate().Forget();
+            ((IService)this).InvokeTerminate(Engine.State).Forget(); // TODO: Schedule via Engine. Use custom termination args.
             m_Instance = default;
         }
 
@@ -91,10 +91,10 @@ namespace ServiceCore
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <inheritdoc/>
-        UniTask IService.InternalInitialize() => Initialize();
+        UniTask IService.InternalInitialize(IInitializationArgs args) => Initialize(args);
 
         /// <inheritdoc/>
-        UniTask IService.InternalTerminate() => Terminate();
+        UniTask IService.InternalTerminate(ITerminationArgs args) => Terminate(args);
 
 
 
@@ -105,9 +105,9 @@ namespace ServiceCore
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <inheritdoc cref="IService{T}.Initialize"/>
-        protected abstract UniTask Initialize();
+        protected abstract UniTask Initialize(IInitializationArgs args);
 
         /// <inheritdoc cref="IService{T}.Terminate"/>
-        protected abstract UniTask Terminate();
+        protected abstract UniTask Terminate(ITerminationArgs args);
     }
 }

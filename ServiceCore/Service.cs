@@ -101,7 +101,7 @@ namespace ServiceCore
             if (service is null && m_Initialized)
             {
                 // Note: is this even a right way to handle it?
-                ServiceCoreLogger.LogError($"{Services.LogPrefix} Rebinded to null service ({typeof(T).Name}) without termination! Service state won't reset!");
+                ServiceCoreLogger.LogError($"{Services.LogPrefix} Rebinded to null service ({typeof(T).Name}) without termination! Service args won't reset!");
                 return;
             }
         }
@@ -123,19 +123,19 @@ namespace ServiceCore
         /// </summary>
         /// <returns>
         /// Doesn't change <see cref="Initialized"/>.
-        /// Use <see cref="IService.InvokeInitialize(InitializationArgs)"/> to change it.
+        /// Use <see cref="IService.InvokeInitialize(IInitializationArgs)"/> to change it.
         /// </returns>
-        protected abstract UniTask Initialize(InitializationArgs args);
+        protected abstract UniTask Initialize(IInitializationArgs args);
 
         /// <summary>
         /// Called when <see cref="Engine"/> terminates all the code and resources from the memory.
-        /// You are meant to save/serialize the state of your service when this event occurs.
+        /// You are meant to save/serialize the args of your service when this event occurs.
         /// </summary>
         /// <remarks>
         /// Doesn't change <see cref="Initialized"/>.
-        /// Use <see cref="IService.InvokeTerminate(TerminationArgs)"/> to change it.
+        /// Use <see cref="IService.InvokeTerminate(ITerminationArgs)"/> to change it.
         /// </remarks>
-        protected abstract UniTask Terminate(TerminationArgs args);
+        protected abstract UniTask Terminate(ITerminationArgs args);
 
 
 
@@ -146,10 +146,10 @@ namespace ServiceCore
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <inheritdoc/>
-        UniTask IService.InternalInitialize(InitializationArgs args) => Initialize(args);
+        UniTask IService.InternalInitialize(IInitializationArgs args) => Initialize(args);
 
         /// <inheritdoc/>
-        UniTask IService.InternalTerminate(TerminationArgs args) => Terminate(args);
+        UniTask IService.InternalTerminate(ITerminationArgs args) => Terminate(args);
 
 
 

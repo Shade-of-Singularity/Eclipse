@@ -32,8 +32,7 @@ namespace ServiceCore.Serialization
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// One of the first services in the game to be initialized,
-        /// as core things like <see cref="Configuration.DefaultConfigurationService"/> relies on it.
+        /// One of the first services in the game to be initialized, as core things, like ConfigurationsServices, is meant to depend on it.
         /// </summary>
         public const int InitializationOrder = -1_800_000_000;
         /// <summary>

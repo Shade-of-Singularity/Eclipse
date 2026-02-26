@@ -206,13 +206,13 @@ namespace ServiceCore
         public static EngineStatus Status => m_State.Status;
 
         /// <summary>
-        /// Current state of the engine.
+        /// Current args of the engine.
         /// </summary>
         public static EngineState State => m_State;
 
         /// <summary>
-        /// Lists all Dependencies referencing <see cref="Engine"/>.
-        /// Such Dependencies are considered "Native" and will be automatically loaded first on <see cref="Initialize"/> call.
+        /// Lists all Modifications referencing <see cref="Engine"/>.
+        /// Such Modifications are considered "Native" and will be automatically loaded first on <see cref="Initialize"/> call.
         /// </summary>
         public static IReadOnlyList<Assembly> NativeAssemblies => m_NativeAssemblies;
 
@@ -224,7 +224,7 @@ namespace ServiceCore
         /// .                                               Static Fields
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private static readonly EngineState m_State = new(EngineStatus.Terminated);
+        private static readonly EngineState m_State = new(EngineStatus.Terminated); // Starts as terminated.
         private static readonly List<Assembly> m_NativeAssemblies = []; // 
         private static readonly AssemblyStorage m_Assemblies = new(64); // NOOOO! My square field declaration! T^T
 
@@ -237,10 +237,12 @@ namespace ServiceCore
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Initializes the entire engine: <see cref="IService"/>s, <see cref="Modding.Modification"/>s, and so on.
+        /// Initializes the entire engine: <see cref="IService"/>s, <see cref="Modification"/>s, and so on.
+        /// You can specify <see cref="InitializationContext"/> to make <see cref="Engine"/> load-in community modifications.
         /// </summary>
-        /// <param Identifier="sorter">NativeSorter for <see cref="NativeAssemblies"/>, to enforce some initialization order.</param>
-        public static async UniTask Initialize(InitializationContext context = default)
+        /// <param name="context">Specifies how <see cref="NativeAssemblies"/> should be ordered. and provides<see cref="ILoadingSource"/>s to load.</param>
+        /// <param name="args">Args to use for <see cref="IService"/> termination. Replaced with <see cref="DefaultInitializationArgs"/> if not provided.</param>
+        public static async UniTask Initialize(InitializationContext context = default, IInitializationArgs? args = default)
         {
             if (Status != EngineStatus.Terminated)
             {
@@ -279,25 +281,38 @@ namespace ServiceCore
 
                 // Note: Looks like it's mandatory for us to have a "core" mod after all in the code.
                 //  It seems to be easier this way. Next time I will implement this, so modding can be supported properly.
-                DependencyMap dependencies = new([natives]);
+                DependencyMap dependencies = m_State.Modifications;
+                dependencies.Clear();
+                dependencies[natives.Identifier] = natives;
 
                 // Reserves space for sources, if there is any.
-                // Note: Sources list will also be filled with sorted native assemblies.
+                // Note: m_Sources list will also be filled with sorted native assemblies.
                 if (context.Sources is not null)
                 {
-                    dependencies.List.AddRange(context.Sources);
+                    foreach (var source in context.Sources)
+                    {
+                        dependencies[source.Identifier] = source;
+                    }
                 }
 
                 // Resolve dependencies here.
-                if (dependencies.TryResolve())
+                // TODO: Make it Async.
+                if (dependencies.TryResolve(out IReadOnlyList<ILoadingSource> sources))
                 {
                     // Loads engine and all dependencies.
-                    await LoadInternal(dependencies, default);
+                    if (args is null) args = new DefaultInitializationArgs(m_State);
+                    else args.Setup(m_State);
+
+                    await LoadInternal(sources, args);
                 }
                 else
                 {
                     // Loads only native libraries if dependencies cannot be resolved.
-                    await LoadInternal(Provider(natives), new InitializationArgs(IsDependenciesBroken: true));
+                    m_State.IsDependenciesBroken = true;
+                    if (args is null) args = new DefaultInitializationArgs(m_State);
+                    else args.Setup(m_State);
+
+                    await LoadInternal(Provider(natives), args);
                     static IEnumerable<ILoadingSource> Provider(ILoadingSource source)
                     {
                         yield return source;
@@ -326,9 +341,10 @@ namespace ServiceCore
         /// Unloads entire engine, all initialized services.
         /// </summary>
         /// <remarks>
-        /// Will not unload mod Dependencies from the memory, as it is impossible.
+        /// Will not unload mod Modifications from the memory, as it is impossible.
         /// </remarks>
-        public static async UniTask Terminate()
+        /// <param name="args">Args to use for <see cref="IService"/> termination. Replaced with <see cref="DefaultTerminationArgs"/> if not provided.</param>
+        public static async UniTask Terminate(ITerminationArgs? args = default)
         {
             // Only already initialized engine can be unloaded.
             // (TODO) Note: should we introduce unloading of a partially loaded engine? Something to think about later.
@@ -341,12 +357,16 @@ namespace ServiceCore
             // TODO: Hold callers in await block until engine is fully unloaded.
             try
             {
+                // EngineState.IsDependenciesBroken args here is retained from the last initialization sequence.
+                if (args is null) args = new DefaultTerminationArgs(m_State);
+                else args.Setup(m_State);
+
                 using (Services.Unsafe.Terminate())
                 {
                     foreach (var service in Services.List)
                     {
                         // TODO: Terminate asynchronously if possible.
-                        await service.InvokeTerminate(default);
+                        await service.InvokeTerminate(args);
                     }
                 }
             }
@@ -506,13 +526,13 @@ namespace ServiceCore
             public readonly Dictionary<Type, ServiceSummary> Mapping = [];
         }
 
-        private static async UniTask UnloadInternal(IEnumerable<Assembly> assemblies, TerminationArgs args)
+        private static async UniTask UnloadInternal(IEnumerable<ILoadingSource> sources, ITerminationArgs args)
         {
             await UniTask.CompletedTask;
             throw new NotSupportedException("Partial termination is not supported yet.");
         }
 
-        private static async UniTask LoadInternal(IEnumerable<ILoadingSource> sources, InitializationArgs args)
+        private static async UniTask LoadInternal(IEnumerable<ILoadingSource> sources, IInitializationArgs args)
         {
             // TODO: Avoid context allocation if all input assemblies are loaded.
             LoadingContext context = new();
@@ -630,7 +650,7 @@ namespace ServiceCore
             await UniTask.CompletedTask;
         }
 
-        private static async UniTask InitializeServices(LoadingContext context, InitializationArgs args)
+        private static async UniTask InitializeServices(LoadingContext context, IInitializationArgs args)
         {
             List<ServiceSummary> services = context.Services;
             var preload = context.Preload;
@@ -721,7 +741,7 @@ namespace ServiceCore
                 await RunThreadedInitialization(services, buffer, after, IService.ThreadExecutionMode.ThreadedAfterMain, args);
 
                 // Simplifications:
-                static async UniTask RunThreadedInitialization(List<ServiceSummary> services, ServiceSummary[] buffer, int allocation, IService.ThreadExecutionMode mode, InitializationArgs args)
+                static async UniTask RunThreadedInitialization(List<ServiceSummary> services, ServiceSummary[] buffer, int allocation, IService.ThreadExecutionMode mode, IInitializationArgs args)
                 {
                     // Runs services that are thread-safe and should be executed before main thread in parallel.
                     // Note: using m_Services[ServiceSummary.service] here should never produce an exception.

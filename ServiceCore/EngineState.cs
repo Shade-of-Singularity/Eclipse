@@ -14,6 +14,8 @@
 /// 
 /// ]]>
 
+using ServiceCore.Modding;
+
 namespace ServiceCore
 {
     /// <summary>
@@ -22,23 +24,23 @@ namespace ServiceCore
     /// You can use it to retrieve the info about incompatible modifications, why engine failed, or if it works properly at the moment.
     /// </summary>
     /// <param name="status">Initial status of this <see cref="EngineState"/> instance.</param>
-    public sealed class EngineState(EngineStatus status)
+    public sealed class EngineState(EngineStatus status) : IInitializationArgs, ITerminationArgs, ICommonStartupArgs
     {
-        /// <summary>
-        /// (When provided by the <see cref="Engine"/>) Current status of the <see cref="Engine"/>.
-        /// </summary>
+        /// <inheritdoc/>
         public EngineStatus Status { get; internal set; } = status;
 
-        /// <summary>
-        /// (When provided by the <see cref="Engine"/>) Whether dependencies were not resolved properly.
-        /// (As a core dev) You can use this value to only partially initialize your services, to show a warning on a screen.
-        /// Introduced to avoid fully loading LocalizationServices (and similar) when dependencies are broken, and an restart will be needed anyway.
-        /// </summary>
-        /// <remarks>
-        /// Even with broken dependencies, <see cref="Status"/> will be set to <see cref="EngineStatus.Initialized"/>!
-        /// <see cref="EngineStatus.InitializationBroken"/> and <see cref="EngineStatus.TerminationBroken"/>
-        /// is shown ONLY when <see cref="Engine"/> breaks during <see cref="Engine.Initialize(InitializationContext)"/> or <see cref="Engine.Terminate"/>
-        /// </remarks>
+        /// <inheritdoc/>
         public bool IsDependenciesBroken { get; internal set; }
+
+        /// <inheritdoc/>
+        public DependencyMap Modifications { get; internal set; } = [];
+
+        /// <inheritdoc/>
+        public void Setup(EngineState state)
+        {
+            Status = state.Status;
+            IsDependenciesBroken = state.IsDependenciesBroken;
+            Modifications = state.Modifications;
+        }
     }
 }

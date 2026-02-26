@@ -320,7 +320,7 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
-        <member name="M:ServiceCore.Configuration.DefaultConfigurationService.Initialize">
+        <member name="M:ServiceCore.Configuration.DefaultConfigurationService.Initialize(ServiceCore.IInitializationArgs)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                              Implementations
@@ -328,7 +328,7 @@
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <inheritdoc/>
         </member>
-        <member name="M:ServiceCore.Configuration.DefaultConfigurationService.Terminate">
+        <member name="M:ServiceCore.Configuration.DefaultConfigurationService.Terminate(ServiceCore.ITerminationArgs)">
             <inheritdoc/>
         </member>
         <member name="M:ServiceCore.Configuration.DefaultConfigurationService.Delay(System.Boolean@,System.Action)">
@@ -998,7 +998,7 @@
         <member name="T:ServiceCore.Configuration.ImbeddedConfiguration`1">
             <summary>
             Base class for all configuration files that are imbedded into the game.
-            Used by <see cref="N:ServiceCore"/> to retrieve settings that are used before <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext)"/> happens.
+            Used by <see cref="N:ServiceCore"/> to retrieve settings that are used before <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext,ServiceCore.IInitializationArgs)"/> happens.
             </summary>
             <remarks>
             Again - can be read and used before engine is initialized, unlike <see cref="T:ServiceCore.Configuration.EngineConfiguration"/>s.
@@ -1092,7 +1092,7 @@
             Cannot be inherited as it should not be replaced by any other service.
             </remarks>
         </member>
-        <member name="M:ServiceCore.Configuration.ReconfigurationService.Initialize">
+        <member name="M:ServiceCore.Configuration.ReconfigurationService.Initialize(ServiceCore.IInitializationArgs)">
             <see cref="T:ServiceCore.Configuration.ReconfigurationService"/> itself doesn't reconfigure anything.
             Code example: <![CDATA[
             [AfterServiceInitialized(typeof(IReconfigurationService), InvokeOrder = 0, ThreadSafe = false)]
@@ -1109,7 +1109,7 @@
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <inheritdoc/>
         </member>
-        <member name="M:ServiceCore.Configuration.ReconfigurationService.Terminate">
+        <member name="M:ServiceCore.Configuration.ReconfigurationService.Terminate(ServiceCore.ITerminationArgs)">
             <inheritdoc/>
         </member>
         <member name="T:ServiceCore.Configuration.IReconfigurationService">
@@ -1248,7 +1248,7 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Actually runs <see cref="M:ServiceCore.Engine.Terminate"/>.
+            Actually runs <see cref="M:ServiceCore.Engine.Terminate(ServiceCore.ITerminationArgs)"/>.
             </summary>
             <remarks>
             See <see cref="M:ServiceCore.DefaultQuitHandler.Interrupt"/> to understand how it is used.
@@ -1270,7 +1270,7 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            [Cached] List of all assembly names (see also: <see cref="P:System.Reflection.AssemblyName.Name"/>),
+            [Cached] Map of all assembly names (see also: <see cref="P:System.Reflection.AssemblyName.Name"/>),
             with <see cref="F:ServiceCore.EclipseConfiguration.ExcludedAssemblyNames"/> excluded from the list.
             </summary>
         </member>
@@ -1304,12 +1304,12 @@
         </member>
         <member name="F:ServiceCore.EclipseConfiguration.FoundAssemblyNames">
             <summary>
-            List of names to all <see cref="T:System.Reflection.Assembly"/> files to analyze.
+            Map of names to all <see cref="T:System.Reflection.Assembly"/> files to analyze.
             </summary>
         </member>
         <member name="F:ServiceCore.EclipseConfiguration.ExcludedAssemblyNames">
             <summary>
-            List of all assemblies to exclude from analysis on initialization.
+            Map of all assemblies to exclude from analysis on initialization.
             </summary>
         </member>
         <member name="F:ServiceCore.EclipseConfiguration.ProcessedAssemblies">
@@ -1393,7 +1393,7 @@
             Called right before <see cref="T:UnityEngine.MonoBehaviour"/> is destroyed.
             </summary>
         </member>
-        <member name="M:ServiceCore.MonoService`1.ServiceCore#IService#InternalInitialize">
+        <member name="M:ServiceCore.MonoService`1.ServiceCore#IService#InternalInitialize(ServiceCore.IInitializationArgs)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                              Implementations
@@ -1401,19 +1401,19 @@
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <inheritdoc/>
         </member>
-        <member name="M:ServiceCore.MonoService`1.ServiceCore#IService#InternalTerminate">
+        <member name="M:ServiceCore.MonoService`1.ServiceCore#IService#InternalTerminate(ServiceCore.ITerminationArgs)">
             <inheritdoc/>
         </member>
-        <member name="M:ServiceCore.MonoService`1.Initialize">
+        <member name="M:ServiceCore.MonoService`1.Initialize(ServiceCore.IInitializationArgs)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                              Protected Methods
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            <inheritdoc cref="M:ServiceCore.IService`1.Initialize"/>
+            <inheritdoc cref="M:ServiceCore.IService`1.Initialize(ServiceCore.IInitializationArgs)"/>
         </member>
-        <member name="M:ServiceCore.MonoService`1.Terminate">
-            <inheritdoc cref="M:ServiceCore.IService`1.Terminate"/>
+        <member name="M:ServiceCore.MonoService`1.Terminate(ServiceCore.ITerminationArgs)">
+            <inheritdoc cref="M:ServiceCore.IService`1.Terminate(ServiceCore.ITerminationArgs)"/>
         </member>
         <member name="T:ServiceCore.QuitHandler`1">
             <inheritdoc cref="T:ServiceCore.QuitHandler"/>

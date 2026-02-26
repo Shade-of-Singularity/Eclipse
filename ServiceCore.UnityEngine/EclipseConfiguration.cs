@@ -35,7 +35,7 @@ namespace ServiceCore
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// [Cached] List of all assembly names (see also: <see cref="System.Reflection.AssemblyName.Name"/>),
+        /// [Cached] Map of all assembly names (see also: <see cref="System.Reflection.AssemblyName.Name"/>),
         /// with <see cref="ExcludedAssemblyNames"/> excluded from the list.
         /// </summary>
         public string[] TargetAssemblyNames
@@ -109,13 +109,13 @@ namespace ServiceCore
         // TODO: Automatically create one if there is no configuration file in any resource folder, on InitializeOnLoadMethod.
         //  This should be made in ServiceCore.Editor.
         /// <summary>
-        /// List of names to all <see cref="System.Reflection.Assembly"/> files to analyze.
+        /// Map of names to all <see cref="System.Reflection.Assembly"/> files to analyze.
         /// </summary>
         /*[UnityEngine.HideInInspector, UnityEngine.SerializeField] */
         public string[] FoundAssemblyNames = [];
 
         /// <summary>
-        /// List of all assemblies to exclude from analysis on initialization.
+        /// Map of all assemblies to exclude from analysis on initialization.
         /// </summary>
         public string[] ExcludedAssemblyNames = [];
 

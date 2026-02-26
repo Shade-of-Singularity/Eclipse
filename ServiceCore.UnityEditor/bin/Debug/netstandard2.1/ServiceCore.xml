@@ -83,6 +83,54 @@
             Reference service to use. Method with this attribute will be executed after this service is initialized.
             </summary>
         </member>
+        <member name="T:ServiceCore.DefaultInitializationArgs">
+            <summary>
+            Default implementation for <see cref="T:ServiceCore.IInitializationArgs"/>.
+            </summary>
+            <param name="state">Engine state to apply.</param>
+        </member>
+        <member name="M:ServiceCore.DefaultInitializationArgs.#ctor(ServiceCore.EngineState)">
+            <summary>
+            Default implementation for <see cref="T:ServiceCore.IInitializationArgs"/>.
+            </summary>
+            <param name="state">Engine state to apply.</param>
+        </member>
+        <member name="P:ServiceCore.DefaultInitializationArgs.Status">
+            <inheritdoc/>
+        </member>
+        <member name="P:ServiceCore.DefaultInitializationArgs.IsDependenciesBroken">
+            <inheritdoc/>
+        </member>
+        <member name="P:ServiceCore.DefaultInitializationArgs.Modifications">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.DefaultInitializationArgs.Setup(ServiceCore.EngineState)">
+            <inheritdoc/>
+        </member>
+        <member name="T:ServiceCore.DefaultTerminationArgs">
+            <summary>
+            Default implementation for <see cref="T:ServiceCore.ITerminationArgs"/>.
+            </summary>
+            <param name="state">Engine state to apply.</param>
+        </member>
+        <member name="M:ServiceCore.DefaultTerminationArgs.#ctor(ServiceCore.EngineState)">
+            <summary>
+            Default implementation for <see cref="T:ServiceCore.ITerminationArgs"/>.
+            </summary>
+            <param name="state">Engine state to apply.</param>
+        </member>
+        <member name="P:ServiceCore.DefaultTerminationArgs.Status">
+            <inheritdoc/>
+        </member>
+        <member name="P:ServiceCore.DefaultTerminationArgs.IsDependenciesBroken">
+            <inheritdoc/>
+        </member>
+        <member name="P:ServiceCore.DefaultTerminationArgs.Modifications">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.DefaultTerminationArgs.Setup(ServiceCore.EngineState)">
+            <inheritdoc/>
+        </member>
         <member name="T:ServiceCore.Engine">
             <summary>
             Main class for <see cref="N:ServiceCore"/> Library.
@@ -166,7 +214,7 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Invoked right after <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext)"/> is called.
+            Invoked right after <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext,ServiceCore.IInitializationArgs)"/> is called.
             </summary>
         </member>
         <member name="E:ServiceCore.Engine.OnEngineInitialized">
@@ -176,7 +224,7 @@
         </member>
         <member name="E:ServiceCore.Engine.OnEngineTerminating">
             <summary>
-            Invoked right after <see cref="M:ServiceCore.Engine.Terminate"/> is called.
+            Invoked right after <see cref="M:ServiceCore.Engine.Terminate(ServiceCore.ITerminationArgs)"/> is called.
             </summary>
         </member>
         <member name="E:ServiceCore.Engine.OnEngineTerminated">
@@ -244,27 +292,32 @@
             </summary>
             <remarks>
             <para>Set to <see cref="F:ServiceCore.EngineStatus.Terminated"/> - by default.</para>
-            <para>Set to <see cref="F:ServiceCore.EngineStatus.Initializing"/> - during initialization (after calling <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext)"/>).</para>
+            <para>Set to <see cref="F:ServiceCore.EngineStatus.Initializing"/> - during initialization (after calling <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext,ServiceCore.IInitializationArgs)"/>).</para>
             <para>Set to <see cref="F:ServiceCore.EngineStatus.Initialized"/> - when <see cref="T:ServiceCore.Engine"/> and <see cref="T:ServiceCore.Modding.Modification"/>s are fully initialized!</para>
-            <para>Set to <see cref="F:ServiceCore.EngineStatus.Terminating"/> - during unloading (after <see cref="M:ServiceCore.Engine.Terminate"/>/automatically by <see cref="!:QuitHandler"/>)</para>
+            <para>Set to <see cref="F:ServiceCore.EngineStatus.Terminating"/> - during unloading (after <see cref="M:ServiceCore.Engine.Terminate(ServiceCore.ITerminationArgs)"/>/automatically by <see cref="!:QuitHandler"/>)</para>
             <para>Set to <see cref="F:ServiceCore.EngineStatus.InitializationBroken"/> - if engine got irreversibly broken during initialization.</para>
             <para>Set to <see cref="F:ServiceCore.EngineStatus.TerminationBroken"/> - if engine got irreversibly broken during unloading.</para>
             </remarks>
         </member>
-        <member name="P:ServiceCore.Engine.NativeAssemblies">
+        <member name="P:ServiceCore.Engine.State">
             <summary>
-            Lists all Dependencies referencing <see cref="T:ServiceCore.Engine"/>.
-            Such Dependencies are considered "Native" and will be automatically loaded first on <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext)"/> call.
+            Current args of the engine.
             </summary>
         </member>
-        <member name="F:ServiceCore.Engine.m_NativeAssemblies">
+        <member name="P:ServiceCore.Engine.NativeAssemblies">
+            <summary>
+            Lists all Modifications referencing <see cref="T:ServiceCore.Engine"/>.
+            Such Modifications are considered "Native" and will be automatically loaded first on <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext,ServiceCore.IInitializationArgs)"/> call.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Engine.m_State">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                               Static Fields
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
-        <member name="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext)">
+        <member name="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext,ServiceCore.IInitializationArgs)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                               Initialization
@@ -272,10 +325,12 @@
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
             Initializes the entire engine: <see cref="T:ServiceCore.IService"/>s, <see cref="T:ServiceCore.Modding.Modification"/>s, and so on.
+            You can specify <see cref="T:ServiceCore.InitializationContext"/> to make <see cref="T:ServiceCore.Engine"/> load-in community modifications.
             </summary>
-            <param Identifier="sorter">NativeSorter for <see cref="P:ServiceCore.Engine.NativeAssemblies"/>, to enforce some initialization order.</param>
+            <param name="context">Specifies how <see cref="P:ServiceCore.Engine.NativeAssemblies"/> should be ordered. and provides<see cref="T:ServiceCore.Loading.ILoadingSource"/>s to load.</param>
+            <param name="args">Args to use for <see cref="T:ServiceCore.IService"/> termination. Replaced with <see cref="T:ServiceCore.DefaultInitializationArgs"/> if not provided.</param>
         </member>
-        <member name="M:ServiceCore.Engine.Terminate">
+        <member name="M:ServiceCore.Engine.Terminate(ServiceCore.ITerminationArgs)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                                 Termination
@@ -285,41 +340,9 @@
             Unloads entire engine, all initialized services.
             </summary>
             <remarks>
-            Will not unload mod Dependencies from the memory, as it is impossible.
+            Will not unload mod Modifications from the memory, as it is impossible.
             </remarks>
-        </member>
-        <member name="M:ServiceCore.Engine.Load(System.Reflection.Assembly)">
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            .
-            .                                              Selective Loading
-            .
-            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            <summary>
-            Loads all data from an source. It includes: <see cref="T:ServiceCore.Modding.Modification"/>s, <see cref="T:ServiceCore.IService"/>s, etc.
-            </summary>
-            <remarks>
-            Will run (TODO: add entry point method) on source load, so it can run some initialization methods.
-            (Note: might not be implemented in favor of using mod initialization order instead and <see cref="M:ServiceCore.Modding.Modification.Initializing"/>)
-            </remarks>
-        </member>
-        <member name="M:ServiceCore.Engine.Load(System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
-            <summary>
-            Loads all data from a list of assemblies. Will fire global updates only after iterating over all <paramref Identifier="assemblies"/>.
-            </summary>
-        </member>
-        <member name="M:ServiceCore.Engine.Unload(System.Reflection.Assembly)">
-            <summary>
-            Not supported. To support it, we will need to add AppDomain reloading.
-            There was no experiments with it yet.
-            </summary>
-            <exception cref="T:System.NotSupportedException">Assembly unloading via AppDomain change is yet to be supported.</exception>
-        </member>
-        <member name="M:ServiceCore.Engine.Unload(System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
-            <summary>
-            Not supported. To support it, we will need to add AppDomain reloading.
-            There was no experiments with it yet.
-            </summary>
-            <exception cref="T:System.NotSupportedException">Assembly unloading via AppDomain change is yet to be supported.</exception>
+            <param name="args">Args to use for <see cref="T:ServiceCore.IService"/> termination. Replaced with <see cref="T:ServiceCore.DefaultTerminationArgs"/> if not provided.</param>
         </member>
         <member name="M:ServiceCore.Engine.#cctor">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -442,6 +465,34 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
+        <member name="T:ServiceCore.EngineState">
+            <summary>
+            Describes a state of the <see cref="T:ServiceCore.Engine"/> during or after initialization.
+            It also stores some info about currently loaded-in mods and stuff like that.
+            You can use it to retrieve the info about incompatible modifications, why engine failed, or if it works properly at the moment.
+            </summary>
+            <param name="status">Initial status of this <see cref="T:ServiceCore.EngineState"/> instance.</param>
+        </member>
+        <member name="M:ServiceCore.EngineState.#ctor(ServiceCore.EngineStatus)">
+            <summary>
+            Describes a state of the <see cref="T:ServiceCore.Engine"/> during or after initialization.
+            It also stores some info about currently loaded-in mods and stuff like that.
+            You can use it to retrieve the info about incompatible modifications, why engine failed, or if it works properly at the moment.
+            </summary>
+            <param name="status">Initial status of this <see cref="T:ServiceCore.EngineState"/> instance.</param>
+        </member>
+        <member name="P:ServiceCore.EngineState.Status">
+            <inheritdoc/>
+        </member>
+        <member name="P:ServiceCore.EngineState.IsDependenciesBroken">
+            <inheritdoc/>
+        </member>
+        <member name="P:ServiceCore.EngineState.Modifications">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.EngineState.Setup(ServiceCore.EngineState)">
+            <inheritdoc/>
+        </member>
         <member name="T:ServiceCore.EngineStatus">
             <summary>
             Current status of the engine.
@@ -454,7 +505,7 @@
         </member>
         <member name="F:ServiceCore.EngineStatus.Terminated">
             <summary>
-            (Default) Engine is terminated and waits for <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext)"/> to be used.
+            (Default) Engine is terminated and waits for <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext,ServiceCore.IInitializationArgs)"/> to be used.
             </summary>
             <remarks>
             If automatic initialization enabled in <see cref="!:EclipseConfiguration"/>
@@ -499,6 +550,46 @@
             that we just can't do anything about it.
             </remarks>
         </member>
+        <member name="T:ServiceCore.ICommonStartupArgs">
+            <summary>
+            Describes arguments, common between <see cref="T:ServiceCore.IInitializationArgs"/> and <see cref="T:ServiceCore.ITerminationArgs"/>.
+            </summary>
+            <remarks>
+            Implemented by <see cref="T:ServiceCore.EngineState"/>, allowing you to use it directly in the initialization/termination.
+            </remarks>
+            <seealso cref="M:ServiceCore.IService.InvokeInitialize(ServiceCore.IInitializationArgs)"/>
+            <seealso cref="M:ServiceCore.IService.InvokeTerminate(ServiceCore.ITerminationArgs)"/>
+        </member>
+        <member name="P:ServiceCore.ICommonStartupArgs.Status">
+            <summary>
+            (When provided by the <see cref="T:ServiceCore.Engine"/>) Current status of the <see cref="T:ServiceCore.Engine"/>.
+            </summary>
+        </member>
+        <member name="P:ServiceCore.ICommonStartupArgs.IsDependenciesBroken">
+            <summary>
+            (When provided by the <see cref="T:ServiceCore.Engine"/>) Whether dependencies were not resolved properly.
+            (As a core dev) You can use this value to only partially initialize your services, to show a warning on a screen.
+            Introduced to avoid fully loading LocalizationServices (and similar) when dependencies are broken, and an restart will be needed anyway.
+            </summary>
+            <remarks>
+            Even with broken dependencies, <see cref="P:ServiceCore.ICommonStartupArgs.Status"/> will be set to <see cref="F:ServiceCore.EngineStatus.Initialized"/>!
+            <see cref="F:ServiceCore.EngineStatus.InitializationBroken"/> and <see cref="F:ServiceCore.EngineStatus.TerminationBroken"/>
+            is shown ONLY when <see cref="T:ServiceCore.Engine"/> breaks during <see cref="!:Engine.Initialize(InitializationContext)"/> or <see cref="M:ServiceCore.Engine.Terminate(ServiceCore.ITerminationArgs)"/>
+            </remarks>
+        </member>
+        <member name="P:ServiceCore.ICommonStartupArgs.Modifications">
+            <summary>
+            All loaded modifications (a.k.a. <see cref="T:ServiceCore.Loading.ILoadingSource"/>s).
+            Also describes dependencies between all of them.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.ICommonStartupArgs.Setup(ServiceCore.EngineState)">
+            <summary>
+            Supplies values from <see cref="T:ServiceCore.EngineState"/>.
+            This method is called by <see cref="T:ServiceCore.Engine"/> during initialization.
+            </summary>
+            <param name="state">Engine state to setup.</param>
+        </member>
         <member name="T:ServiceCore.IgnoreServiceAttribute">
             <summary>
             Defines which services (or service interfaces) should be ignored when constructing service associations.
@@ -512,15 +603,11 @@
             </summary>
             <seealso cref="M:ServiceCore.Services.ServiceEntry.Construct(ServiceCore.IService)"/>
         </member>
-        <member name="T:ServiceCore.InitializationArgs">
+        <member name="T:ServiceCore.IInitializationArgs">
             <summary>
-            Arguments used for initializing individual services.
+            Arguments for <see cref="T:ServiceCore.IService"/> initialization.
             </summary>
-        </member>
-        <member name="M:ServiceCore.InitializationArgs.#ctor(System.Boolean)">
-            <summary>
-            Arguments used for initializing individual services.
-            </summary>
+            <seealso cref="M:ServiceCore.IService.InvokeInitialize(ServiceCore.IInitializationArgs)"/>
         </member>
         <member name="T:ServiceCore.InitializationContext">
             <summary>
@@ -569,8 +656,8 @@
             Runs this callback as soon as mod assembly is loaded.
             </summary>
             <remarks>
-            For built-in assemblies, or assemblies loaded before <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext)"/> is run
-            - <see cref="T:ServiceCore.Engine"/> will run callbacks with this attribute almost immediately on <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext)"/> call.
+            For built-in assemblies, or assemblies loaded before <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext,ServiceCore.IInitializationArgs)"/> is run
+            - <see cref="T:ServiceCore.Engine"/> will run callbacks with this attribute almost immediately on <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext,ServiceCore.IInitializationArgs)"/> call.
             <para>
             Note: <see cref="F:ServiceCore.InitializationTiming.BeforeEngineInitialization"/> will run only after ALL mods were loaded and ALL <see cref="F:ServiceCore.InitializationTiming.OnAssemblyLoad"/> was run.
             This guarantees that <see cref="F:ServiceCore.InitializationTiming.OnAssemblyLoad"/> will 100%, always, run before any <see cref="F:ServiceCore.InitializationTiming.BeforeEngineInitialization"/> will run.
@@ -630,7 +717,7 @@
             Cached type-safe null-safe instance of the service. ~x40 times faster than <see cref="M:ServiceCore.Services.Get``1"/>!
             </summary>
             <remarks>
-            Might be <c>null</c> when <see cref="T:ServiceCore.Engine"/> is not initialized.
+            Might be <c>null</c> when <see cref="T:ServiceCore.Engine"/> is not initializing/initialized.
             </remarks>
         </member>
         <member name="P:ServiceCore.IService`1.Initialized">
@@ -671,7 +758,7 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
-        <member name="M:ServiceCore.IService`1.Initialize">
+        <member name="M:ServiceCore.IService`1.Initialize(ServiceCore.IInitializationArgs)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                               Public Methods
@@ -686,20 +773,20 @@
             </summary>
             <returns>
             Doesn't change <see cref="P:ServiceCore.IService`1.Initialized"/>.
-            Use <see cref="M:ServiceCore.IService.InvokeInitialize"/> to change it.
+            Use <see cref="M:ServiceCore.IService.InvokeInitialize(ServiceCore.IInitializationArgs)"/> to change it.
             </returns>
         </member>
-        <member name="M:ServiceCore.IService`1.Terminate">
+        <member name="M:ServiceCore.IService`1.Terminate(ServiceCore.ITerminationArgs)">
             <summary>
             Called when <see cref="T:ServiceCore.Engine"/> terminates all the code and resources from the memory.
             You are meant to save/serialize the state of your service when this event occurs.
             </summary>
             <remarks>
             Doesn't change <see cref="P:ServiceCore.IService`1.Initialized"/>.
-            Use <see cref="M:ServiceCore.IService.InvokeTerminate"/> to change it.
+            Use <see cref="M:ServiceCore.IService.InvokeTerminate(ServiceCore.ITerminationArgs)"/> to change it.
             </remarks>
         </member>
-        <member name="M:ServiceCore.IService`1.ServiceCore#IService#InternalInitialize">
+        <member name="M:ServiceCore.IService`1.ServiceCore#IService#InternalInitialize(ServiceCore.IInitializationArgs)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                                  Internal
@@ -707,7 +794,7 @@
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <inheritdoc/>
         </member>
-        <member name="M:ServiceCore.IService`1.ServiceCore#IService#InternalTerminate">
+        <member name="M:ServiceCore.IService`1.ServiceCore#IService#InternalTerminate(ServiceCore.ITerminationArgs)">
             <inheritdoc/>
         </member>
         <member name="M:ServiceCore.IService`1.Exist">
@@ -724,6 +811,13 @@
             Use <see cref="P:ServiceCore.IService`1.Initialized"/> itself instead.
             </remarks>
         </member>
+        <member name="M:ServiceCore.IService`1.TryGet(`0@)">
+            <summary>
+            Checks if <see cref="P:ServiceCore.IService`1.Instance"/> exist and returns it as <paramref name="service"/>.
+            </summary>
+            <param name="service">Returned service or <c>null</c>.</param>
+            <returns><c>true</c> when service <see cref="M:ServiceCore.IService`1.Exist"/>. <c>false</c> otherwise.</returns>
+        </member>
         <member name="T:ServiceCore.IService">
             <summary>
             Basic interface for a service.
@@ -735,34 +829,34 @@
         </member>
         <member name="P:ServiceCore.IService.Initialized">
             <summary>
-            Flags whether <see cref="M:ServiceCore.IService.InvokeInitialize"/> was called on a service or not.
+            Flags whether <see cref="M:ServiceCore.IService.InvokeInitialize(ServiceCore.IInitializationArgs)"/> was called on a service or not.
             </summary>
         </member>
-        <member name="M:ServiceCore.IService.InternalInitialize">
+        <member name="M:ServiceCore.IService.InternalInitialize(ServiceCore.IInitializationArgs)">
             <summary>
             Used to hide this method from <see cref="T:ServiceCore.IService"/> users.
-            Invokes <see cref="M:ServiceCore.IService`1.Initialize"/>.
+            Invokes <see cref="M:ServiceCore.IService`1.Initialize(ServiceCore.IInitializationArgs)"/>.
             </summary>
         </member>
-        <member name="M:ServiceCore.IService.InternalTerminate">
+        <member name="M:ServiceCore.IService.InternalTerminate(ServiceCore.ITerminationArgs)">
             <summary>
             Used to hide this method from <see cref="T:ServiceCore.IService"/> users.
-            Invokes <see cref="M:ServiceCore.IService`1.Terminate"/>.
+            Invokes <see cref="M:ServiceCore.IService`1.Terminate(ServiceCore.ITerminationArgs)"/>.
             </summary>
         </member>
-        <member name="M:ServiceCore.IService.InvokeInitialize">
+        <member name="M:ServiceCore.IService.InvokeInitialize(ServiceCore.IInitializationArgs)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
-            .                                               Static Methods
+            .                                               Public Methods
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <summary>
-            Calls <see cref="M:ServiceCore.IService`1.Initialize"/> if service is not <see cref="P:ServiceCore.IService.Initialized"/>.
+            Calls <see cref="M:ServiceCore.IService`1.Initialize(ServiceCore.IInitializationArgs)"/> if service is not <see cref="P:ServiceCore.IService.Initialized"/>.
             </summary>
         </member>
-        <member name="M:ServiceCore.IService.InvokeTerminate">
+        <member name="M:ServiceCore.IService.InvokeTerminate(ServiceCore.ITerminationArgs)">
             <summary>
-            Calls <see cref="M:ServiceCore.IService`1.Terminate"/> is service is <see cref="P:ServiceCore.IService.Initialized"/>.
+            Calls <see cref="M:ServiceCore.IService`1.Terminate(ServiceCore.ITerminationArgs)"/> is service is <see cref="P:ServiceCore.IService.Initialized"/>.
             </summary>
         </member>
         <member name="T:ServiceCore.IService.ThreadExecutionMode">
@@ -789,6 +883,12 @@
             Initializes service in multithreaded mode, after other <see cref="F:ServiceCore.IService.ThreadExecutionMode.MainThread"/> services initialize.
             Order is reversed during unloading.
             </summary>
+        </member>
+        <member name="T:ServiceCore.ITerminationArgs">
+            <summary>
+            Arguments for <see cref="T:ServiceCore.IService"/> termination.
+            </summary>
+            <seealso cref="M:ServiceCore.IService.InvokeTerminate(ServiceCore.ITerminationArgs)"/>
         </member>
         <member name="T:ServiceCore.Loading.AssemblySource">
             <summary>
@@ -902,7 +1002,7 @@
         <member name="T:ServiceCore.Localization.DefaultLocalizationService">
             <inheritdoc cref="T:ServiceCore.Localization.ILocalizationService"/>
         </member>
-        <member name="M:ServiceCore.Localization.DefaultLocalizationService.Initialize">
+        <member name="M:ServiceCore.Localization.DefaultLocalizationService.Initialize(ServiceCore.IInitializationArgs)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                              Implementations
@@ -910,7 +1010,7 @@
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <inheritdoc/>
         </member>
-        <member name="M:ServiceCore.Localization.DefaultLocalizationService.Terminate">
+        <member name="M:ServiceCore.Localization.DefaultLocalizationService.Terminate(ServiceCore.ITerminationArgs)">
             <inheritdoc/>
         </member>
         <member name="T:ServiceCore.Localization.ILocalizationService">
@@ -1007,6 +1107,63 @@
             <summary>
             Map of dependencies.
             </summary>
+        </member>
+        <member name="P:ServiceCore.Modding.DependencyMap.Item(System.String)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Public Properties
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Direct accessor to an internal <see cref="T:System.Collections.Generic.Dictionary`2"/> with all <see cref="T:ServiceCore.Loading.ILoadingSource"/>s.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.DependencyMap.m_Map">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Map of all dependencies.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.Modding.DependencyMap.m_Sources">
+            <summary>
+            Ordered sources.
+            </summary>
+        </member>
+        <member name="P:ServiceCore.Modding.DependencyMap.Count">
+            <inheritdoc/>
+        </member>
+        <member name="P:ServiceCore.Modding.DependencyMap.IsReadOnly">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyMap.TryResolve(System.Collections.Generic.IReadOnlyList{ServiceCore.Loading.ILoadingSource}@)">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Attempts to resolve all dependencies. Returns cached <paramref name="sources"/> array if already resolved.
+            </summary>
+            <returns><c>true</c> if all dependencies were resolved successfully. <c>false</c> if dependencies are missing or incompatible.</returns>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyMap.Clear">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:ServiceCore.Modding.DependencyMap.GetEnumerator">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                              Implementations
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <inheritdoc cref="M:System.Collections.Generic.IEnumerable`1.GetEnumerator"/>
         </member>
         <member name="T:ServiceCore.Modding.Modification`1">
             <inheritdoc cref="T:ServiceCore.Modding.Modification"/>
@@ -1237,7 +1394,7 @@
         </member>
         <member name="F:ServiceCore.Modding.ModificationInfo.Dependencies">
             <summary>
-            Dependencies that this mod declares.
+            Modifications that this mod declares.
             </summary>
             <remarks>
             Those are <see cref="P:System.Reflection.Assembly.FullName"/>s (?).
@@ -2278,7 +2435,7 @@
         <member name="T:ServiceCore.Serialization.DefaultSerializationService">
             <inheritdoc cref="T:ServiceCore.Serialization.ISerializationService"/>
         </member>
-        <member name="M:ServiceCore.Serialization.DefaultSerializationService.Initialize">
+        <member name="M:ServiceCore.Serialization.DefaultSerializationService.Initialize(ServiceCore.IInitializationArgs)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                              Implementations
@@ -2286,7 +2443,7 @@
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <inheritdoc/>
         </member>
-        <member name="M:ServiceCore.Serialization.DefaultSerializationService.Terminate">
+        <member name="M:ServiceCore.Serialization.DefaultSerializationService.Terminate(ServiceCore.ITerminationArgs)">
             <inheritdoc/>
         </member>
         <member name="T:ServiceCore.Serialization.ISerializationService">
@@ -2478,7 +2635,7 @@
             Cached type-safe null-safe instance of the service. ~x40 times faster than <see cref="M:ServiceCore.Services.Get``1"/>!
             </summary>
             <remarks>
-            Might be <c>null</c> when <see cref="T:ServiceCore.Engine"/> is not initialized.
+            Might be <c>null</c> when <see cref="T:ServiceCore.Engine"/> is not initializing/initialized.
             </remarks>
         </member>
         <member name="P:ServiceCore.Service`1.Initialized">
@@ -2519,7 +2676,7 @@
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         </member>
-        <member name="M:ServiceCore.Service`1.Initialize">
+        <member name="M:ServiceCore.Service`1.Initialize(ServiceCore.IInitializationArgs)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                               Public Methods
@@ -2534,20 +2691,20 @@
             </summary>
             <returns>
             Doesn't change <see cref="P:ServiceCore.Service`1.Initialized"/>.
-            Use <see cref="M:ServiceCore.IService.InvokeInitialize"/> to change it.
+            Use <see cref="M:ServiceCore.IService.InvokeInitialize(ServiceCore.IInitializationArgs)"/> to change it.
             </returns>
         </member>
-        <member name="M:ServiceCore.Service`1.Terminate">
+        <member name="M:ServiceCore.Service`1.Terminate(ServiceCore.ITerminationArgs)">
             <summary>
             Called when <see cref="T:ServiceCore.Engine"/> terminates all the code and resources from the memory.
-            You are meant to save/serialize the state of your service when this event occurs.
+            You are meant to save/serialize the args of your service when this event occurs.
             </summary>
             <remarks>
             Doesn't change <see cref="P:ServiceCore.Service`1.Initialized"/>.
-            Use <see cref="M:ServiceCore.IService.InvokeTerminate"/> to change it.
+            Use <see cref="M:ServiceCore.IService.InvokeTerminate(ServiceCore.ITerminationArgs)"/> to change it.
             </remarks>
         </member>
-        <member name="M:ServiceCore.Service`1.ServiceCore#IService#InternalInitialize">
+        <member name="M:ServiceCore.Service`1.ServiceCore#IService#InternalInitialize(ServiceCore.IInitializationArgs)">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                                  Internal
@@ -2555,7 +2712,7 @@
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             <inheritdoc/>
         </member>
-        <member name="M:ServiceCore.Service`1.ServiceCore#IService#InternalTerminate">
+        <member name="M:ServiceCore.Service`1.ServiceCore#IService#InternalTerminate(ServiceCore.ITerminationArgs)">
             <inheritdoc/>
         </member>
         <member name="M:ServiceCore.Service`1.Exist">
@@ -2571,6 +2728,13 @@
             During <see cref="T:ServiceCore.Engine"/> initialization, even if service exist, <see cref="P:ServiceCore.Service`1.Initialized"/> might be <c>false</c>.
             Use <see cref="P:ServiceCore.Service`1.Initialized"/> itself instead.
             </remarks>
+        </member>
+        <member name="M:ServiceCore.Service`1.TryGet(`0@)">
+            <summary>
+            Checks if <see cref="P:ServiceCore.Service`1.Instance"/> exist and returns it as <paramref name="service"/>.
+            </summary>
+            <param name="service">Returned service or <c>null</c>.</param>
+            <returns><c>true</c> when service <see cref="M:ServiceCore.Service`1.Exist"/>. <c>false</c> otherwise.</returns>
         </member>
         <member name="T:ServiceCore.ServiceAttribute">
             <summary>

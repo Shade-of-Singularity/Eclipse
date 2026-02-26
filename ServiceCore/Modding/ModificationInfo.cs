@@ -51,7 +51,7 @@ namespace ServiceCore.Modding
         /// </summary>
         public readonly Version Version = version;
         /// <summary>
-        /// Dependencies that this mod declares.
+        /// Modifications that this mod declares.
         /// </summary>
         /// <remarks>
         /// Those are <see cref="System.Reflection.Assembly.FullName"/>s (?).

@@ -47,6 +47,11 @@ namespace ServiceCore
         /// Ignored when <see cref="ExecutionMode"/> is not <see cref="IService.ThreadExecutionMode.MainThread"/>
         /// (as it will essentially produce race conditions).
         /// </remarks>
+        /// TODO: Resolve ordering based on <see cref="Loading.ILoadingSource.Dependencies"/>,
+        /// and use <see cref="ExecutionOrder"/> for ordering within one <see cref="Loading.ILoadingSource"/> only.
+        /// TODO: Create an analyzer and code gen which will control dependencies manually by reading the code.
+        ///  And analyzer will warn you if you create mutual dependency within a service.
+        ///  This is a new age of service development, baby!
         public int ExecutionOrder { get; }
 
         /// <summary>
