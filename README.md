@@ -1,10 +1,10 @@
 # About ServiceCore
-**ServiceCore** - is a high-performance library for managing (initializing, terminating) services at runtime, with complete (optional) community modding support.
+**ServiceCore** - is a high-performance library for managing (initializing, terminating) services at runtime, based on [CRTP](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern) pattern, with complete (optional) community modding support.
 
 It can be used either as an utility library, or as a core for your application or game
 (Especially if you want it to support modding from a get-go)
 
-And it utilizes UniTask for async initialization and termination.
+And it utilizes [UniTask](https://github.com/Cysharp/UniTask) for async initialization and termination.
 
 Services can be initialized in a multi-threaded context as well, even when used in Unity.
 
