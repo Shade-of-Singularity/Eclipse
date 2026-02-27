@@ -240,9 +240,9 @@ namespace ServiceCore
         /// Initializes the entire engine: <see cref="IService"/>s, <see cref="Modification"/>s, and so on.
         /// You can specify <see cref="InitializationContext"/> to make <see cref="Engine"/> load-in community modifications.
         /// </summary>
-        /// <param name="context">Specifies how <see cref="NativeAssemblies"/> should be ordered. and provides<see cref="ILoadingSource"/>s to load.</param>
+        /// <param name="context">Specifies how <see cref="NativeAssemblies"/> should be ordered. and provides<see cref="ILoadingSource"/>s to load. </param>
         /// <param name="args">Args to use for <see cref="IService"/> termination. Replaced with <see cref="DefaultInitializationArgs"/> if not provided.</param>
-        public static async UniTask Initialize(InitializationContext context = default, IInitializationArgs? args = default)
+        public static async UniTask Initialize(InitializationContext? context = default, IInitializationArgs? args = default)
         {
             if (Status != EngineStatus.Terminated)
             {
@@ -266,6 +266,7 @@ namespace ServiceCore
                     throw new NotSupportedException();
                 }
 
+                context ??= InitializationContext.Default;
                 // Listing built-in assemblies with built-in services.
                 // TODO: Remove allocations if needed.
                 List<ILoadable> loadables = new(m_NativeAssemblies.Count);
@@ -277,7 +278,7 @@ namespace ServiceCore
                     loadables.Add((LoadableAssemblyReference)assembly);
                 }
 
-                AssemblySource natives = new(loadables);
+                NativeSource natives = new(loadables);
 
                 // Note: Looks like it's mandatory for us to have a "core" mod after all in the code.
                 //  It seems to be easier this way. Next time I will implement this, so modding can be supported properly.
@@ -299,8 +300,8 @@ namespace ServiceCore
                 if (dependencies.TryResolve(out IReadOnlyList<ILoadingSource> sources))
                 {
                     // Loads engine and all dependencies.
-                    if (args is null) args = new DefaultInitializationArgs(m_State);
-                    else args.Setup(m_State);
+                    args ??= new DefaultInitializationArgs();
+                    args.Setup(m_State);
 
                     await LoadInternal(sources, args);
                 }
@@ -308,8 +309,8 @@ namespace ServiceCore
                 {
                     // Loads only native libraries if dependencies cannot be resolved.
                     m_State.IsDependenciesBroken = true;
-                    if (args is null) args = new DefaultInitializationArgs(m_State);
-                    else args.Setup(m_State);
+                    args ??= new DefaultInitializationArgs();
+                    args.Setup(m_State);
 
                     await LoadInternal(Provider(natives), args);
                     static IEnumerable<ILoadingSource> Provider(ILoadingSource source)

@@ -87,13 +87,11 @@
             <summary>
             Default implementation for <see cref="T:ServiceCore.IInitializationArgs"/>.
             </summary>
-            <param name="state">Engine state to apply.</param>
         </member>
-        <member name="M:ServiceCore.DefaultInitializationArgs.#ctor(ServiceCore.EngineState)">
+        <member name="M:ServiceCore.DefaultInitializationArgs.#ctor">
             <summary>
             Default implementation for <see cref="T:ServiceCore.IInitializationArgs"/>.
             </summary>
-            <param name="state">Engine state to apply.</param>
         </member>
         <member name="P:ServiceCore.DefaultInitializationArgs.Status">
             <inheritdoc/>
@@ -327,7 +325,7 @@
             Initializes the entire engine: <see cref="T:ServiceCore.IService"/>s, <see cref="T:ServiceCore.Modding.Modification"/>s, and so on.
             You can specify <see cref="T:ServiceCore.InitializationContext"/> to make <see cref="T:ServiceCore.Engine"/> load-in community modifications.
             </summary>
-            <param name="context">Specifies how <see cref="P:ServiceCore.Engine.NativeAssemblies"/> should be ordered. and provides<see cref="T:ServiceCore.Loading.ILoadingSource"/>s to load.</param>
+            <param name="context">Specifies how <see cref="P:ServiceCore.Engine.NativeAssemblies"/> should be ordered. and provides<see cref="T:ServiceCore.Loading.ILoadingSource"/>s to load. </param>
             <param name="args">Args to use for <see cref="T:ServiceCore.IService"/> termination. Replaced with <see cref="T:ServiceCore.DefaultInitializationArgs"/> if not provided.</param>
         </member>
         <member name="M:ServiceCore.Engine.Terminate(ServiceCore.ITerminationArgs)">
@@ -619,6 +617,13 @@
             Describes how <see cref="T:ServiceCore.Engine"/> should be initialized, and what it should initialize.
             </summary>
         </member>
+        <member name="F:ServiceCore.InitializationContext.Default">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Static Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
         <member name="F:ServiceCore.InitializationContext.NativeSorter">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
@@ -630,9 +635,46 @@
             </summary>
             <seealso cref="P:ServiceCore.Engine.NativeAssemblies"/>
         </member>
+        <member name="F:ServiceCore.InitializationContext.BeforeInitialization">
+            <summary>
+            Enlists all <see cref="T:ServiceCore.IService"/>s which should be initialized before main/default initialization loop happens.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.InitializationContext.AfterInitialization">
+            <summary>
+            Enlists all <see cref="T:ServiceCore.IService"/>s which should be initialized after main/default initialization loop happens.
+            </summary>
+        </member>
         <member name="F:ServiceCore.InitializationContext.Sources">
             <summary>
             All loading sources for <see cref="T:ServiceCore.Engine"/> to initialize.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.InitializationContext.isWritingAfter">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:ServiceCore.InitializationContext.Schedule``1">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Public Methods
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+            <summary>
+            Schedules given service to run before the default initialization sequence (or after, if run after <see cref="M:ServiceCore.InitializationContext.ScheduleDefault"/>).
+            </summary>
+        </member>
+        <member name="M:ServiceCore.InitializationContext.Schedule``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Schedules given services to run before the default initialization sequence (or after, if run after <see cref="M:ServiceCore.InitializationContext.ScheduleDefault"/>).
+            </summary>
+        </member>
+        <member name="M:ServiceCore.InitializationContext.ScheduleDefault">
+            <summary>
+            Schedules all default services after already scheduled ones.
             </summary>
         </member>
         <member name="T:ServiceCore.InitializationTiming">
@@ -818,6 +860,28 @@
             <param name="service">Returned service or <c>null</c>.</param>
             <returns><c>true</c> when service <see cref="M:ServiceCore.IService`1.Exist"/>. <c>false</c> otherwise.</returns>
         </member>
+        <member name="M:ServiceCore.IService`1.Instantiate``1(ServiceCore.IInitializationArgs)">
+            <summary>
+            Manually instantiates and initializes this <see cref="T:ServiceCore.IService`1"/>.
+            </summary>
+            <remarks>
+            Manual initialization is incompatible with <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext,ServiceCore.IInitializationArgs)"/>.
+            If you decide to use both - make sure that manually initialized services are destroyed before using automatic initialization.
+            </remarks>
+            <param name="args">Arguments to provide during initialization. Defaults to terminated <see cref="T:ServiceCore.EngineState"/>.</param>
+            <returns><see cref="T:Cysharp.Threading.Tasks.UniTask"/> from <see cref="M:ServiceCore.IService`1.Initialize(ServiceCore.IInitializationArgs)"/> to await.</returns>
+        </member>
+        <member name="M:ServiceCore.IService`1.Destroy(ServiceCore.ITerminationArgs)">
+            <summary>
+            Manually terminates and destroys this <see cref="T:ServiceCore.IService`1"/>.
+            </summary>
+            <remarks>
+            Manual destruction is incompatible with <see cref="M:ServiceCore.Engine.Terminate(ServiceCore.ITerminationArgs)"/>.
+            Make sure all manually initialized services are destroyed while <see cref="T:ServiceCore.Engine"/> is <see cref="F:ServiceCore.EngineStatus.Initialized"/>.
+            </remarks>
+            <param name="args">Arguments to provide to the service for termination. Defaults to terminated <see cref="T:ServiceCore.EngineState"/>.</param>
+            <returns><see cref="T:Cysharp.Threading.Tasks.UniTask"/> from <see cref="M:ServiceCore.IService`1.Terminate(ServiceCore.ITerminationArgs)"/> to await.</returns>
+        </member>
         <member name="T:ServiceCore.IService">
             <summary>
             Basic interface for a service.
@@ -889,36 +953,6 @@
             Arguments for <see cref="T:ServiceCore.IService"/> termination.
             </summary>
             <seealso cref="M:ServiceCore.IService.InvokeTerminate(ServiceCore.ITerminationArgs)"/>
-        </member>
-        <member name="T:ServiceCore.Loading.AssemblySource">
-            <summary>
-            Source of direct <see cref="T:System.Reflection.Assembly"/> references for <see cref="T:ServiceCore.Engine"/>.
-            </summary>
-            <remarks>
-            By default used for the core of the game.
-            </remarks>
-            <param name="loadable">Collection of loadable items to... Well... Load.</param>
-        </member>
-        <member name="M:ServiceCore.Loading.AssemblySource.#ctor(System.Collections.Generic.IEnumerable{ServiceCore.Loading.ILoadable})">
-            <summary>
-            Source of direct <see cref="T:System.Reflection.Assembly"/> references for <see cref="T:ServiceCore.Engine"/>.
-            </summary>
-            <remarks>
-            By default used for the core of the game.
-            </remarks>
-            <param name="loadable">Collection of loadable items to... Well... Load.</param>
-        </member>
-        <member name="P:ServiceCore.Loading.AssemblySource.Identifier">
-            <inheritdoc/>
-        </member>
-        <member name="P:ServiceCore.Loading.AssemblySource.Version">
-            <inheritdoc/>
-        </member>
-        <member name="P:ServiceCore.Loading.AssemblySource.Dependencies">
-            <inheritdoc/>
-        </member>
-        <member name="M:ServiceCore.Loading.AssemblySource.GetLoadables">
-            <inheritdoc/>
         </member>
         <member name="T:ServiceCore.Loading.ILoadable">
             <summary>
@@ -998,6 +1032,36 @@
             Creates an <see cref="T:ServiceCore.Loading.ILoadable"/> struct from provided <paramref name="assembly"/>.
             </summary>
             <param name="assembly">Assembly to analyze.</param>
+        </member>
+        <member name="T:ServiceCore.Loading.NativeSource">
+            <summary>
+            Source of direct <see cref="T:System.Reflection.Assembly"/> references for <see cref="T:ServiceCore.Engine"/>.
+            </summary>
+            <remarks>
+            By default used for the core of the game.
+            </remarks>
+            <param name="loadable">Collection of loadable items to... Well... Load.</param>
+        </member>
+        <member name="M:ServiceCore.Loading.NativeSource.#ctor(System.Collections.Generic.IEnumerable{ServiceCore.Loading.ILoadable})">
+            <summary>
+            Source of direct <see cref="T:System.Reflection.Assembly"/> references for <see cref="T:ServiceCore.Engine"/>.
+            </summary>
+            <remarks>
+            By default used for the core of the game.
+            </remarks>
+            <param name="loadable">Collection of loadable items to... Well... Load.</param>
+        </member>
+        <member name="P:ServiceCore.Loading.NativeSource.Identifier">
+            <inheritdoc/>
+        </member>
+        <member name="P:ServiceCore.Loading.NativeSource.Version">
+            <inheritdoc/>
+        </member>
+        <member name="P:ServiceCore.Loading.NativeSource.Dependencies">
+            <inheritdoc/>
+        </member>
+        <member name="M:ServiceCore.Loading.NativeSource.GetLoadables">
+            <inheritdoc/>
         </member>
         <member name="T:ServiceCore.Localization.DefaultLocalizationService">
             <inheritdoc cref="T:ServiceCore.Localization.ILocalizationService"/>
@@ -3032,12 +3096,14 @@
             Invoked when services was fully terminated.
             </summary>
         </member>
-        <member name="P:ServiceCore.Services.Entries">
+        <member name="P:ServiceCore.Services.ManuallyInitializedAmount">
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             .
             .                                              Static Properties
             .
             ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="P:ServiceCore.Services.Entries">
             <summary>
             Enumerator over all <see cref="T:ServiceCore.Services.ServiceEntry"/> of all registered services.
             </summary>
@@ -3110,6 +3176,16 @@
             <remarks>
             Will return <c>false</c> even if service exist, but its type is wrong.
             </remarks>
+        </member>
+        <member name="M:ServiceCore.Services.IncrementManuallyInitializedServices">
+            <summary>
+            Increments <see cref="P:ServiceCore.Services.ManuallyInitializedAmount"/> by '1'.
+            </summary>
+        </member>
+        <member name="M:ServiceCore.Services.DecrementManuallyInitializedServices">
+            <summary>
+            Decrements <see cref="P:ServiceCore.Services.ManuallyInitializedAmount"/> by '1'.
+            </summary>
         </member>
         <member name="T:ServiceCore.Services.ServiceEntry">
             <summary>

@@ -10,7 +10,7 @@ namespace ServiceCore.Loading
     /// By default used for the core of the game.
     /// </remarks>
     /// <param name="loadable">Collection of loadable items to... Well... Load.</param>
-    public readonly struct AssemblySource(IEnumerable<ILoadable> loadable) : ILoadingSource
+    public readonly struct NativeSource(IEnumerable<ILoadable> loadable) : ILoadingSource
     {
         /// <inheritdoc/>
         public string Identifier => Modifications.CoreModificationName;

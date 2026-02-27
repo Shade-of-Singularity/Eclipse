@@ -5,21 +5,28 @@ namespace ServiceCore
     /// <summary>
     /// Default implementation for <see cref="IInitializationArgs"/>.
     /// </summary>
-    /// <param name="state">Engine state to apply.</param>
-    public sealed class DefaultInitializationArgs(EngineState state) : IInitializationArgs
+    public sealed class DefaultInitializationArgs() : IInitializationArgs
     {
         /// <inheritdoc/>
-        public EngineStatus Status { get; internal set; } = state.Status;
+        public EngineStatus Status { get; internal set; }
 
         /// <inheritdoc/>
-        public bool IsDependenciesBroken { get; internal set; } = state.IsDependenciesBroken;
+        public bool IsDependenciesBroken { get; internal set; }
 
         /// <inheritdoc/>
-        public DependencyMap Modifications { get; internal set; } = state.Modifications;
+        public DependencyMap? Modifications { get; internal set; }
 
         /// <inheritdoc/>
-        public void Setup(EngineState state)
+        public void Setup(EngineState? state)
         {
+            if (state is null)
+            {
+                Status = EngineStatus.Terminated;
+                IsDependenciesBroken = false;
+                Modifications = null;
+                return;
+            }
+
             Status = state.Status;
             IsDependenciesBroken = state.IsDependenciesBroken;
             Modifications = state.Modifications;

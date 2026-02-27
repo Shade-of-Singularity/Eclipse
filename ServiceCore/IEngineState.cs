@@ -33,13 +33,13 @@ namespace ServiceCore
         /// All loaded modifications (a.k.a. <see cref="Loading.ILoadingSource"/>s).
         /// Also describes dependencies between all of them.
         /// </summary>
-        public DependencyMap Modifications { get; }
+        public DependencyMap? Modifications { get; }
 
         /// <summary>
         /// Supplies values from <see cref="EngineState"/>.
         /// This method is called by <see cref="Engine"/> during initialization.
         /// </summary>
         /// <param name="state">Engine state to setup.</param>
-        public void Setup(EngineState state);
+        public void Setup(EngineState? state);
     }
 }

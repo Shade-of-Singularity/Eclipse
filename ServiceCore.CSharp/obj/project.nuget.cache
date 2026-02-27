@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "FPNaE3M4bO0=",
+  "success": true,
+  "projectFilePath": "F:\\Unity\\Support\\ServiceCore\\ServiceCore.CSharp\\ServiceCore.CSharp.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Dark\\.nuget\\packages\\microsoft.codeanalysis.analyzers\\3.11.0\\microsoft.codeanalysis.analyzers.3.11.0.nupkg.sha512",
+    "C:\\Users\\Dark\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\4.5.3\\system.runtime.compilerservices.unsafe.4.5.3.nupkg.sha512",
+    "C:\\Users\\Dark\\.nuget\\packages\\system.threading.tasks.extensions\\4.5.4\\system.threading.tasks.extensions.4.5.4.nupkg.sha512",
+    "C:\\Users\\Dark\\.nuget\\packages\\unitask\\2.5.10\\unitask.2.5.10.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -68,6 +68,8 @@ namespace ServiceCore
         /// .                                              Static Properties
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        internal static uint ManuallyInitializedAmount { get; private set; }
+        
         /// <summary>
         /// Enumerator over all <see cref="ServiceEntry"/> of all registered services.
         /// </summary>
@@ -223,5 +225,17 @@ namespace ServiceCore
             service = default;
             return false;
         }
+
+
+
+        /// <summary>
+        /// Increments <see cref="ManuallyInitializedAmount"/> by '1'.
+        /// </summary>
+        internal static void IncrementManuallyInitializedServices() => ManuallyInitializedAmount++;
+
+        /// <summary>
+        /// Decrements <see cref="ManuallyInitializedAmount"/> by '1'.
+        /// </summary>
+        internal static void DecrementManuallyInitializedServices() => ManuallyInitializedAmount--;
     }
 }

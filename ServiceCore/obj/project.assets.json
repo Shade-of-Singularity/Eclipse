@@ -859,11 +859,11 @@
   "project": {
     "version": "0.4.0",
     "restore": {
-      "projectUniqueName": "F:\\Unity\\Support\\Eclipse\\ServiceCore\\ServiceCore.csproj",
+      "projectUniqueName": "F:\\Unity\\Support\\ServiceCore\\ServiceCore\\ServiceCore.csproj",
       "projectName": "ServiceCore",
-      "projectPath": "F:\\Unity\\Support\\Eclipse\\ServiceCore\\ServiceCore.csproj",
+      "projectPath": "F:\\Unity\\Support\\ServiceCore\\ServiceCore\\ServiceCore.csproj",
       "packagesPath": "C:\\Users\\Dark\\.nuget\\packages\\",
-      "outputPath": "F:\\Unity\\Support\\Eclipse\\ServiceCore\\obj\\",
+      "outputPath": "F:\\Unity\\Support\\ServiceCore\\ServiceCore\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

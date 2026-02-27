@@ -27,3 +27,16 @@ F:\Unity\Support\Eclipse\ServiceCore\obj\Debug\netstandard2.1\ServiceCore.source
 F:\Unity\Support\Eclipse\ServiceCore\obj\Debug\netstandard2.1\ServiceCore.dll
 F:\Unity\Support\Eclipse\ServiceCore\obj\Debug\netstandard2.1\ServiceCore.xml
 F:\Unity\Support\Eclipse\ServiceCore\obj\Debug\netstandard2.1\ServiceCore.pdb
+F:\Unity\Support\ServiceCore\ServiceCore\bin\Debug\netstandard2.1\ServiceCore.deps.json
+F:\Unity\Support\ServiceCore\ServiceCore\bin\Debug\netstandard2.1\ServiceCore.dll
+F:\Unity\Support\ServiceCore\ServiceCore\bin\Debug\netstandard2.1\ServiceCore.pdb
+F:\Unity\Support\ServiceCore\ServiceCore\bin\Debug\netstandard2.1\ServiceCore.xml
+F:\Unity\Support\ServiceCore\ServiceCore\obj\Debug\netstandard2.1\ServiceCore.csproj.AssemblyReference.cache
+F:\Unity\Support\ServiceCore\ServiceCore\obj\Debug\netstandard2.1\ServiceCore.GeneratedMSBuildEditorConfig.editorconfig
+F:\Unity\Support\ServiceCore\ServiceCore\obj\Debug\netstandard2.1\ServiceCore.AssemblyInfoInputs.cache
+F:\Unity\Support\ServiceCore\ServiceCore\obj\Debug\netstandard2.1\ServiceCore.AssemblyInfo.cs
+F:\Unity\Support\ServiceCore\ServiceCore\obj\Debug\netstandard2.1\ServiceCore.csproj.CoreCompileInputs.cache
+F:\Unity\Support\ServiceCore\ServiceCore\obj\Debug\netstandard2.1\ServiceCore.sourcelink.json
+F:\Unity\Support\ServiceCore\ServiceCore\obj\Debug\netstandard2.1\ServiceCore.dll
+F:\Unity\Support\ServiceCore\ServiceCore\obj\Debug\netstandard2.1\ServiceCore.xml
+F:\Unity\Support\ServiceCore\ServiceCore\obj\Debug\netstandard2.1\ServiceCore.pdb

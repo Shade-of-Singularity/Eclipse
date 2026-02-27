@@ -1,6 +1,6 @@
 is_global = true
 build_property.RootNamespace = ServiceCore.Editor
-build_property.ProjectDir = F:\Unity\Support\Eclipse\ServiceCore.UnityEditor\
+build_property.ProjectDir = F:\Unity\Support\ServiceCore\ServiceCore.UnityEditor\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.CsWinRTUseWindowsUIXamlProjections = false

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "F:\\Unity\\Support\\Eclipse\\ServiceCore.UnityEditor\\ServiceCore.UnityEditor.csproj": {}
+    "F:\\Unity\\Support\\ServiceCore\\ServiceCore.UnityEditor\\ServiceCore.UnityEditor.csproj": {}
   },
   "projects": {
-    "F:\\Unity\\Support\\Eclipse\\ServiceCore.UnityEditor\\ServiceCore.UnityEditor.csproj": {
+    "F:\\Unity\\Support\\ServiceCore\\ServiceCore.UnityEditor\\ServiceCore.UnityEditor.csproj": {
       "version": "0.4.0",
       "restore": {
-        "projectUniqueName": "F:\\Unity\\Support\\Eclipse\\ServiceCore.UnityEditor\\ServiceCore.UnityEditor.csproj",
+        "projectUniqueName": "F:\\Unity\\Support\\ServiceCore\\ServiceCore.UnityEditor\\ServiceCore.UnityEditor.csproj",
         "projectName": "ServiceCore.UnityEditor",
-        "projectPath": "F:\\Unity\\Support\\Eclipse\\ServiceCore.UnityEditor\\ServiceCore.UnityEditor.csproj",
+        "projectPath": "F:\\Unity\\Support\\ServiceCore\\ServiceCore.UnityEditor\\ServiceCore.UnityEditor.csproj",
         "packagesPath": "C:\\Users\\Dark\\.nuget\\packages\\",
-        "outputPath": "F:\\Unity\\Support\\Eclipse\\ServiceCore.UnityEditor\\obj\\",
+        "outputPath": "F:\\Unity\\Support\\ServiceCore\\ServiceCore.UnityEditor\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -32,11 +32,11 @@
           "netstandard2.1": {
             "targetAlias": "netstandard2.1",
             "projectReferences": {
-              "F:\\Unity\\Support\\Eclipse\\ServiceCore.UnityEngine\\ServiceCore.UnityEngine.csproj": {
-                "projectPath": "F:\\Unity\\Support\\Eclipse\\ServiceCore.UnityEngine\\ServiceCore.UnityEngine.csproj"
+              "F:\\Unity\\Support\\ServiceCore\\ServiceCore.UnityEngine\\ServiceCore.UnityEngine.csproj": {
+                "projectPath": "F:\\Unity\\Support\\ServiceCore\\ServiceCore.UnityEngine\\ServiceCore.UnityEngine.csproj"
               },
-              "F:\\Unity\\Support\\Eclipse\\ServiceCore\\ServiceCore.csproj": {
-                "projectPath": "F:\\Unity\\Support\\Eclipse\\ServiceCore\\ServiceCore.csproj"
+              "F:\\Unity\\Support\\ServiceCore\\ServiceCore\\ServiceCore.csproj": {
+                "projectPath": "F:\\Unity\\Support\\ServiceCore\\ServiceCore\\ServiceCore.csproj"
               }
             }
           }
@@ -82,14 +82,14 @@
         }
       }
     },
-    "F:\\Unity\\Support\\Eclipse\\ServiceCore.UnityEngine\\ServiceCore.UnityEngine.csproj": {
+    "F:\\Unity\\Support\\ServiceCore\\ServiceCore.UnityEngine\\ServiceCore.UnityEngine.csproj": {
       "version": "0.4.0",
       "restore": {
-        "projectUniqueName": "F:\\Unity\\Support\\Eclipse\\ServiceCore.UnityEngine\\ServiceCore.UnityEngine.csproj",
+        "projectUniqueName": "F:\\Unity\\Support\\ServiceCore\\ServiceCore.UnityEngine\\ServiceCore.UnityEngine.csproj",
         "projectName": "ServiceCore.UnityEngine",
-        "projectPath": "F:\\Unity\\Support\\Eclipse\\ServiceCore.UnityEngine\\ServiceCore.UnityEngine.csproj",
+        "projectPath": "F:\\Unity\\Support\\ServiceCore\\ServiceCore.UnityEngine\\ServiceCore.UnityEngine.csproj",
         "packagesPath": "C:\\Users\\Dark\\.nuget\\packages\\",
-        "outputPath": "F:\\Unity\\Support\\Eclipse\\ServiceCore.UnityEngine\\obj\\",
+        "outputPath": "F:\\Unity\\Support\\ServiceCore\\ServiceCore.UnityEngine\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -110,8 +110,8 @@
           "netstandard2.1": {
             "targetAlias": "netstandard2.1",
             "projectReferences": {
-              "F:\\Unity\\Support\\Eclipse\\ServiceCore\\ServiceCore.csproj": {
-                "projectPath": "F:\\Unity\\Support\\Eclipse\\ServiceCore\\ServiceCore.csproj"
+              "F:\\Unity\\Support\\ServiceCore\\ServiceCore\\ServiceCore.csproj": {
+                "projectPath": "F:\\Unity\\Support\\ServiceCore\\ServiceCore\\ServiceCore.csproj"
               }
             }
           }
@@ -157,14 +157,14 @@
         }
       }
     },
-    "F:\\Unity\\Support\\Eclipse\\ServiceCore\\ServiceCore.csproj": {
+    "F:\\Unity\\Support\\ServiceCore\\ServiceCore\\ServiceCore.csproj": {
       "version": "0.4.0",
       "restore": {
-        "projectUniqueName": "F:\\Unity\\Support\\Eclipse\\ServiceCore\\ServiceCore.csproj",
+        "projectUniqueName": "F:\\Unity\\Support\\ServiceCore\\ServiceCore\\ServiceCore.csproj",
         "projectName": "ServiceCore",
-        "projectPath": "F:\\Unity\\Support\\Eclipse\\ServiceCore\\ServiceCore.csproj",
+        "projectPath": "F:\\Unity\\Support\\ServiceCore\\ServiceCore\\ServiceCore.csproj",
         "packagesPath": "C:\\Users\\Dark\\.nuget\\packages\\",
-        "outputPath": "F:\\Unity\\Support\\Eclipse\\ServiceCore\\obj\\",
+        "outputPath": "F:\\Unity\\Support\\ServiceCore\\ServiceCore\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

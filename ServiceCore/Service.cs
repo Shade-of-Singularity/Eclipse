@@ -167,7 +167,7 @@ namespace ServiceCore
         /// Use <see cref="Initialized"/> itself instead.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Exist() => m_Instance is not null;
+        public static bool Exist() => Instance is not null;
 
         /// <summary>
         /// Checks if <see cref="Instance"/> exist and returns it as <paramref name="service"/>.
@@ -175,10 +175,6 @@ namespace ServiceCore
         /// <param name="service">Returned service or <c>null</c>.</param>
         /// <returns><c>true</c> when service <see cref="Exist"/>. <c>false</c> otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryGet([NotNullWhen(true)] out T? service)
-        {
-            service = m_Instance;
-            return service is not null;
-        }
+        public static bool TryGet([NotNullWhen(true)] out T? service) => (service = Instance) is not null;
     }
 }

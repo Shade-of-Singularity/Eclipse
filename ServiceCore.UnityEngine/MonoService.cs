@@ -70,7 +70,8 @@ namespace ServiceCore
         protected virtual void Awake()
         {
             m_Instance ??= (T)this;
-            ((IService)this).InvokeInitialize(Engine.State).Forget(); // TODO: Schedule via Engine. Use custom initialization args.
+            // TODO: Schedule via Engine or postpone until previous service is initialized. Use custom initialization args.
+            ((IService)this).InvokeInitialize(Engine.State).Forget();
         }
 
         /// <summary>
@@ -78,7 +79,8 @@ namespace ServiceCore
         /// </summary>
         protected virtual void Destroy()
         {
-            ((IService)this).InvokeTerminate(Engine.State).Forget(); // TODO: Schedule via Engine. Use custom termination args.
+            // TODO: Schedule via Engine or postpone until previous service is terminated. Use custom termination args.
+            ((IService)this).InvokeTerminate(Engine.State).Forget();
             m_Instance = default;
         }
 

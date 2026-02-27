@@ -1514,6 +1514,37 @@
             Runs whenever unloader is disabled by any means.
             </summary>
         </member>
+        <member name="T:ServiceCore.ServiceInitializer">
+            <summary>
+            Initializes attached <see cref="T:ServiceCore.MonoService`1"/> instances manually at startup, in a given order.
+            </summary>
+        </member>
+        <member name="P:ServiceCore.ServiceInitializer.InitializationArgs">
+            <summary>
+            <see cref="T:ServiceCore.ITerminationArgs"/> to use in <see cref="M:ServiceCore.IService.InvokeInitialize(ServiceCore.IInitializationArgs)"/>.
+            Defaults to current <see cref="P:ServiceCore.Engine.State"/> if not provided.
+            </summary>
+        </member>
+        <member name="P:ServiceCore.ServiceInitializer.TerminationArgs">
+            <summary>
+            <see cref="T:ServiceCore.ITerminationArgs"/> to use in <see cref="M:ServiceCore.IService.InvokeTerminate(ServiceCore.ITerminationArgs)"/>.
+            Defaults to current <see cref="P:ServiceCore.Engine.State"/> if not provided.
+            </summary>
+        </member>
+        <member name="F:ServiceCore.ServiceInitializer.m_Instance">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Private Fields
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
+        <member name="M:ServiceCore.ServiceInitializer.Awake">
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+            .
+            .                                               Unity Callbacks
+            .
+            ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        </member>
         <member name="T:ServiceCore.Specs">
             <summary>
             Stores information about system specs of current device.

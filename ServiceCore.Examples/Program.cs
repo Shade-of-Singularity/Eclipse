@@ -1,0 +1,68 @@
+﻿using Cysharp.Threading.Tasks;
+using ServiceCore.CSharp;
+using ServiceCore.Localization;
+using ServiceCore.Serialization;
+
+namespace ServiceCore.Examples
+{
+    internal class Program
+    {
+        static async Task<int> Main(string[] args)
+        {
+            await ManualInitialization();
+            await AutoInitialization_SemiManualOrdering();
+            await AutomaticInitialization();
+            CSharpExclusiveBlockingInitialization();
+            return 0;
+        }
+
+        static async UniTask ManualInitialization()
+        {
+            ServiceCoreLogger.Log($"Starting {nameof(ManualInitialization)}.");
+
+            // Manual initialization.
+            await ISerializationService.Instantiate<DefaultSerializationService>();
+            await ILocalizationService.Instantiate<DefaultLocalizationService>();
+
+            // Manual termination.
+            await ISerializationService.Destroy();
+            await ILocalizationService.Destroy();
+
+            ServiceCoreLogger.Log($"Finished {nameof(ManualInitialization)}.");
+        }
+
+        static async UniTask AutoInitialization_SemiManualOrdering()
+        {
+            ServiceCoreLogger.Log($"Starting {nameof(AutoInitialization_SemiManualOrdering)}.");
+
+            InitializationContext context = new();
+            context.Schedule<ISerializationService>();
+            context.Schedule<ILocalizationService>();
+            context.ScheduleDefault();
+            await Engine.Initialize(context);
+            await Engine.Terminate();
+
+            ServiceCoreLogger.Log($"Finished {nameof(AutoInitialization_SemiManualOrdering)}.");
+        }
+
+        static async UniTask AutomaticInitialization()
+        {
+            ServiceCoreLogger.Log($"Starting {nameof(AutomaticInitialization)}.");
+
+            await Engine.Initialize();
+            await Engine.Terminate();
+
+            ServiceCoreLogger.Log($"Finished {nameof(AutomaticInitialization)}.");
+        }
+
+        static void CSharpExclusiveBlockingInitialization()
+        {
+            ServiceCoreLogger.Log($"Starting {nameof(CSharpExclusiveBlockingInitialization)}.");
+
+            EngineHelpers.InitializeSync();
+            EngineHelpers.TerminateSync();
+
+            ServiceCoreLogger.Log($"Finished {nameof(CSharpExclusiveBlockingInitialization)}.");
+        }
+    }
+}

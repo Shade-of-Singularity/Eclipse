@@ -191,7 +191,7 @@ namespace ServiceCore
         /// Use <see cref="Initialized"/> itself instead.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Exist() => m_Instance is not null;
+        public static bool Exist() => Instance is not null;
 
         /// <summary>
         /// Checks if <see cref="Instance"/> exist and returns it as <paramref name="service"/>.
@@ -199,10 +199,60 @@ namespace ServiceCore
         /// <param name="service">Returned service or <c>null</c>.</param>
         /// <returns><c>true</c> when service <see cref="Exist"/>. <c>false</c> otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryGet([NotNullWhen(true)] out T? service)
+        public static bool TryGet([NotNullWhen(true)] out T? service) => (service = Instance) is not null;
+
+        /// <summary>
+        /// Manually instantiates and initializes this <see cref="IService{T}"/>.
+        /// </summary>
+        /// <remarks>
+        /// Manual initialization is incompatible with <see cref="Engine.Initialize(InitializationContext, IInitializationArgs?)"/>.
+        /// If you decide to use both - make sure that manually initialized services are destroyed before using automatic initialization.
+        /// </remarks>
+        /// <param name="args">Arguments to provide during initialization. Defaults to terminated <see cref="EngineState"/>.</param>
+        /// <returns><see cref="UniTask"/> from <see cref="IService{T}.Initialize(IInitializationArgs)"/> to await.</returns>
+        public static async UniTask Instantiate<TService>(IInitializationArgs? args = default)
+            where TService : class, IService<T>, new()
         {
-            service = m_Instance;
-            return service is not null;
+            // Note: Should we simply keep those services alive instead?
+            if (Engine.Status != EngineStatus.Terminated)
+            {
+                throw new NotSupportedException($"{Engine.LogPrefix} You cannot use manual service initialization after ServiceCore was initialized.");
+            }
+
+            if (m_Instance is not null)
+            {
+                throw new Exception($"{Engine.LogPrefix} Service ({typeof(T).Name}) is already instantiated.");
+            }
+
+            await (m_Instance = (T)(IService<T>)new TService()).InvokeInitialize(args ?? Engine.State);
+            Services.IncrementManuallyInitializedServices();
+        }
+
+        /// <summary>
+        /// Manually terminates and destroys this <see cref="IService{T}"/>.
+        /// </summary>
+        /// <remarks>
+        /// Manual destruction is incompatible with <see cref="Engine.Terminate(ITerminationArgs?)"/>.
+        /// Make sure all manually initialized services are destroyed while <see cref="Engine"/> is <see cref="EngineStatus.Initialized"/>.
+        /// </remarks>
+        /// <param name="args">Arguments to provide to the service for termination. Defaults to terminated <see cref="EngineState"/>.</param>
+        /// <returns><see cref="UniTask"/> from <see cref="IService{T}.Terminate(ITerminationArgs)"/> to await.</returns>
+        public static async UniTask Destroy(ITerminationArgs? args = default)
+        {
+            // Note: Should we simply keep those services alive instead?
+            if (Engine.Status != EngineStatus.Terminated)
+            {
+                throw new NotSupportedException($"{Engine.LogPrefix} You cannot use manual service destruction after ServiceCore was initialized.");
+            }
+
+            if (m_Instance is null)
+            {
+                throw new Exception($"{Engine.LogPrefix} Service ({typeof(T).Name}) is already destroyed.");
+            }
+
+            await m_Instance.InvokeTerminate(args ?? Engine.State);
+            m_Instance = null;
+            Services.DecrementManuallyInitializedServices();
         }
     }
 
