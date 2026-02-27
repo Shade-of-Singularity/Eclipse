@@ -2840,6 +2840,28 @@
             <param name="service">Returned service or <c>null</c>.</param>
             <returns><c>true</c> when service <see cref="M:ServiceCore.Service`1.Exist"/>. <c>false</c> otherwise.</returns>
         </member>
+        <member name="M:ServiceCore.Service`1.Instantiate(ServiceCore.IInitializationArgs)">
+            <summary>
+            Manually instantiates and initializes this <see cref="T:ServiceCore.IService`1"/>.
+            </summary>
+            <remarks>
+            Manual initialization is incompatible with <see cref="M:ServiceCore.Engine.Initialize(ServiceCore.InitializationContext,ServiceCore.IInitializationArgs)"/>.
+            If you decide to use both - make sure that manually initialized services are destroyed before using automatic initialization.
+            </remarks>
+            <param name="args">Arguments to provide during initialization. Defaults to terminated <see cref="T:ServiceCore.EngineState"/>.</param>
+            <returns><see cref="T:Cysharp.Threading.Tasks.UniTask"/> from <see cref="M:ServiceCore.IService`1.Initialize(ServiceCore.IInitializationArgs)"/> to await.</returns>
+        </member>
+        <member name="M:ServiceCore.Service`1.Destroy(ServiceCore.ITerminationArgs)">
+            <summary>
+            Manually terminates and destroys this <see cref="T:ServiceCore.IService`1"/>.
+            </summary>
+            <remarks>
+            Manual destruction is incompatible with <see cref="M:ServiceCore.Engine.Terminate(ServiceCore.ITerminationArgs)"/>.
+            Make sure all manually initialized services are destroyed while <see cref="T:ServiceCore.Engine"/> is <see cref="F:ServiceCore.EngineStatus.Initialized"/>.
+            </remarks>
+            <param name="args">Arguments to provide to the service for termination. Defaults to terminated <see cref="T:ServiceCore.EngineState"/>.</param>
+            <returns><see cref="T:Cysharp.Threading.Tasks.UniTask"/> from <see cref="M:ServiceCore.IService`1.Terminate(ServiceCore.ITerminationArgs)"/> to await.</returns>
+        </member>
         <member name="T:ServiceCore.ServiceAttribute">
             <summary>
             Describes when and how service should be initialized.

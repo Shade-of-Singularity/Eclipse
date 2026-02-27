@@ -7,6 +7,12 @@ namespace ServiceCore.Examples
 {
     internal class Program
     {
+        private sealed class SealedService : Service<SealedService>
+        {
+            protected override UniTask Initialize(IInitializationArgs args) => UniTask.CompletedTask;
+            protected override UniTask Terminate(ITerminationArgs args) => UniTask.CompletedTask;
+        }
+
         static async Task<int> Main(string[] args)
         {
             await ManualInitialization();
@@ -23,10 +29,12 @@ namespace ServiceCore.Examples
             // Manual initialization.
             await ISerializationService.Instantiate<DefaultSerializationService>();
             await ILocalizationService.Instantiate<DefaultLocalizationService>();
+            await SealedService.Instantiate(); // Alternative with Service<T> services.
 
             // Manual termination.
             await ISerializationService.Destroy();
             await ILocalizationService.Destroy();
+            await SealedService.Destroy();
 
             ServiceCoreLogger.Log($"Finished {nameof(ManualInitialization)}.");
         }
