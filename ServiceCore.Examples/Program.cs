@@ -67,8 +67,8 @@ namespace ServiceCore.Examples
         {
             ServiceCoreLogger.Log($"Starting {nameof(CSharpExclusiveBlockingInitialization)}.");
 
-            EngineHelpers.InitializeSync();
-            EngineHelpers.TerminateSync();
+            EngineHelpers.InitializeBlocking();
+            EngineHelpers.TerminateBlocking();
 
             ServiceCoreLogger.Log($"Finished {nameof(CSharpExclusiveBlockingInitialization)}.");
         }

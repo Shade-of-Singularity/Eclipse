@@ -18,7 +18,7 @@ namespace ServiceCore.CSharp
         /// </remarks>
         /// <param name="context"><inheritdoc cref="Engine.Initialize(InitializationContext?, IInitializationArgs?)"/></param>
         /// <param name="args"><inheritdoc cref="Engine.Initialize(InitializationContext?, IInitializationArgs?)"/></param>
-        public static void InitializeSync(InitializationContext? context = default, IInitializationArgs? args = default)
+        public static void InitializeBlocking(InitializationContext? context = default, IInitializationArgs? args = default)
         {
             Engine.Initialize(context, args).AsValueTask().GetAwaiter().GetResult();
         }
@@ -32,7 +32,7 @@ namespace ServiceCore.CSharp
         /// No piece of advice here - just good luck in finding a good place for this method call.
         /// </remarks>
         /// <param name="args"><inheritdoc cref="Engine.Terminate(ITerminationArgs?)"/></param>
-        public static void TerminateSync(ITerminationArgs? args = default)
+        public static void TerminateBlocking(ITerminationArgs? args = default)
         {
             Engine.Terminate(args).AsValueTask().GetAwaiter().GetResult();
         }
