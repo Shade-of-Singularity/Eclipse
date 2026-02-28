@@ -20,7 +20,7 @@ namespace ServiceCore.CSharp
         /// <param name="args"><inheritdoc cref="Engine.Initialize(InitializationContext?, IInitializationArgs?)"/></param>
         public static void InitializeBlocking(InitializationContext? context = default, IInitializationArgs? args = default)
         {
-            Engine.Initialize(context, args).AsValueTask().GetAwaiter().GetResult();
+            Engine.Initialize(context, args).AsTask().GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace ServiceCore.CSharp
         /// <param name="args"><inheritdoc cref="Engine.Terminate(ITerminationArgs?)"/></param>
         public static void TerminateBlocking(ITerminationArgs? args = default)
         {
-            Engine.Terminate(args).AsValueTask().GetAwaiter().GetResult();
+            Engine.Terminate(args).AsTask().GetAwaiter().GetResult();
         }
     }
 }
