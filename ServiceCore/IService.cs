@@ -15,7 +15,6 @@
 /// ]]>
 
 using Cysharp.Threading.Tasks;
-using ServiceCore.Reflection;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -113,8 +112,6 @@ namespace ServiceCore
         /// .                                           Initialization / Reset
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        // TODO: Remove. Descriptor will be useless if you don't use Engine.Initialize(...), so we need to initialize it only when actually needed.
-        static IService() => KnownServices.Register(ServiceDescriptor.Construct<T>(ServiceGetter, ServiceSetter));
         private static IService? ServiceGetter() => m_Instance;
         private static void ServiceSetter(IService? service)
         {
@@ -126,6 +123,23 @@ namespace ServiceCore
                 ServiceCoreLogger.LogError($"{Services.LogPrefix} Rebinded to null service ({typeof(T).Name}) without termination! Service state won't reset!");
             }
         }
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                                  Internal
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <inheritdoc/>
+        ServiceDescriptor IService.GetDescriptor() => ServiceDescriptor.Retrieve(GetType(), ServiceGetter, ServiceSetter);
+
+        /// <inheritdoc/>
+        UniTask IService.InternalInitialize(IInitializationArgs args) => Initialize(args);
+
+        /// <inheritdoc/>
+        UniTask IService.InternalTerminate(ITerminationArgs args) => Terminate(args);
 
 
 
@@ -157,20 +171,6 @@ namespace ServiceCore
         /// Use <see cref="IService.InvokeTerminate(ITerminationArgs)"/> to change it.
         /// </remarks>
         UniTask Terminate(ITerminationArgs args);
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                                  Internal
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <inheritdoc/>
-        UniTask IService.InternalInitialize(IInitializationArgs args) => Initialize(args);
-
-        /// <inheritdoc/>
-        UniTask IService.InternalTerminate(ITerminationArgs args) => Terminate(args);
 
 
 
@@ -216,7 +216,7 @@ namespace ServiceCore
                 throw new Exception($"{Engine.LogPrefix} Service ({typeof(T).Name}) is already instantiated.");
             }
 
-            KnownServices.Retrieve<T>()!.Persistent = true;
+            ServiceDescriptor.Retrieve<T>(ServiceGetter, ServiceSetter).Persistent = true;
             // TODO: Schedule it properly.
             // TODO: Call initialization callbacks.
             await (m_Instance = (T)(IService<T>)new TService()).InvokeInitialize(args ?? Engine.State);
@@ -234,12 +234,17 @@ namespace ServiceCore
         /// <returns><see cref="UniTask"/> from <see cref="IService{T}.Terminate(ITerminationArgs)"/> to await.</returns>
         public static async UniTask Destroy(ITerminationArgs? args = default)
         {
-            if (m_Instance is null)
+            if (m_Instance is null || !ServiceDescriptor.TryGetCached<T>(out var descriptor))
             {
-                throw new Exception($"{Engine.LogPrefix} Service ({typeof(T).Name}) is already destroyed.");
+                throw new Exception($"{Engine.LogPrefix} Service ({typeof(T).Name}) is already destroyed or was never initialized.");
             }
 
-            KnownServices.Retrieve<T>()!.Persistent = false;
+            if (!descriptor.Persistent)
+            {
+                throw new Exception($"{Engine.LogPrefix} Cannot manually destroy automatically initialized service ({typeof(T).Name}).");
+            }
+
+            descriptor.Persistent = false;
             // TODO: Schedule it properly.
             // TODO: Call termination callbacks.
             await m_Instance.InvokeTerminate(args ?? Engine.State);
@@ -285,6 +290,14 @@ namespace ServiceCore
         /// .                                               Public Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Constructs special descriptor for this <see cref="IService"/>.
+        /// </summary>
+        /// <remarks>
+        /// Calls <see cref="ServiceDescriptor.Retrieve(Type, ServiceGetter, ServiceSetter)"/> internally. Thus it is cached.
+        /// </remarks>
+        public ServiceDescriptor GetDescriptor();
+        
         /// <summary>
         /// Calls <see cref="IService{T}.Initialize"/> if service is not <see cref="Initialized"/>.
         /// </summary>

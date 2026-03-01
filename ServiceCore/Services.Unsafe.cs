@@ -97,7 +97,6 @@ namespace ServiceCore
             /// Sets or Replaces existing service in internal service collection.
             /// </summary>
             /// <param Identifier="service">Service to register.</param>
-            /// TODO: Add locking for internal dictionary.
             public static void Set(IService service)
             {
                 if (service is null)
@@ -106,55 +105,7 @@ namespace ServiceCore
                     return;
                 }
 
-                var entry = new ActiveService(service);
-                if (entry.Descriptor.Persistent)
-                {
-                    ServiceCoreLogger.LogWarning($"{LogPrefix} Cannot register persistent service.");
-                    return;
-                }
-
-                SetUnchecked(entry);
-            }
-
-            /// <summary>
-            /// Sets or Replaces existing service in internal service collection.
-            /// </summary>
-            /// <remarks>
-            /// Internally, service is replaced on if *any* conflict between 
-            /// </remarks>
-            /// <param Identifier="entry">Service entry to register.</param>
-            /// TODO: Add locking for internal dictionary.
-            public static void Set(ActiveService entry)
-            {
-                if (entry.Service is null)
-                {
-                    ServiceCoreLogger.LogWarning($"{LogPrefix} Attempted to register null service.");
-                    return;
-                }
-
-                if (entry.Descriptor.Persistent)
-                {
-                    ServiceCoreLogger.LogWarning($"{LogPrefix} Cannot register persistent service.");
-                    return;
-                }
-
-                SetUnchecked(entry);
-            }
-
-            /// <summary>
-            /// Removes given service from a service list.
-            /// </summary>
-            /// <returns><inheritdoc cref="Remove(Type)"/></returns>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool Remove(IService service)
-            {
-                if (service is null)
-                {
-                    ServiceCoreLogger.LogWarning($"{LogPrefix} Attempted to remove null service.");
-                    return false;
-                }
-
-                return RemoveUnchecked(service.GetType());
+                SetUnchecked(service);
             }
 
             /// <summary>
@@ -164,15 +115,15 @@ namespace ServiceCore
             /// <c>true</c> if service was removed.
             /// <c>false</c> if there was no service under given <paramref Identifier="key"/> to begin with.
             /// </returns>
-            public static bool Remove(Type key)
+            public static bool Remove(IService service)
             {
-                if (key is null)
+                if (service is null)
                 {
                     ServiceCoreLogger.LogWarning($"{LogPrefix} Attempted to remove null service.");
                     return false;
                 }
 
-                return RemoveUnchecked(key);
+                return RemoveUnchecked(service.GetType());
             }
 
 
@@ -207,12 +158,15 @@ namespace ServiceCore
                 }
             }
 
-            private static void SetUnchecked(ActiveService entry)
+            private static void SetUnchecked(IService service)
             {
                 lock (m_Services)
                 {
+                    ServiceDescriptor descriptor = service.GetDescriptor();
+                    ActiveService entry = new(service, descriptor);
+
                     // Registers service.
-                    Type[] associations = entry.Descriptor.Associations;
+                    Type[] associations = descriptor.Associations;
                     for (int i = 0; i < associations.Length; i++)
                     {
                         Type association = associations[i];
@@ -220,16 +174,17 @@ namespace ServiceCore
 
                         if (!m_Services.TryAdd(association, entry))
                         {
-                            // Overwrites previously existing service entirely.
+                            // Removes previously existing service entirely.
                             ActiveService existing = m_Services[association];
-                            Array.ForEach(existing.Descriptor.Associations, static a => m_Services.Remove(a));
-                            existing.Descriptor.Setter(null);
+                            Array.ForEach(descriptor.Associations, static a => m_Services.Remove(a));
+                            descriptor.Setter(null);
+
                             m_Services[association] = entry;
                         }
                     }
 
                     // Updates underlying Instance field.
-                    entry.Descriptor.Setter(entry.Service);
+                    descriptor.Setter(service);
                 }
             }
 
