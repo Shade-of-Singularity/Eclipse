@@ -113,7 +113,8 @@ namespace ServiceCore
         /// .                                           Initialization / Reset
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        static IService() => KnownServices.Register<T>(ServiceDescriptor.Construct<T>(ServiceGetter, ServiceSetter));
+        // TODO: Remove. Descriptor will be useless if you don't use Engine.Initialize(...), so we need to initialize it only when actually needed.
+        static IService() => KnownServices.Register(ServiceDescriptor.Construct<T>(ServiceGetter, ServiceSetter));
         private static IService? ServiceGetter() => m_Instance;
         private static void ServiceSetter(IService? service)
         {

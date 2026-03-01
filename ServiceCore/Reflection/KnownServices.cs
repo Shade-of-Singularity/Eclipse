@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using static ServiceCore.Services;
 
 namespace ServiceCore.Reflection
 {
@@ -32,17 +31,8 @@ namespace ServiceCore.Reflection
         /// <summary>
         /// Register information about specific <see cref="IService"/> under type <typeparamref name="T"/>.
         /// </summary>
-        /// <typeparam name="T">Type of a specified <see cref="IService"/>.</typeparam>
         /// <param name="descriptor">Information about specified <see cref="IService"/>.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Register<T>(ServiceDescriptor descriptor) where T : IService => Register(typeof(T), descriptor);
-
-        /// <summary>
-        /// Register information about specific <see cref="IService"/> <paramref name="type"/>.
-        /// </summary>
-        /// <param name="type">Type of an <see cref="IService"/>.</param>
-        /// <param name="descriptor">Information about specified <see cref="IService"/>.</param>
-        public static void Register(Type type, ServiceDescriptor descriptor)
+        public static void Register(ServiceDescriptor descriptor)
         {
             lock (Services)
             {
@@ -52,7 +42,6 @@ namespace ServiceCore.Reflection
                 {
                     Type association = associations[i];
                     if (association is null) continue;
-
                     if (!Services.TryAdd(association, descriptor))
                     {
                         // Overwrites previously existing service entirely.
@@ -101,7 +90,7 @@ namespace ServiceCore.Reflection
         /// <param name="type">Type of required <see cref="IService"/>.</param>
         /// <param name="descriptor">Information about specified <see cref="IService"/>.</param>
         /// <returns><c>true</c> when <paramref name="descriptor"/> were found and it is provided. <c>false</c> otherwise.</returns>
-        public static bool Retrieve(Type type, [NotNullWhen(true)] out ServiceDescriptor? descriptor)
+        public static bool TryRetrieve(Type type, [NotNullWhen(true)] out ServiceDescriptor? descriptor)
         {
             lock (Services) return Services.TryGetValue(type, out descriptor);
         }

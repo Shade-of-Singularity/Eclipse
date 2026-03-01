@@ -17,6 +17,7 @@
 using Cysharp.Threading.Tasks;
 using ServiceCore.Loading;
 using ServiceCore.Modding;
+using ServiceCore.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -634,11 +635,18 @@ namespace ServiceCore
                 // This code will be moved to background thread later.
                 // You should use EngineService Initialize for executing code on a main thread instead.
                 RuntimeHelpers.RunClassConstructor(summary.service.TypeHandle);
-                Services.ActiveService entry = new((IService)Activator.CreateInstance(summary.service));
+                if (!KnownServices.TryRetrieve(summary.service, out var descriptor))
+                {
+                    // TODO: Cache associations by analyzing the interface tree.
+                    ServiceCoreLogger.LogWarning($"No known associations exist for service ({summary.service}).");
+                    continue;
+                }
+
+                Services.ActiveService entry = new((IService)Activator.CreateInstance(summary.service), descriptor);
                 Services.Unsafe.Set(entry); // TODO: Terminate service on overwriting.
 
                 // Registers all associations with current service.
-                Type[] associations = entry.Descriptor.Associations;
+                Type[] associations = descriptor.Associations;
                 for (int j = 0; j < associations.Length; j++)
                 {
                     context.Mapping[associations[j]] = summary;

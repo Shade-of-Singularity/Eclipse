@@ -26,13 +26,6 @@ namespace ServiceCore
         /// </summary>
         /// <param name="Service">Instance of a service.</param>
         /// <param name="Descriptor">Descriptor of said service.</param>
-        public readonly record struct ActiveService(IService Service, ServiceDescriptor Descriptor)
-        {
-            /// <summary>
-            /// Creates <see cref="ActiveService"/> by retrieving <see cref="ServiceDescriptor"/> from <see cref="KnownServices"/> automatically.
-            /// </summary>
-            /// <param name="Service">Instance of a service.</param>
-            public ActiveService(IService Service) : this(Service, KnownServices.Retrieve(Service.GetType())) { }
-        }
+        public readonly record struct ActiveService(IService Service, ServiceDescriptor Descriptor) { }
     }
 }
