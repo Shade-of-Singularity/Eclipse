@@ -67,17 +67,20 @@ namespace ServiceCore
         /// .
         /// .                                              Static Properties
         /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        internal static uint ManuallyInitializedAmount { get; private set; }
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>        
+        /// <summary>
+        /// <see cref="IReadOnlyDictionary{TKey, TValue}"/> containing all currently present <see cref="ActiveService"/>s.
+        /// </summary>
+        public static IReadOnlyDictionary<Type, ActiveService> Map => m_Services;
         
         /// <summary>
-        /// Enumerator over all <see cref="ServiceEntry"/> of all registered services.
+        /// Enumerator over all <see cref="ActiveService"/> of all registered services.
         /// </summary>
-        public static IEnumerable<ServiceEntry> Entries
+        public static IEnumerable<ActiveService> Entries
         {
             get
             {
-                lock (_lock)
+                lock (m_Services)
                 {
                     // TODO: Avoid duplicates, which appear due to map mapping services to multiple keys for optimization.
                     foreach (var entry in m_Services.Values)
@@ -95,12 +98,12 @@ namespace ServiceCore
         {
             get
             {
-                lock (_lock)
+                lock (m_Services)
                 {
                     // TODO: Avoid duplicates, which appear due to map mapping services to multiple keys for optimization.
                     foreach (var entry in m_Services.Values)
                     {
-                        yield return entry.service;
+                        yield return entry.Service;
                     }
                 }
             }
@@ -115,8 +118,7 @@ namespace ServiceCore
         /// .                                               Static Fields
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private static readonly Dictionary<Type, ServiceEntry> m_Services = [];
-        private static readonly object _lock = new();
+        private static readonly Dictionary<Type, ActiveService> m_Services = [];
 
 
 
@@ -134,7 +136,8 @@ namespace ServiceCore
         /// </remarks>
         public static bool Has<T>() where T : class, IService
         {
-            return m_Services.TryGetValue(typeof(T), out ServiceEntry entry) && entry.service is T;
+            // Note: Do we need a type check at all? Won't it break the logic in common use cases?
+            return m_Services.TryGetValue(typeof(T), out ActiveService entry) && entry.Service is T;
         }
 
         /// <summary>
@@ -145,7 +148,8 @@ namespace ServiceCore
         /// </remarks>
         public static bool Has(Type type)
         {
-            return m_Services.TryGetValue(type, out ServiceEntry entry) && entry.service.GetType() == type;
+            // Note: Do we need a type check at all? Won't it break the logic in common use cases?
+            return m_Services.TryGetValue(type, out ActiveService entry) && entry.Service.GetType() == type;
         }
 
 
@@ -160,9 +164,9 @@ namespace ServiceCore
         /// </remarks>
         public static T? Get<T>() where T : class, IService
         {
-            if (m_Services.TryGetValue(typeof(T), out ServiceEntry entry))
+            if (m_Services.TryGetValue(typeof(T), out ActiveService entry))
             {
-                return entry.service as T;
+                return entry.Service as T;
             }
 
             return default;
@@ -177,9 +181,9 @@ namespace ServiceCore
         /// </remarks>
         public static IService? Get(Type type)
         {
-            if (m_Services.TryGetValue(type, out ServiceEntry entry) && entry.GetType() == type)
+            if (m_Services.TryGetValue(type, out ActiveService entry) && entry.GetType() == type)
             {
-                return entry.service;
+                return entry.Service;
             }
 
             return default;
@@ -197,7 +201,7 @@ namespace ServiceCore
         /// </remarks>
         public static bool TryGet<T>([NotNullWhen(true)] out T? service) where T : class, IService
         {
-            if (m_Services.TryGetValue(typeof(T), out ServiceEntry entry) && entry.service is T t)
+            if (m_Services.TryGetValue(typeof(T), out ActiveService entry) && entry.Service is T t)
             {
                 service = t;
                 return true;
@@ -216,26 +220,14 @@ namespace ServiceCore
         /// </remarks>
         public static bool TryGet(Type type, [NotNullWhen(true)] out IService? service)
         {
-            if (m_Services.TryGetValue(type, out ServiceEntry entry) && entry.service.GetType() == type)
+            if (m_Services.TryGetValue(type, out ActiveService entry) && entry.Service.GetType() == type)
             {
-                service = entry.service;
+                service = entry.Service;
                 return true;
             }
 
             service = default;
             return false;
         }
-
-
-
-        /// <summary>
-        /// Increments <see cref="ManuallyInitializedAmount"/> by '1'.
-        /// </summary>
-        internal static void IncrementManuallyInitializedServices() => ManuallyInitializedAmount++;
-
-        /// <summary>
-        /// Decrements <see cref="ManuallyInitializedAmount"/> by '1'.
-        /// </summary>
-        internal static void DecrementManuallyInitializedServices() => ManuallyInitializedAmount--;
     }
 }

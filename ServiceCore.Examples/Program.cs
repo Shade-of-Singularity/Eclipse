@@ -15,6 +15,7 @@ namespace ServiceCore.Examples
 
         static async Task<int> Main(string[] args)
         {
+            Testing.Start();
             await ManualInitialization();
             await AutoInitialization_SemiManualOrdering();
             await AutomaticInitialization();
@@ -29,7 +30,7 @@ namespace ServiceCore.Examples
             // Manual initialization.
             await ISerializationService.Instantiate<DefaultSerializationService>();
             await ILocalizationService.Instantiate<DefaultLocalizationService>();
-            await SealedService.Instantiate(); // Alternative with Service<T> services.
+            await SealedService.Instantiate(); // Alternative with AService<T> services.
 
             // Manual termination.
             await ISerializationService.Destroy();

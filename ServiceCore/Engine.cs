@@ -624,26 +624,24 @@ namespace ServiceCore
             const int ResizeSafetyMargin = 2;
             context.Mapping.EnsureCapacity(services.Count * ResizeSafetyMargin);
 
-            using (Services.Unsafe.Rebind())
+            foreach (ServiceSummary summary in services)
             {
-                foreach (ServiceSummary summary in services)
-                {
-                    // Note: would of been nice to make mapping of m_Services and class activation execute it
-                    // in parallel with passes below, in a background thread.
-                    // Maybe by adding some kind of internal temporary reference table?
-                    // 
-                    // Right now activation is synced with a main thread, but it doesn't have to.
-                    // This code will be moved to background thread later.
-                    // You should use EngineService Initialize for executing code on a main thread instead.
-                    IService service = (IService)Activator.CreateInstance(summary.service);
-                    Services.ServiceEntry entry = Services.ServiceEntry.Construct(service);
-                    Services.Unsafe.Set(entry); // TODO: Terminate service on overwriting.
+                // Note: would of been nice to make mapping of m_Services and class activation execute it
+                // in parallel with passes below, in a background thread.
+                // Maybe by adding some kind of internal temporary reference table?
+                // 
+                // Right now activation is synced with a main thread, but it doesn't have to.
+                // This code will be moved to background thread later.
+                // You should use EngineService Initialize for executing code on a main thread instead.
+                RuntimeHelpers.RunClassConstructor(summary.service.TypeHandle);
+                Services.ActiveService entry = new((IService)Activator.CreateInstance(summary.service));
+                Services.Unsafe.Set(entry); // TODO: Terminate service on overwriting.
 
-                    // Registers all associations with current service.
-                    for (int j = 0; j < entry.associations.Length; j++)
-                    {
-                        context.Mapping[entry.associations[j]] = summary;
-                    }
+                // Registers all associations with current service.
+                Type[] associations = entry.Descriptor.Associations;
+                for (int j = 0; j < associations.Length; j++)
+                {
+                    context.Mapping[associations[j]] = summary;
                 }
             }
 
@@ -652,6 +650,8 @@ namespace ServiceCore
 
         private static async UniTask InitializeServices(LoadingContext context, IInitializationArgs args)
         {
+            // TODO: Make it independent enough so we can use this method for custom service initialization.
+            //  and make it schedulable.
             List<ServiceSummary> services = context.Services;
             var preload = context.Preload;
             var afterload = context.Afterload;
@@ -732,7 +732,7 @@ namespace ServiceCore
                     {
                         if (summary.attribute.ExecutionMode != IService.ThreadExecutionMode.MainThread) continue;
                         summary.preload.ForEach(m => m.method.Invoke(null, null));
-                        await Services.Unsafe.Dictionary[summary.service].service.InvokeInitialize(args);
+                        await Services.Map[summary.service].Service.InvokeInitialize(args);
                         summary.afterload.ForEach(m => m.method.Invoke(null, null));
                     }
                 }
@@ -786,7 +786,7 @@ namespace ServiceCore
                                 if (pre.attribute.ThreadSafe) pre.method.Invoke(null, null);
                             });
 
-                            await Services.Unsafe.Dictionary[set.service].service.InvokeInitialize(args);
+                            await Services.Map[set.service].Service.InvokeInitialize(args);
                             set.afterload.ForEach(static after =>
                             {
                                 if (after.attribute.ThreadSafe) after.method.Invoke(null, null);

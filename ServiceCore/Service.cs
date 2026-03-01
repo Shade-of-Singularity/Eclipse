@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using ServiceCore.Reflection;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -89,21 +90,16 @@ namespace ServiceCore
         /// .                                           Initialization / Reset
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        static Service()
+        static Service() => KnownServices.Register<T>(ServiceDescriptor.Construct<T>(ServiceGetter, ServiceSetter));
+        private static IService? ServiceGetter() => m_Instance;
+        private static void ServiceSetter(IService? service)
         {
-            Services.Unsafe.RebindServices += RebindService;
-            //m_Instance = Services.Get<T>(); // No need, since services instance is provided after RebindService callback.
-        }
-
-        private static void RebindService()
-        {
-            T? service = Services.Get<T>();
-            m_Instance = service;
+            m_Instance = (T?)service;
             if (service is null && m_Initialized)
             {
                 // Note: is this even a right way to handle it?
-                ServiceCoreLogger.LogError($"{Services.LogPrefix} Rebinded to null service ({typeof(T).Name}) without termination! Service args won't reset!");
-                return;
+                // Maybe I should schedule termination instead? Then we need a good scheduling system.
+                ServiceCoreLogger.LogError($"{Services.LogPrefix} Rebinded to null service ({typeof(T).Name}) without termination! Service state won't reset!");
             }
         }
 
@@ -180,6 +176,7 @@ namespace ServiceCore
 
         /// <summary>
         /// Manually instantiates and initializes this <see cref="IService{T}"/>.
+        /// (Not thread-safe)
         /// </summary>
         /// <remarks>
         /// Manual initialization is incompatible with <see cref="Engine.Initialize(InitializationContext, IInitializationArgs?)"/>.
@@ -189,23 +186,20 @@ namespace ServiceCore
         /// <returns><see cref="UniTask"/> from <see cref="IService{T}.Initialize(IInitializationArgs)"/> to await.</returns>
         public static async UniTask Instantiate(IInitializationArgs? args = default)
         {
-            // Note: Should we simply keep those services alive instead?
-            if (Engine.Status != EngineStatus.Terminated)
-            {
-                throw new NotSupportedException($"{Engine.LogPrefix} You cannot use manual service initialization after ServiceCore was initialized.");
-            }
-
             if (m_Instance is not null)
             {
                 throw new Exception($"{Engine.LogPrefix} Service ({typeof(T).Name}) is already instantiated.");
             }
 
+            KnownServices.Retrieve<T>()!.Persistent = true;
+            // TODO: Schedule it properly.
+            // TODO: Call initialization callbacks.
             await ((IService)(m_Instance = new())).InvokeInitialize(args ?? Engine.State);
-            Services.IncrementManuallyInitializedServices();
         }
 
         /// <summary>
         /// Manually terminates and destroys this <see cref="IService{T}"/>.
+        /// (Not thread-safe)
         /// </summary>
         /// <remarks>
         /// Manual destruction is incompatible with <see cref="Engine.Terminate(ITerminationArgs?)"/>.
@@ -215,20 +209,16 @@ namespace ServiceCore
         /// <returns><see cref="UniTask"/> from <see cref="IService{T}.Terminate(ITerminationArgs)"/> to await.</returns>
         public static async UniTask Destroy(ITerminationArgs? args = default)
         {
-            // Note: Should we simply keep those services alive instead?
-            if (Engine.Status != EngineStatus.Terminated)
-            {
-                throw new NotSupportedException($"{Engine.LogPrefix} You cannot use manual service destruction after ServiceCore was initialized.");
-            }
-
             if (m_Instance is null)
             {
                 throw new Exception($"{Engine.LogPrefix} Service ({typeof(T).Name}) is already destroyed.");
             }
 
+            KnownServices.Retrieve<T>()!.Persistent = false;
+            // TODO: Schedule it properly.
+            // TODO: Call termination callbacks.
             await ((IService)m_Instance).InvokeTerminate(args ?? Engine.State);
             m_Instance = null;
-            Services.DecrementManuallyInitializedServices();
         }
     }
 }

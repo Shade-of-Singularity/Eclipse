@@ -21,7 +21,7 @@ namespace ServiceCore
     /// <summary>
     /// Defines which services (or service interfaces) should be ignored when constructing service associations.
     /// </summary>
-    /// <seealso cref="Services.ServiceEntry.Construct(IService)"/>
+    /// <seealso cref="Services.ActiveService.Construct(IService)"/>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface, AllowMultiple = false, Inherited = false)]
     public sealed class IgnoreServiceAttribute : Attribute { }
 }

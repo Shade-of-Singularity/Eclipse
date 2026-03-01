@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace ServiceCore
 {
@@ -32,36 +33,11 @@ namespace ServiceCore
         {
             /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
             /// .
-            /// .                                                   Events
-            /// .
-            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            /// <summary>
-            /// Asks systems to recache all services in internal fields.
-            /// Called after services were added or all services were removed.
-            /// </summary>
-            public static event Action? RebindServices;
-
-
-
-
-            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            /// .
-            /// .                                              Static Properties
-            /// .
-            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            public static IDictionary<Type, ServiceEntry> Dictionary => m_Services;
-
-
-
-
-            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            /// .
             /// .                                               Static Fields
             /// .
             /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             private static readonly Handle m_InitializationHandle = new(FireInitializedEvents);
             private static readonly Handle m_TerminationHandle = new(FireTerminationEvents);
-            private static readonly Handle m_RebindHandle = new(FireRebindEvents);
 
 
 
@@ -76,7 +52,6 @@ namespace ServiceCore
             /// </summary>
             /// <remarks>
             /// After returned value is disposed - fires <see cref="OnServicesInitialized"/> event.
-            /// Does not fire <see cref="RebindServices"/> event.
             /// </remarks>
             /// <returns>
             /// You are meant to use returned value like that:
@@ -100,7 +75,6 @@ namespace ServiceCore
             /// </summary>
             /// <remarks>
             /// After returned value is disposed - fires <see cref="OnServicesTerminated"/> event.
-            /// Does not fire <see cref="RebindServices"/> event.
             /// </remarks>
             /// <returns>
             /// You are meant to use returned value like that:
@@ -120,24 +94,6 @@ namespace ServiceCore
             }
 
             /// <summary>
-            /// Rebinds values for internal instance fields of <see cref="IService{T}.Instance"/>.
-            /// </summary>
-            /// <remarks>
-            /// Does so by firing <see cref="RebindServices"/> event.
-            /// </remarks>
-            /// <returns>
-            /// You are meant to use returned value like that:
-            /// <code><![CDATA[
-            /// using (Rebind()) // Auto-fires nothing.
-            /// {
-            ///     // Add or Remove services.
-            /// }
-            /// // Auto-fires RebindServices event.
-            /// ]]></code>
-            /// </returns>
-            public static IDisposable Rebind() => m_RebindHandle.Activate();
-
-            /// <summary>
             /// Sets or Replaces existing service in internal service collection.
             /// </summary>
             /// <param Identifier="service">Service to register.</param>
@@ -150,7 +106,14 @@ namespace ServiceCore
                     return;
                 }
 
-                SetUnchecked(ServiceEntry.Construct(service));
+                var entry = new ActiveService(service);
+                if (entry.Descriptor.Persistent)
+                {
+                    ServiceCoreLogger.LogWarning($"{LogPrefix} Cannot register persistent service.");
+                    return;
+                }
+
+                SetUnchecked(entry);
             }
 
             /// <summary>
@@ -161,11 +124,17 @@ namespace ServiceCore
             /// </remarks>
             /// <param Identifier="entry">Service entry to register.</param>
             /// TODO: Add locking for internal dictionary.
-            public static void Set(ServiceEntry entry)
+            public static void Set(ActiveService entry)
             {
-                if (entry.service is null)
+                if (entry.Service is null)
                 {
                     ServiceCoreLogger.LogWarning($"{LogPrefix} Attempted to register null service.");
+                    return;
+                }
+
+                if (entry.Descriptor.Persistent)
+                {
+                    ServiceCoreLogger.LogWarning($"{LogPrefix} Cannot register persistent service.");
                     return;
                 }
 
@@ -176,7 +145,17 @@ namespace ServiceCore
             /// Removes given service from a service list.
             /// </summary>
             /// <returns><inheritdoc cref="Remove(Type)"/></returns>
-            public static bool Remove(IService service) => Remove(service.GetType());
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool Remove(IService service)
+            {
+                if (service is null)
+                {
+                    ServiceCoreLogger.LogWarning($"{LogPrefix} Attempted to remove null service.");
+                    return false;
+                }
+
+                return RemoveUnchecked(service.GetType());
+            }
 
             /// <summary>
             /// Removes service under given association <paramref Identifier="key"/> from a service list.
@@ -187,13 +166,13 @@ namespace ServiceCore
             /// </returns>
             public static bool Remove(Type key)
             {
-                if (m_Services.TryGetValue(key, out ServiceEntry entry))
+                if (key is null)
                 {
-                    Array.ForEach(entry.associations, a => m_Services.Remove(a));
-                    return true;
+                    ServiceCoreLogger.LogWarning($"{LogPrefix} Attempted to remove null service.");
+                    return false;
                 }
 
-                return false;
+                return RemoveUnchecked(key);
             }
 
 
@@ -228,33 +207,44 @@ namespace ServiceCore
                 }
             }
 
-            private static void FireRebindEvents()
+            private static void SetUnchecked(ActiveService entry)
             {
-                try
+                lock (m_Services)
                 {
-                    RebindServices?.Invoke();
-                }
-                catch (Exception ex)
-                {
-                    ServiceCoreLogger.LogException(ex);
+                    // Registers service.
+                    Type[] associations = entry.Descriptor.Associations;
+                    for (int i = 0; i < associations.Length; i++)
+                    {
+                        Type association = associations[i];
+                        if (association is null) continue;
+
+                        if (!m_Services.TryAdd(association, entry))
+                        {
+                            // Overwrites previously existing service entirely.
+                            ActiveService existing = m_Services[association];
+                            Array.ForEach(existing.Descriptor.Associations, static a => m_Services.Remove(a));
+                            existing.Descriptor.Setter(null);
+                            m_Services[association] = entry;
+                        }
+                    }
+
+                    // Updates underlying Instance field.
+                    entry.Descriptor.Setter(entry.Service);
                 }
             }
 
-            private static void SetUnchecked(ServiceEntry entry)
+            private static bool RemoveUnchecked(Type key)
             {
-                // Registers service.
-                for (int i = 0; i < entry.associations.Length; i++)
+                lock (m_Services)
                 {
-                    Type association = entry.associations[i];
-                    if (association is null) continue;
-
-                    if (!m_Services.TryAdd(association, entry))
+                    if (m_Services.TryGetValue(key, out ActiveService entry))
                     {
-                        // Overwrites previously existing service entirely.
-                        ServiceEntry existing = m_Services[association];
-                        Array.ForEach(existing.associations, a => m_Services.Remove(a));
-                        m_Services[association] = entry;
+                        Array.ForEach(entry.Descriptor.Associations, static a => m_Services.Remove(a));
+                        entry.Descriptor.Setter(null);
+                        return true;
                     }
+
+                    return false;
                 }
             }
         }
