@@ -14,7 +14,6 @@
 /// 
 /// ]]>
 
-using ServiceCore.Localization;
 using System;
 using System.Collections.Generic;
 
@@ -25,7 +24,7 @@ namespace ServiceCore
         /// <summary>
         /// Entry with information about a service.
         /// </summary>
-        public readonly partial struct ServiceEntry(IService service, Type[] associations)
+        public readonly struct ServiceEntry(IService service, Type[] associations)
         {
             /// <summary>
             /// Service instance that can be referenced/used.
