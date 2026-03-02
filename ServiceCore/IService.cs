@@ -15,8 +15,6 @@
 /// ]]>
 
 using Cysharp.Threading.Tasks;
-using ServiceCore.Localization;
-using ServiceCore.Serialization;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -81,7 +79,7 @@ namespace ServiceCore
         public static new bool Initialized => m_Initialized;
 
         /// <summary>
-        /// Descriptor for this service.
+        /// <see cref="ServiceDescriptor"/> for this service.
         /// </summary>
         public static ServiceDescriptor Descriptor => m_Descriptor;
 
@@ -111,9 +109,9 @@ namespace ServiceCore
         /// </summary>
         private static bool m_Initialized;
         /// <summary>
-        /// Descriptor of this service.
+        /// <see cref="ServiceDescriptor"/> for this service.
         /// </summary>
-        private static readonly ServiceDescriptor m_Descriptor = ServiceDescriptor.Retrieve<T>(ServiceGetter, ServiceSetter)!;
+        private static readonly ServiceDescriptor m_Descriptor = ServiceDescriptor.Construct<IService<T>>(ServiceGetter, ServiceSetter);
 
 
 
@@ -161,7 +159,7 @@ namespace ServiceCore
         /// Called when <see cref="Engine"/> initializes all the code and resources from the memory.
         /// <para>
         /// Unlike any <see cref="IService"/> .ctor (constructor), this method is thread-safe.
-        /// (as long as <see cref="ServiceAttribute.ExecutionMode"/> is <see cref="IService.ThreadExecutionMode.MainThread"/>)
+        /// (as long as <see cref="ServiceAttribute.ExecutionMode"/> is <see cref="ThreadExecutionMode.MainThread"/>)
         /// </para>
         /// </summary>
         /// <returns>
@@ -206,42 +204,6 @@ namespace ServiceCore
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGet([NotNullWhen(true)] out T? service) => (service = Instance) is not null;
 
-        public interface ITest : ILocalizationService, ISerializationService { }
-        sealed class Test : Service<Test>, ITest
-        {
-            public int Param => throw new NotImplementedException();
-
-            protected override UniTask Initialize(IInitializationArgs args)
-            {
-                throw new NotImplementedException();
-            }
-
-            protected override UniTask Terminate(ITerminationArgs args)
-            {
-                throw new NotImplementedException();
-            }
-
-            UniTask IService<ILocalizationService>.Initialize(IInitializationArgs args)
-            {
-                return Initialize(args);
-            }
-
-            UniTask IService<ISerializationService>.Initialize(IInitializationArgs args)
-            {
-                return Initialize(args);
-            }
-
-            UniTask IService<ILocalizationService>.Terminate(ITerminationArgs args)
-            {
-                return Terminate(args);
-            }
-
-            UniTask IService<ISerializationService>.Terminate(ITerminationArgs args)
-            {
-                return Terminate(args);
-            }
-        }
-
         /// <summary>
         /// Manually instantiates and initializes this <see cref="IService{T}"/>.
         /// (Not thread-safe)
@@ -260,8 +222,8 @@ namespace ServiceCore
                 throw new Exception($"{Engine.LogPrefix} Service ({typeof(T).Name}) is already instantiated.");
             }
 
-            ITest.Instantiate<>(Engine.State);
-            ServiceDescriptor.Retrieve<T>(ServiceGetter, ServiceSetter).Persistent = true;
+            // TODO: Update reference in all associated descriptors.
+            Descriptor.Persistent = true;
             // TODO: Schedule it properly.
             // TODO: Call initialization callbacks.
             await (m_Instance = (T)(IService<T>)new TService()).InvokeInitialize(args ?? Engine.State);
@@ -279,17 +241,17 @@ namespace ServiceCore
         /// <returns><see cref="UniTask"/> from <see cref="IService{T}.Terminate(ITerminationArgs)"/> to await.</returns>
         public static async UniTask Destroy(ITerminationArgs? args = default)
         {
-            if (m_Instance is null || !ServiceDescriptor.TryGetCached<T>(out var descriptor))
+            if (m_Instance is null)
             {
                 throw new Exception($"{Engine.LogPrefix} Service ({typeof(T).Name}) is already destroyed or was never initialized.");
             }
 
-            if (!descriptor.Persistent)
+            if (!Descriptor.Persistent)
             {
                 throw new Exception($"{Engine.LogPrefix} Cannot manually destroy automatically initialized service ({typeof(T).Name}).");
             }
 
-            descriptor.Persistent = false;
+            Descriptor.Persistent = false;
             // TODO: Schedule it properly.
             // TODO: Call termination callbacks.
             await m_Instance.InvokeTerminate(args ?? Engine.State);
@@ -307,7 +269,6 @@ namespace ServiceCore
     /// For custom services, please use <see cref="IService{TService}"/> interface instead.
     /// This interface is needed only for internal usage and listing in <see cref="Services.List"/>.
     /// </remarks>
-    [DoNotAssociate]
     public partial interface IService
     {
         /// <summary>

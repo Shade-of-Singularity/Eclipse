@@ -56,7 +56,7 @@ namespace ServiceCore
         public static bool Initialized => m_Initialized;
 
         /// <summary>
-        /// Descriptor for this service.
+        /// <see cref="ServiceDescriptor"/> for this service.
         /// </summary>
         public static ServiceDescriptor Descriptor => m_Descriptor;
 
@@ -86,9 +86,9 @@ namespace ServiceCore
         /// </summary>
         private static bool m_Initialized;
         /// <summary>
-        /// Descriptor of this service.
+        /// <see cref="ServiceDescriptor"/> for this service.
         /// </summary>
-        private static readonly ServiceDescriptor m_Descriptor = new(typeof(T), ServiceGetter, ServiceSetter);
+        private static readonly ServiceDescriptor m_Descriptor = ServiceDescriptor.Construct<Service<T>>(ServiceGetter, ServiceSetter);
 
 
 
@@ -198,7 +198,8 @@ namespace ServiceCore
                 throw new Exception($"{Engine.LogPrefix} Service ({typeof(T).Name}) is already instantiated.");
             }
 
-            ServiceDescriptor.Retrieve<T>(ServiceGetter, ServiceSetter).Persistent = true;
+            // TODO: Set "persistent" on all services current instance overrides.
+            Descriptor.Persistent = true;
             // TODO: Schedule it properly.
             // TODO: Call initialization callbacks.
             await ((IService)(m_Instance = new())).InvokeInitialize(args ?? Engine.State);
@@ -216,17 +217,18 @@ namespace ServiceCore
         /// <returns><see cref="UniTask"/> from <see cref="IService{T}.Terminate(ITerminationArgs)"/> to await.</returns>
         public static async UniTask Destroy(ITerminationArgs? args = default)
         {
-            if (m_Instance is null || !ServiceDescriptor.TryGetCached<T>(out var descriptor))
+            if (m_Instance is null)
             {
                 throw new Exception($"{Engine.LogPrefix} Service ({typeof(T).Name}) is already destroyed or was never initialized.");
             }
 
-            if (!descriptor.Persistent)
+            if (!Descriptor.Persistent)
             {
                 throw new Exception($"{Engine.LogPrefix} Cannot manually destroy automatically initialized service ({typeof(T).Name}).");
             }
 
-            descriptor.Persistent = false;
+            // TODO: Reset "persistent" on all services current instance overrides.
+            Descriptor.Persistent = false;
             // TODO: Schedule it properly.
             // TODO: Call termination callbacks.
             await ((IService)m_Instance).InvokeTerminate(args ?? Engine.State);

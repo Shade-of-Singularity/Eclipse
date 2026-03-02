@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace ServiceCore
@@ -41,14 +40,23 @@ namespace ServiceCore
             if (type is null) throw new ArgumentNullException(nameof(type));
             return m_Descriptors.GetOrAdd(type, static (type) =>
             {
+                //
+                // TODO: Finish. Find a way to quickly check if service IService via both custom base class and IService.
+                //
+
+                Type temp;
+                bool implementsInterfaceService = false;
+
                 // Makes sure all service declarations create a descriptor about them.
                 var interfaces = type.GetInterfaces();
                 for (int i = 0; i < interfaces.Length; i++)
                 {
-                    RuntimeHelpers.RunClassConstructor(interfaces[i].TypeHandle);
+                    temp = interfaces[i];
+                    RuntimeHelpers.RunClassConstructor(temp.TypeHandle);
+                    implementsInterfaceService |= temp.IsGenericTypeDefinition && temp.GetGenericTypeDefinition() == typeof(IService<>);
                 }
 
-                Type temp = type;
+                temp = type;
                 do
                 {
                     RuntimeHelpers.RunClassConstructor(temp.TypeHandle);
