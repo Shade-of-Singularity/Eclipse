@@ -28,7 +28,7 @@ namespace ServiceCore
     /// </para>
     /// </remarks>
     /// <typeparam Identifier="T">Service implementing this abstract class.</typeparam>
-    [IgnoreService]
+    [ServiceIdentifier]
     public abstract class Service<T> : IService where T : Service<T>, new()
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -56,6 +56,11 @@ namespace ServiceCore
         public static bool Initialized => m_Initialized;
 
         /// <summary>
+        /// Descriptor for this service.
+        /// </summary>
+        public static ServiceDescriptor Descriptor => m_Descriptor;
+
+        /// <summary>
         /// Flag implementation to access static <see cref="Initialized"/> field.
         /// </summary>
         bool IService.Initialized
@@ -80,6 +85,10 @@ namespace ServiceCore
         /// Internal null-safe flag for checking for initialization.
         /// </summary>
         private static bool m_Initialized;
+        /// <summary>
+        /// Descriptor of this service.
+        /// </summary>
+        private static readonly ServiceDescriptor m_Descriptor = new(typeof(T), ServiceGetter, ServiceSetter);
 
 
 
@@ -109,9 +118,6 @@ namespace ServiceCore
         /// .                                                  Internal
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <inheritdoc/>
-        ServiceDescriptor IService.GetDescriptor() => ServiceDescriptor.Retrieve(GetType(), ServiceGetter, ServiceSetter);
-
         /// <inheritdoc/>
         UniTask IService.InternalInitialize(IInitializationArgs args) => Initialize(args);
 

@@ -19,16 +19,33 @@ namespace ServiceCore
 
     /// <summary>
     /// Describes an serviceType <see cref="IService"/>.
+    /// Similar to <see cref="Type"/> in its essence.
     /// </summary>
-    /// <remarks>
-    /// Right now only describes <paramref name="Getter"/> and <paramref name="Setter"/> for <see cref="IService{T}.Instance"/>.
-    /// </remarks>
-    /// <param name="Type">Type of our <see cref="IService"/>.</param>
-    /// <param name="Getter">Getter for <see cref="IService{T}.Instance"/> property.</param>
-    /// <param name="Setter">Setter for <see cref="IService{T}.Instance"/> property.</param>
-    /// <param name="Associations">Other types, associated with this <see cref="IService"/>.</param>
-    public sealed record class ServiceDescriptor(Type Type, ServiceGetter Getter, ServiceSetter Setter, Type[] Associations)
+    public sealed class ServiceDescriptor : IEquatable<ServiceDescriptor>
     {
+        /// <summary>
+        /// <see cref="ServiceDescriptor"/> serviceType for all invalid descriptors.
+        /// </summary>
+        /// <remarks>
+        /// Services without <see cref="ServiceIdentifierAttribute"/> in the inheritance tree are marked as such.
+        /// </remarks>
+        //public static readonly ServiceDescriptor Invalid = new(null!, null!, null!, []);
+
+        /// <summary>
+        /// Type implementing <see cref="IService"/> with <see cref="ServiceIdentifierAttribute"/> defined.
+        /// </summary>
+        public Type Identifier { get; }
+
+        /// <summary>
+        /// Getter for service instance property (e.g. <see cref="IService{T}.Instance"/> or <see cref="Service{T}.Instance"/>).
+        /// </summary>
+        [NotNullIfNotNull(nameof(Identifier))] public ServiceGetter Getter { get; }
+
+        /// <summary>
+        /// Setter for service instance property (e.g. <see cref="IService{T}.Instance"/> or <see cref="Service{T}.Instance"/>).
+        /// </summary>
+        [NotNullIfNotNull(nameof(Identifier))] public ServiceSetter Setter { get; }
+
         /// <summary>
         /// Whether or not this serviceType stays intact regardless of <see cref="Engine"/> initialization/termination.
         /// </summary>
@@ -38,6 +55,40 @@ namespace ServiceCore
         /// </remarks>
         public bool Persistent { get; set; }
 
+        /// <summary>
+        /// Types associated with 
+        /// </summary>
+        public Type[] Associations
+        {
+            get => m_Associations is not null ? m_Associations : (m_Associations = GetAssociations(Identifier));
+        }
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                               Private Fields
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        private Type[]? m_Associations;
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                                Constructors
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        private ServiceDescriptor(Type identifier, ServiceGetter getter, ServiceSetter setter, Type[]? associations)
+        {
+            Identifier = identifier;
+            Getter = getter;
+            Setter = setter;
+            m_Associations = associations;
+        }
+
 
 
 
@@ -46,9 +97,46 @@ namespace ServiceCore
         /// .                                               Static Fields
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private static readonly Dictionary<Type, ServiceDescriptor> m_CachedDescriptors = new(64);
-        private static readonly List<Type> m_AssociationsBuffer = new(16);
-        private static readonly object _lock = new();
+        private static readonly Dictionary<Type, ServiceDescriptor?> m_CachedDescriptors = new(64);
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                               Private Methods
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        private static Type[] GetAssociations(Type identifier)
+        {
+            if (!typeof(IService).IsAssignableFrom(identifier))
+            {
+                return [];
+            }
+
+            List<Type> associations = [];
+            var interfaces = identifier.GetInterfaces();
+            for (int i = 0; i < interfaces.Length; i++)
+            {
+                var temp = interfaces[i];
+                if (typeof(IService).IsAssignableFrom(temp) && !temp.IsDefined(typeof(DoNotAssociate), inherit: false))
+                {
+                    associations.Add(temp);
+                }
+            }
+
+            do
+            {
+                if (!identifier.IsDefined(typeof(DoNotAssociate), inherit: false))
+                {
+                    associations.Add(identifier);
+                }
+
+                identifier = identifier.BaseType;
+            }
+            while (typeof(IService).IsAssignableFrom(identifier) && identifier != typeof(object));
+            return [.. associations];
+        }
 
 
 
@@ -58,105 +146,175 @@ namespace ServiceCore
         /// .                                               Public Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <summary>
-        /// Attempts to retrieve <see cref="ServiceDescriptor"/> from an internal cache.
-        /// </summary>
-        /// <param name="descriptor"><see cref="ServiceDescriptor"/> describing all service associations and some additional data.</param>
-        /// <typeparam name="T">Type of the service to fetch a <see cref="ServiceDescriptor"/> for.</typeparam>
-        /// <returns><c>true</c> if found. <c>false</c> if otherwise (service was never initialized)</returns>
-        public static bool TryGetCached<T>(out ServiceDescriptor descriptor) where T : IService
+        /// <inheritdoc cref="TryGetCached(Type, out ServiceDescriptor?)"/>
+        /// <typeparam name="T">Identifier of the service to fetch a <see cref="ServiceDescriptor"/> for.</typeparam>
+        public static bool TryGetCached<T>([NotNullWhen(true)] out ServiceDescriptor? descriptor) where T : IService
         {
-            lock (_lock) return m_CachedDescriptors.TryGetValue(typeof(T), out descriptor);
+            lock (m_CachedDescriptors) return m_CachedDescriptors.TryGetValue(typeof(T), out descriptor) && descriptor is not null;
         }
 
         /// <summary>
         /// Attempts to retrieve <see cref="ServiceDescriptor"/> from an internal cache.
         /// </summary>
-        /// <param name="type">Type of the service to retrieve an <see cref="ServiceDescriptor"/> for.</param>
+        /// <param name="serviceType">Identifier of the service to retrieve an <see cref="ServiceDescriptor"/> for.</param>
         /// <param name="descriptor"><see cref="ServiceDescriptor"/> describing all service associations and some additional data.</param>
         /// <returns><c>true</c> if found. <c>false</c> if otherwise (service was never initialized)</returns>
-        public static bool TryGetCached(Type type, [NotNullWhen(true)] out ServiceDescriptor? descriptor)
+        public static bool TryGetCached(Type serviceType, [NotNullWhen(true)] out ServiceDescriptor? descriptor)
         {
-            lock (_lock) return m_CachedDescriptors.TryGetValue(type, out descriptor);
+            lock (m_CachedDescriptors) return m_CachedDescriptors.TryGetValue(serviceType, out descriptor) && descriptor is not null;
         }
+
+
+
+
+        /// <inheritdoc cref="GetCached(Type)"/>
+        /// <typeparam name="T">Identifier of the service to fetch a <see cref="ServiceDescriptor"/> for.</typeparam>
+        public static ServiceDescriptor? GetCached<T>() where T : IService
+        {
+            lock (m_CachedDescriptors) return m_CachedDescriptors.GetValueOrDefault(typeof(T));
+        }
+
+        /// <summary>
+        /// Retrieves <see cref="ServiceDescriptor"/> from an internal cache.
+        /// </summary>
+        /// <param name="serviceType">Identifier of the service to retrieve an <see cref="ServiceDescriptor"/> for.</param>
+        /// <returns><c>true</c> if found. <c>false</c> if otherwise (service was never initialized)</returns>
+        public static ServiceDescriptor? GetCached(Type serviceType)
+        {
+            lock (m_CachedDescriptors) return m_CachedDescriptors.GetValueOrDefault(serviceType);
+        }
+
+
+
+
+        /// <inheritdoc cref="TryRetrieve(Type, ServiceGetter, ServiceSetter, out ServiceDescriptor?)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool TryRetrieve<T>(ServiceGetter getter, ServiceSetter setter, [NotNullWhen(true)] out ServiceDescriptor? descriptor) where T : IService
+        {
+            descriptor = Retrieve(typeof(T), getter, setter);
+            return descriptor is not null;
+        }
+
+        /// <summary>
+        /// Attempts to retrieve <see cref="ServiceDescriptor"/> from a provided <paramref name="serviceType"/> serviceType.
+        /// Result is cached and will be returned on the next call.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="Getter"/> and <see cref="Setter"/> won't change if returned <paramref name="descriptor"/> has different delegates.
+        /// </remarks>
+        /// <param name="serviceType">Type which inherits <see cref="IService"/> and defines <see cref="ServiceIdentifierAttribute"/> somewhere.</param>
+        /// <param name="getter">Getter for service instance property (e.g. <see cref="IService{T}.Instance"/> or <see cref="Service{T}.Instance"/>).</param>
+        /// <param name="setter">Setter for service instance property (e.g. <see cref="IService{T}.Instance"/> or <see cref="Service{T}.Instance"/>).</param>
+        /// <param name="descriptor">
+        /// <c>null</c> if <paramref name="serviceType"/> doesn't inherit <see cref="IService"/> or doesn't define <see cref="ServiceIdentifierAttribute"/>.
+        /// Otherwise, returns <see cref="ServiceDescriptor"/> describing <paramref name="serviceType"/>.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if <see cref="ServiceDescriptor"/> was retrieved successfully.
+        /// <c>false</c> if <paramref name="serviceType"/> doesn't implement <see cref="IService"/> and doesn't define <see cref="ServiceIdentifierAttribute"/>
+        /// in base classes or implemented interfaces (Examples: <see cref="Service{T}"/> or <see cref="IService{T}"/>).
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool TryRetrieve(Type serviceType, ServiceGetter getter, ServiceSetter setter, [NotNullWhen(true)] out ServiceDescriptor? descriptor)
+        {
+            descriptor = Retrieve(serviceType, getter, setter);
+            return descriptor is not null;
+        }
+
+
+
 
         /// <inheritdoc cref="Retrieve(Type, ServiceGetter, ServiceSetter)"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ServiceDescriptor Retrieve<T>(ServiceGetter getter, ServiceSetter setter) where T : IService
+        public static ServiceDescriptor? Retrieve<T>(ServiceGetter getter, ServiceSetter setter) where T : IService
         {
             return Retrieve(typeof(T), getter, setter);
         }
 
         /// <summary>
-        /// Retrieves <see cref="ServiceDescriptor"/> from internal cache, or construct a new one from the input data.
+        /// Attempts to retrieve <see cref="ServiceDescriptor"/> from a provided <paramref name="serviceType"/> serviceType.
+        /// Result is cached and will be returned on the next call.
         /// </summary>
         /// <remarks>
-        /// If target serviceType has <see cref="IgnoreServiceChildrenAttribute"/> defined (or inherited) - descriptor won't build associations.
+        /// <see cref="Getter"/> and <see cref="Setter"/> won't change if returned <see cref="ServiceDescriptor"/> has different delegates.
         /// </remarks>
-        /// <param name="serviceType">Type of our <see cref="IService"/>.</param>
-        /// <param name="getter">Getter for <see cref="IService{T}.Instance"/> property.</param>
-        /// <param name="setter">Setter for <see cref="IService{T}.Instance"/> property.</param>
-        /// <returns>New <see cref="ServiceDescriptor"/> instance with information about our <see cref="IService"/>.</returns>
-        public static ServiceDescriptor Retrieve(Type serviceType, ServiceGetter getter, ServiceSetter setter)
+        /// <param name="serviceType">Type which inherits <see cref="IService"/> and defines <see cref="ServiceIdentifierAttribute"/> somewhere.</param>
+        /// <param name="getter">Getter for service instance property (e.g. <see cref="IService{T}.Instance"/> or <see cref="Service{T}.Instance"/>).</param>
+        /// <param name="setter">Setter for service instance property (e.g. <see cref="IService{T}.Instance"/> or <see cref="Service{T}.Instance"/>).</param>
+        /// <returns>
+        /// <c>null</c> if <paramref name="serviceType"/> doesn't inherit <see cref="IService"/> or doesn't define <see cref="ServiceIdentifierAttribute"/>.
+        /// Otherwise, returns <see cref="ServiceDescriptor"/> describing <paramref name="serviceType"/>.
+        /// </returns>
+        public static ServiceDescriptor? Retrieve(Type serviceType, ServiceGetter getter, ServiceSetter setter)
         {
-            lock (_lock)
+            lock (m_CachedDescriptors)
             {
-                if (m_CachedDescriptors.TryGetValue(serviceType, out ServiceDescriptor result))
+                // 1. Check cached declarations. Return them if they are present.
+                if (m_CachedDescriptors.TryGetValue(serviceType, out ServiceDescriptor? descriptor))
                 {
-                    // Partially updates descriptor if Getter or Setter delegates were changed.
-                    if (result.Getter == getter && result.Setter == setter)
-                    {
-                        result = new(serviceType, getter, setter, result.Associations);
-                        m_CachedDescriptors[serviceType] = result;
-                    }
-
-                    return result;
+                    return descriptor;
                 }
 
-                // Ignores all children of one of the parent services if requested.
-                if (serviceType.IsDefined(typeof(IgnoreServiceChildrenAttribute), inherit: true))
+                // 2. Identify the identifier interface.
+                // Note: With this implementation, one class cannot implement multiple interfaces.
+                //  I wonder if it's a problem. In theory we can just create descriptors for multiple classes and store them internally.
+                //  But one of them will remain inaccessible under such implementation.
+                Type? identifier;
+                var interfaces = serviceType.GetInterfaces();
+                for (int i = 0; i < interfaces.Length; i++)
                 {
-                    result = new(serviceType, getter, setter, serviceType.IsDefined(typeof(IgnoreServiceAttribute), inherit: false) ? [] : [serviceType]);
-                    m_CachedDescriptors[serviceType] = result;
-                    return result;
-                }
-
-                // Registers all interfaces implementing this serviceType.
-                m_AssociationsBuffer.Clear();
-                serviceType.FindInterfaces(Filter, null);
-
-                // Registers all classes on the way to the base.
-                Type type = serviceType;
-                while (true)
-                {
-                    // Ignore types which ask for it.
-                    if (!type.IsDefined(typeof(IgnoreServiceAttribute), inherit: false))
+                    identifier = interfaces[i];
+                    if (identifier.IsDefined(typeof(ServiceIdentifierAttribute), inherit: false))
                     {
-                        m_AssociationsBuffer.Add(type);
-                    }
-
-                    type = type.BaseType;
-                    if (type is null || type == typeof(object))
-                    {
-                        result = new(serviceType, getter, setter, [.. m_AssociationsBuffer]);
-                        m_CachedDescriptors[serviceType] = result;
-                        return result;
+                        descriptor = new(identifier, getter, setter, null);
+                        m_CachedDescriptors[serviceType] = descriptor;
+                        return descriptor;
                     }
                 }
+
+                // 3. If interface not found - identify the identifier class.
+                identifier = serviceType;
+                while (identifier is not null && identifier != typeof(object))
+                {
+                    if (identifier.IsDefined(typeof(ServiceIdentifierAttribute), inherit: false))
+                    {
+                        descriptor = new(identifier, getter, setter, null);
+                        m_CachedDescriptors[serviceType] = descriptor;
+                        return descriptor;
+                    }
+
+                    identifier = identifier.BaseType;
+                }
+
+                m_CachedDescriptors[serviceType] = null;
+                return null;
             }
+        }
 
-            // Simplifications:
-            static bool Filter(Type type, object? filter)
-            {
-                if (typeof(IService).IsAssignableFrom(type) && !type.IsDefined(typeof(IgnoreServiceAttribute), inherit: false))
-                {
-                    m_AssociationsBuffer.Add(type);
-                }
 
-                // Always return false, to not form an internal array.
-                // TODO: Check source code to see how much resources, if any, this thing eats on idle run.
-                return false;
-            }
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                              Implementations
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <inheritdoc/>
+        public bool Equals(ServiceDescriptor other) => other is not null && other.Identifier == Identifier;
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => Identifier.GetHashCode();
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            return obj is ServiceDescriptor descriptor && descriptor.Identifier == Identifier;
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"{Identifier} (Getter: {Getter}) (Setter: {Setter})";
         }
     }
 }

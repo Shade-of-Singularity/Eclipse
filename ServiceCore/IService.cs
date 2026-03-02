@@ -51,7 +51,7 @@ namespace ServiceCore
     /// </para>
     /// </remarks>
     /// <typeparam Identifier="T">The type of the service to retrieve. Must inherit from <see cref="IService{TService}"/>.</typeparam>
-    [IgnoreService] // Were added to allow child services to implement this attribute as well.
+    [ServiceIdentifier]
     public interface IService<T> : IService where T : class, IService<T>
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
@@ -79,6 +79,11 @@ namespace ServiceCore
         public static new bool Initialized => m_Initialized;
 
         /// <summary>
+        /// Descriptor for this service.
+        /// </summary>
+        public static ServiceDescriptor Descriptor => m_Descriptor;
+
+        /// <summary>
         /// Flag implementation to access static <see cref="Initialized"/> field.
         /// </summary>
         bool IService.Initialized
@@ -103,6 +108,10 @@ namespace ServiceCore
         /// Internal null-safe flag for checking for initialization.
         /// </summary>
         private static bool m_Initialized;
+        /// <summary>
+        /// Descriptor of this service.
+        /// </summary>
+        private static readonly ServiceDescriptor m_Descriptor = ServiceDescriptor.Retrieve<T>(ServiceGetter, ServiceSetter)!;
 
 
 
@@ -132,9 +141,6 @@ namespace ServiceCore
         /// .                                                  Internal
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <inheritdoc/>
-        ServiceDescriptor IService.GetDescriptor() => ServiceDescriptor.Retrieve(GetType(), ServiceGetter, ServiceSetter);
-
         /// <inheritdoc/>
         UniTask IService.InternalInitialize(IInitializationArgs args) => Initialize(args);
 
@@ -262,7 +268,7 @@ namespace ServiceCore
     /// For custom services, please use <see cref="IService{TService}"/> interface instead.
     /// This interface is needed only for internal usage and listing in <see cref="Services.List"/>.
     /// </remarks>
-    [IgnoreService]
+    [DoNotAssociate]
     public partial interface IService
     {
         /// <summary>
@@ -290,14 +296,6 @@ namespace ServiceCore
         /// .                                               Public Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <summary>
-        /// Constructs special descriptor for this <see cref="IService"/>.
-        /// </summary>
-        /// <remarks>
-        /// Calls <see cref="ServiceDescriptor.Retrieve(Type, ServiceGetter, ServiceSetter)"/> internally. Thus it is cached.
-        /// </remarks>
-        public ServiceDescriptor GetDescriptor();
-        
         /// <summary>
         /// Calls <see cref="IService{T}.Initialize"/> if service is not <see cref="Initialized"/>.
         /// </summary>
