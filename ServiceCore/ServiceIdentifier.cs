@@ -3,6 +3,7 @@
 namespace ServiceCore
 {
     /// <summary>
+    /// Do not use this class unless you know what you are doing! (or unless you are writing your own CRTP ServiceCore extension)
     /// Marks class/instance (e.g. <see cref="Service{T}"/> or <see cref="IService{T}"/>) as an identifier in inheritance tree.
     /// </summary>
     /// <remarks>

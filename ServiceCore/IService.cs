@@ -206,7 +206,8 @@ namespace ServiceCore
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGet([NotNullWhen(true)] out T? service) => (service = Instance) is not null;
 
-        sealed class Test : Service<Test>, ILocalizationService, ISerializationService
+        public interface ITest : ILocalizationService, ISerializationService { }
+        sealed class Test : Service<Test>, ITest
         {
             public int Param => throw new NotImplementedException();
 
@@ -240,7 +241,6 @@ namespace ServiceCore
                 return Terminate(args);
             }
         }
-
 
         /// <summary>
         /// Manually instantiates and initializes this <see cref="IService{T}"/>.
