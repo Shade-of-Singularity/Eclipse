@@ -15,6 +15,8 @@
 /// ]]>
 
 using Cysharp.Threading.Tasks;
+using ServiceCore.Localization;
+using ServiceCore.Serialization;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -204,6 +206,42 @@ namespace ServiceCore
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGet([NotNullWhen(true)] out T? service) => (service = Instance) is not null;
 
+        sealed class Test : Service<Test>, ILocalizationService, ISerializationService
+        {
+            public int Param => throw new NotImplementedException();
+
+            protected override UniTask Initialize(IInitializationArgs args)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override UniTask Terminate(ITerminationArgs args)
+            {
+                throw new NotImplementedException();
+            }
+
+            UniTask IService<ILocalizationService>.Initialize(IInitializationArgs args)
+            {
+                return Initialize(args);
+            }
+
+            UniTask IService<ISerializationService>.Initialize(IInitializationArgs args)
+            {
+                return Initialize(args);
+            }
+
+            UniTask IService<ILocalizationService>.Terminate(ITerminationArgs args)
+            {
+                return Terminate(args);
+            }
+
+            UniTask IService<ISerializationService>.Terminate(ITerminationArgs args)
+            {
+                return Terminate(args);
+            }
+        }
+
+
         /// <summary>
         /// Manually instantiates and initializes this <see cref="IService{T}"/>.
         /// (Not thread-safe)
@@ -222,6 +260,7 @@ namespace ServiceCore
                 throw new Exception($"{Engine.LogPrefix} Service ({typeof(T).Name}) is already instantiated.");
             }
 
+            ITest.Instantiate<>(Engine.State);
             ServiceDescriptor.Retrieve<T>(ServiceGetter, ServiceSetter).Persistent = true;
             // TODO: Schedule it properly.
             // TODO: Call initialization callbacks.
