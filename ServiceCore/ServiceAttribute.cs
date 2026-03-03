@@ -44,7 +44,7 @@ namespace ServiceCore
         /// Initialization order of the service.
         /// </summary>
         /// <remarks>
-        /// Ignored when <see cref="ExecutionMode"/> is not <see cref="IService.ThreadExecutionMode.MainThread"/>
+        /// Ignored when <see cref="ExecutionMode"/> is not <see cref="ThreadExecutionMode.MainThread"/>
         /// (as it will essentially produce race conditions).
         /// </remarks>
         /// TODO: Resolve ordering based on <see cref="Loading.ILoadingSource.Dependencies"/>,
@@ -52,15 +52,15 @@ namespace ServiceCore
         /// TODO: Create an analyzer and code gen which will control dependencies manually by reading the code.
         ///  And analyzer will warn you if you create mutual dependency within a service.
         ///  This is a new age of service development, baby!
-        public int ExecutionOrder { get; }
+        public long ExecutionOrder { get; }
 
         /// <summary>
         /// Describes how service initialization/unloading will interact with threading system.
         /// </summary>
         /// <remarks>
-        /// By default executes in <see cref="IService.ThreadExecutionMode.MainThread"/> mode.
+        /// By default executes in <see cref="ThreadExecutionMode.MainThread"/> mode.
         /// </remarks>
-        public IService.ThreadExecutionMode ExecutionMode { get; }
+        public ThreadExecutionMode ExecutionMode { get; }
 
 
 
@@ -79,19 +79,19 @@ namespace ServiceCore
         /// Defines initialization <see cref="ExecutionOrder"/> for the underlying <see cref="IService"/>.
         /// </summary>
         /// <remarks>
-        /// Will forcefully keep <see cref="ExecutionMode"/> at <see cref="IService.ThreadExecutionMode.MainThread"/>
+        /// Will forcefully keep <see cref="ExecutionMode"/> at <see cref="ThreadExecutionMode.MainThread"/>
         /// as any ordering is ignored during multi-threaded initialization.
         /// </remarks>
-        public ServiceAttribute(int order)
+        public ServiceAttribute(long order)
         {
             ExecutionOrder = order;
         }
 
         /// <summary>
-        /// Defines <see cref="IService.ThreadExecutionMode"/> for the underlying <see cref="IService{TService}"/>.
+        /// Defines <see cref="ThreadExecutionMode"/> for the underlying <see cref="IService{TService}"/>.
         /// </summary>
-        /// <param Identifier="mode">Mode to use. Providing <see cref="IService.ThreadExecutionMode.MainThread"/> works the same as empty .ctor</param>
-        public ServiceAttribute(IService.ThreadExecutionMode mode)
+        /// <param Identifier="mode">Mode to use. Providing <see cref="ThreadExecutionMode.MainThread"/> works the same as empty .ctor</param>
+        public ServiceAttribute(ThreadExecutionMode mode)
         {
             ExecutionMode = mode;
         }

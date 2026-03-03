@@ -9,7 +9,7 @@ namespace ServiceCore
     /// <summary>
     /// Delegate, describing <see cref="IService{T}.Instance"/> getter.
     /// </summary>
-    /// <returns>Retrieved serviceType.</returns>
+    /// <returns>Retrieved serviceIdentifier.</returns>
     public delegate IService? ServiceGetter();
 
     /// <summary>
@@ -19,13 +19,13 @@ namespace ServiceCore
     public delegate void ServiceSetter(IService? service);
 
     /// <summary>
-    /// Describes an serviceType <see cref="IService"/>.
+    /// Describes an serviceIdentifier <see cref="IService"/>.
     /// Similar to <see cref="Type"/> in its essence.
     /// </summary>
     public sealed class ServiceDescriptor : IEquatable<ServiceDescriptor>
     {
         /// <summary>
-        /// <see cref="ServiceDescriptor"/> serviceType for all invalid descriptors.
+        /// <see cref="ServiceDescriptor"/> serviceIdentifier for all invalid descriptors.
         /// </summary>
         /// <remarks>
         /// Services without <see cref="ServiceIdentifierAttribute"/> in the inheritance tree are marked as such.
@@ -45,10 +45,11 @@ namespace ServiceCore
         /// <summary>
         /// Setter for service instance property (e.g. <see cref="IService{T}.Instance"/> or <see cref="Service{T}.Instance"/>).
         /// </summary>
+        /// TODO: Add "OnServiceChanged" callback, but make it pending if <see cref="Services.Unsafe.Initialize()"/> lock is active.
         [NotNullIfNotNull(nameof(Identifier))] public ServiceSetter Setter { get; }
 
         /// <summary>
-        /// Whether or not this serviceType stays intact regardless of <see cref="Engine"/> initialization/termination.
+        /// Whether or not this serviceIdentifier stays intact regardless of <see cref="Engine"/> initialization/termination.
         /// </summary>
         /// <remarks>
         /// <see cref="BeforeServiceInitializedAttribute"/> and <see cref="AfterServiceInitializedAttribute"/> callbacks
@@ -79,7 +80,7 @@ namespace ServiceCore
         /// .                                               Static Fields
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private static readonly ConcurrentDictionary<Type, ServiceDescriptor?> m_CachedDescriptors = [];
+        private static readonly ConcurrentDictionary<Type, ServiceDescriptor> m_Descriptors = [];
 
 
 
@@ -92,27 +93,80 @@ namespace ServiceCore
         /// <inheritdoc cref="Construct(Type, ServiceGetter, ServiceSetter)"/>
         /// <typeparam name="T"><see cref="IService"/> which defines <see cref="ServiceIdentifierAttribute"/>.</typeparam>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ServiceDescriptor Construct<T>(ServiceGetter getter, ServiceSetter setter) where T : IService
+        public static ServiceDescriptor Construct<T>(ServiceGetter getter, ServiceSetter setter) where T : class, IService
         {
             return Construct(typeof(T), getter, setter);
         }
 
         /// <summary>
-        /// Constructs new instance of <see cref="ServiceDescriptor"/> for given <paramref name="serviceType"/>.
+        /// Constructs new instance of <see cref="ServiceDescriptor"/> for given <paramref name="serviceIdentifier"/>.
         /// </summary>
-        /// <param name="serviceType"><see cref="IService"/> which defines <see cref="ServiceIdentifierAttribute"/>.</param>
+        /// <param name="serviceIdentifier">Type of <see cref="IService"/> which explicitly defines <see cref="ServiceIdentifierAttribute"/>.</param>
         /// <param name="getter">Getter for service instance property (e.g. <see cref="IService{T}.Instance"/> or <see cref="Service{T}.Instance"/>).</param>
         /// <param name="setter">Setter for service instance property (e.g. <see cref="IService{T}.Instance"/> or <see cref="Service{T}.Instance"/>).</param>
-        /// <returns>New <see cref="ServiceDescriptor"/> for a given <paramref name="serviceType"/>.</returns>
-        /// <exception cref="Exception">Indicates that provided <paramref name="serviceType"/> doesn't define <see cref="ServiceIdentifierAttribute"/>.</exception>
-        public static ServiceDescriptor Construct(Type serviceType, ServiceGetter getter, ServiceSetter setter)
+        /// <returns>New <see cref="ServiceDescriptor"/> for a given <paramref name="serviceIdentifier"/>.</returns>
+        /// <exception cref="Exception">Indicates that provided <paramref name="serviceIdentifier"/> doesn't define <see cref="ServiceIdentifierAttribute"/>.</exception>
+        public static ServiceDescriptor Construct(Type serviceIdentifier, ServiceGetter getter, ServiceSetter setter)
         {
-            if (!serviceType.IsDefined(typeof(ServiceIdentifierAttribute), inherit: false))
+            if (!serviceIdentifier.IsDefined(typeof(ServiceIdentifierAttribute), inherit: false))
             {
-                throw new Exception($"Type {serviceType} does not define {nameof(ServiceIdentifierAttribute)}. {nameof(ServiceDescriptor)} won't be built.");
+                throw new Exception($"{Engine.LogPrefix} Type {serviceIdentifier} does not define {nameof(ServiceIdentifierAttribute)}. {nameof(ServiceDescriptor)} cannot be built.");
             }
 
-            return new ServiceDescriptor(serviceType, getter, setter);
+            return new ServiceDescriptor(serviceIdentifier, getter, setter);
+        }
+
+        /// <inheritdoc cref="Get(Type)"/>
+        /// <typeparam name="T"><see cref="IService"/> which defines <see cref="ServiceIdentifierAttribute"/>.</typeparam>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ServiceDescriptor Get<T>() where T : class, IService
+        {
+            return Get(typeof(T));
+        }
+
+        /// <summary>
+        /// Retrieves <see cref="ServiceDescriptor"/> for a given <paramref name="serviceIdentifier"/> type.
+        /// </summary>
+        /// <param name="serviceIdentifier">Type of <see cref="IService"/> which explicitly defines <see cref="ServiceIdentifierAttribute"/>.</param>
+        /// <returns></returns>
+        /// <exception cref="KeyNotFoundException"></exception>
+        public static ServiceDescriptor Get(Type serviceIdentifier)
+        {
+            if (!m_Descriptors.TryGetValue(serviceIdentifier, out ServiceDescriptor? descriptor))
+            {
+                if (!typeof(IService).IsAssignableFrom(serviceIdentifier))
+                {
+                    throw new Exception($"{Engine.LogPrefix} Cannot retrieve {nameof(ServiceDescriptor)} for identifier ({serviceIdentifier.Name}), which doesn't implement {nameof(IService)}");
+                }
+
+                if (!serviceIdentifier.IsDefined(typeof(ServiceIdentifierAttribute), inherit: false))
+                {
+                    throw new Exception($"{Engine.LogPrefix} Identifier ({serviceIdentifier.Name}) doesn't define {nameof(ServiceIdentifierAttribute)}. Cannot get {nameof(ServiceDescriptor)} for it.");
+                }
+                
+                throw new Exception($"{Engine.LogPrefix} Identifier ({serviceIdentifier.Name}) define {nameof(ServiceIdentifierAttribute)} but haven't constructed {nameof(ServiceDescriptor)}. Cannot get {nameof(ServiceDescriptor)} for it");
+            }
+
+            return descriptor;
+        }
+
+        /// <inheritdoc cref="TryGet(Type, out ServiceDescriptor?)"/>
+        /// <typeparam name="T"><see cref="IService"/> which defines <see cref="ServiceIdentifierAttribute"/>.</typeparam>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool TryGet<T>([NotNullWhen(true)] out ServiceDescriptor? descriptor) where T : class, IService
+        {
+            return TryGet(typeof(T), out descriptor);
+        }
+
+        /// <summary>
+        /// Retrieves already constructed <see cref="ServiceDescriptor"/> about specific <see cref="IService"/>.
+        /// </summary>
+        /// <param name="serviceIdentifier">Type of <see cref="IService"/> which explicitly defines <see cref="ServiceIdentifierAttribute"/>.</param>
+        /// <param name="descriptor"><see cref="ServiceDescriptor"/> for a given <paramref name="serviceIdentifier"/>.</param>
+        /// <returns><c>true</c> if <paramref name="descriptor"/> were found. <c>false</c> otherwise.</returns>
+        public static bool TryGet(Type serviceIdentifier, [NotNullWhen(true)] out ServiceDescriptor? descriptor)
+        {
+            return m_Descriptors.TryGetValue(serviceIdentifier, out descriptor);
         }
 
 

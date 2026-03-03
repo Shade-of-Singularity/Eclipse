@@ -13,6 +13,26 @@ namespace ServiceCore.Modding
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
+        /// .                                              Static Properties
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// <see cref="DependencyMap"/> describing only <see cref="Engine.NativeAssemblies"/>.
+        /// Returned as a default value in related methods.
+        /// </summary>
+        public static readonly DependencyMap Native;
+        static DependencyMap()
+        {
+            Native = [];
+            var source = new NativeSource((IEnumerable<ILoadable>)Engine.NativeAssemblies);
+            Native.Add(source.Identifier, source);
+        }
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
         /// .                                              Public Properties
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>

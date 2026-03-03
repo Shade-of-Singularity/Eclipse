@@ -363,10 +363,10 @@ namespace ServiceCore
 
                 using (Services.Unsafe.Terminate())
                 {
-                    foreach (var service in Services.List)
+                    foreach (var service in Services.RuntimeServices)
                     {
                         // TODO: Terminate asynchronously if possible.
-                        await service.InvokeTerminate(args);
+                        await service.Getter()!.InvokeTerminate(args);
                     }
                 }
             }
@@ -626,18 +626,26 @@ namespace ServiceCore
 
             foreach (ServiceSummary summary in services)
             {
-                // Note: would of been nice to make mapping of m_Services and class activation execute it
+                // Note: would of been nice to make mapping of m_RuntimeServices and class activation execute it
                 // in parallel with passes below, in a background thread.
                 // Maybe by adding some kind of internal temporary reference table?
                 // 
                 // Right now activation is synced with a main thread, but it doesn't have to.
                 // This code will be moved to background thread later.
                 // You should use EngineService Initialize for executing code on a main thread instead.
+
+                // TODO: Instead of using mappings:
+                // 1. Enlist all services.
+                // 1.1. Services which override other services have to be removed.
+                // 2. Enlist all their ServiceDescriptors.
+                // 3. With HashMap, make sure that only the newest services remains.
+                // 4. Make sure to remove services, descriptors of which were completely removed from the list.
+                // 5. Initialize services using their descriptors, based on initialization order associated with a class defining them.
                 IService service = (IService)Activator.CreateInstance(summary.service);
                 Services.Unsafe.Set(service); // TODO: Terminate service on overwriting.
 
                 // Registers all associations with current service.
-                Type[] associations = service.GetDescriptor().Associations;
+                Type[] associations = service.Descriptor;
                 for (int j = 0; j < associations.Length; j++)
                 {
                     context.Mapping[associations[j]] = summary;
@@ -667,9 +675,9 @@ namespace ServiceCore
                 {
                     switch (buffer[i].attribute.ExecutionMode)
                     {
-                        case IService.ThreadExecutionMode.MainThread: normal++; break;
-                        case IService.ThreadExecutionMode.ThreadedBeforeMain: before++; break;
-                        case IService.ThreadExecutionMode.ThreadedAfterMain: after++; break;
+                        case ThreadExecutionMode.MainThread: normal++; break;
+                        case ThreadExecutionMode.ThreadedBeforeMain: before++; break;
+                        case ThreadExecutionMode.ThreadedAfterMain: after++; break;
                     }
                 }
 
@@ -705,7 +713,7 @@ namespace ServiceCore
                     })
                 );
 
-                // Note: 'preload' and 'afterload' lists should NOT be used with m_Services after this section without TryGetValue checks.
+                // Note: 'preload' and 'afterload' lists should NOT be used with m_RuntimeServices after this section without TryGetValue checks.
                 // Some of the MethodSummaries might reference a non-existing service.
                 // Use 'ServiceSummary.preload' and 'ServiceSummary.afterload' from 'summaries' or 'mapping' instead.
                 preload.Clear();
@@ -722,14 +730,14 @@ namespace ServiceCore
                 services.CopyTo(buffer);
 
                 // Executed thread-safe initializations and callbacks before main thread.
-                await RunThreadedInitialization(services, buffer, before, IService.ThreadExecutionMode.ThreadedBeforeMain, args);
+                await RunThreadedInitialization(services, buffer, before, ThreadExecutionMode.ThreadedBeforeMain, args);
 
                 // Initialization part on a Main Unity thread.
                 if (normal > 0)
                 {
                     foreach (ServiceSummary summary in services)
                     {
-                        if (summary.attribute.ExecutionMode != IService.ThreadExecutionMode.MainThread) continue;
+                        if (summary.attribute.ExecutionMode != ThreadExecutionMode.MainThread) continue;
                         summary.preload.ForEach(m => m.method.Invoke(null, null));
                         await Services.Map[summary.service].Service.InvokeInitialize(args);
                         summary.afterload.ForEach(m => m.method.Invoke(null, null));
@@ -737,13 +745,13 @@ namespace ServiceCore
                 }
 
                 // Executed thread-safe initializations and callbacks after main thread.
-                await RunThreadedInitialization(services, buffer, after, IService.ThreadExecutionMode.ThreadedAfterMain, args);
+                await RunThreadedInitialization(services, buffer, after, ThreadExecutionMode.ThreadedAfterMain, args);
 
                 // Simplifications:
-                static async UniTask RunThreadedInitialization(List<ServiceSummary> services, ServiceSummary[] buffer, int allocation, IService.ThreadExecutionMode mode, IInitializationArgs args)
+                static async UniTask RunThreadedInitialization(List<ServiceSummary> services, ServiceSummary[] buffer, int allocation, ThreadExecutionMode mode, IInitializationArgs args)
                 {
                     // Runs services that are thread-safe and should be executed before main thread in parallel.
-                    // Note: using m_Services[ServiceSummary.service] here should never produce an exception.
+                    // Note: using m_RuntimeServices[ServiceSummary.service] here should never produce an exception.
                     //  I believe this is ensured by filtering in 'LoadServices' method.   - Dark
                     // Note #2: Down the line, we can group executions by the order:
                     // - Services with the same execution order will execute in parallel.

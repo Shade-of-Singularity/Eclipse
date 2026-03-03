@@ -2,7 +2,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using static ServiceCore.IService;
 
 namespace ServiceCore
 {
@@ -59,6 +58,11 @@ namespace ServiceCore
         /// <see cref="ServiceDescriptor"/> for this service.
         /// </summary>
         public static ServiceDescriptor Descriptor => m_Descriptor;
+
+        /// <summary>
+        /// Implementation to access static <see cref="Descriptor"/> field from <see cref="IService"/> instance.
+        /// </summary>
+        ServiceDescriptor IService.Descriptor => m_Descriptor;
 
         /// <summary>
         /// Flag implementation to access static <see cref="Initialized"/> field.
@@ -191,18 +195,30 @@ namespace ServiceCore
         /// </remarks>
         /// <param name="args">Arguments to provide during initialization. Defaults to terminated <see cref="EngineState"/>.</param>
         /// <returns><see cref="UniTask"/> from <see cref="IService{T}.Initialize(IInitializationArgs)"/> to await.</returns>
-        public static async UniTask Instantiate(IInitializationArgs? args = default)
+        public static UniTask Instantiate(IInitializationArgs? args = default)
         {
             if (m_Instance is not null)
             {
                 throw new Exception($"{Engine.LogPrefix} Service ({typeof(T).Name}) is already instantiated.");
             }
 
-            // TODO: Set "persistent" on all services current instance overrides.
-            Descriptor.Persistent = true;
+            var descriptors = ServiceRanges<T>.Range.Descriptors;
+            if (descriptors.Length == 0)
+            {
+                throw new Exception($"{Engine.LogPrefix} Service {typeof(T).Name} doesn't have any {nameof(ServiceIdentifierAttribute)}s defined in the inheritance tree.");
+            }
+
+            T instance = new();
+            for (int i = 0; i < descriptors.Length; i++)
+            {
+                ServiceDescriptor descriptor = descriptors[i];
+                descriptor.Setter(instance); // Intentionally overwrites service reference.
+                descriptor.Persistent = true;
+            }
+
             // TODO: Schedule it properly.
             // TODO: Call initialization callbacks.
-            await ((IService)(m_Instance = new())).InvokeInitialize(args ?? Engine.State);
+            return ((IService)instance).InvokeInitialize(args ?? Engine.State);
         }
 
         /// <summary>
@@ -227,12 +243,25 @@ namespace ServiceCore
                 throw new Exception($"{Engine.LogPrefix} Cannot manually destroy automatically initialized service ({typeof(T).Name}).");
             }
 
-            // TODO: Reset "persistent" on all services current instance overrides.
-            Descriptor.Persistent = false;
+            var descriptors = ServiceRanges<T>.Range.Descriptors;
+            if (descriptors.Length == 0)
+            {
+                throw new Exception($"{Engine.LogPrefix} Service {typeof(T).Name} doesn't have any {nameof(ServiceIdentifierAttribute)}s defined in the inheritance tree.");
+            }
+
             // TODO: Schedule it properly.
             // TODO: Call termination callbacks.
             await ((IService)m_Instance).InvokeTerminate(args ?? Engine.State);
-            m_Instance = null;
+
+            for (int i = 0; i < descriptors.Length; i++)
+            {
+                ServiceDescriptor descriptor = descriptors[i];
+                if (descriptor.Getter() == m_Instance)
+                {
+                    descriptor.Setter(null);
+                    descriptor.Persistent = false;
+                }
+            }
         }
     }
 }

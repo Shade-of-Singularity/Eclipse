@@ -15,8 +15,6 @@
 /// ]]>
 
 using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace ServiceCore
 {
@@ -109,11 +107,12 @@ namespace ServiceCore
             }
 
             /// <summary>
-            /// Removes service under given association <paramref Identifier="key"/> from a service list.
+            /// Removes service under given association <paramref Identifier="serviceType"/> from a service list.
             /// </summary>
             /// <returns>
             /// <c>true</c> if service was removed.
-            /// <c>false</c> if there was no service under given <paramref Identifier="key"/> to begin with.
+            /// <c>false</c> if there was no service under given <paramref Identifier="serviceType"/> to begin with,
+            /// or (very unlikely) it was completely replaced with another service due to manual intervention.
             /// </returns>
             public static bool Remove(IService service)
             {
@@ -123,7 +122,7 @@ namespace ServiceCore
                     return false;
                 }
 
-                return RemoveUnchecked(service.GetType());
+                return RemoveUnchecked(service);
             }
 
 
@@ -160,47 +159,49 @@ namespace ServiceCore
 
             private static void SetUnchecked(IService service)
             {
-                lock (m_Services)
+                if (service is null)
                 {
-                    ServiceDescriptor descriptor = service.GetDescriptor();
-                    ActiveService entry = new(service, descriptor);
+                    throw new ArgumentNullException(nameof(service));
+                }
 
-                    // Registers service.
-                    Type[] associations = descriptor.Associations;
-                    for (int i = 0; i < associations.Length; i++)
-                    {
-                        Type association = associations[i];
-                        if (association is null) continue;
+                var descriptors = ServiceRanges.Retrieve(service.GetType()).Descriptors;
+                for (int i = 0; i < descriptors.Length; i++)
+                {
+                    // Note: We should probably allow at least listing them.
+                    //  But doesn't allow overwriting them.
+                    //  This should also be accounted for in mods - in case someone will declare a consistent service after a mod termination.
+                    if (descriptors[i].Persistent) throw new Exception($"{Engine.LogPrefix} Cannot set manually initialized service ({service.GetType().Name}) to a runtime {nameof(Services)} storage.");
+                }
 
-                        if (!m_Services.TryAdd(association, entry))
-                        {
-                            // Removes previously existing service entirely.
-                            ActiveService existing = m_Services[association];
-                            Array.ForEach(descriptor.Associations, static a => m_Services.Remove(a));
-                            descriptor.Setter(null);
-
-                            m_Services[association] = entry;
-                        }
-                    }
-
-                    // Updates underlying Instance field.
-                    descriptor.Setter(service);
+                for (int i = 0; i < descriptors.Length; i++)
+                {
+                    descriptors[i].Setter(service);
                 }
             }
 
-            private static bool RemoveUnchecked(Type key)
+            private static bool RemoveUnchecked(IService service)
             {
-                lock (m_Services)
+                var descriptors = ServiceRanges.Retrieve(service.GetType()).Descriptors;
+                for (int i = 0; i < descriptors.Length; i++)
                 {
-                    if (m_Services.TryGetValue(key, out ActiveService entry))
-                    {
-                        Array.ForEach(entry.Descriptor.Associations, static a => m_Services.Remove(a));
-                        entry.Descriptor.Setter(null);
-                        return true;
-                    }
-
-                    return false;
+                    // Note: We should probably allow at least listing them.
+                    //  But doesn't allow overwriting them.
+                    //  This should also be accounted for in mods - in case someone will declare a consistent service after a mod termination.
+                    if (descriptors[i].Persistent) return false;
                 }
+
+                bool removed = false;
+                for (int i = 0; i < descriptors.Length; i++)
+                {
+                    var descriptor = descriptors[i];
+                    if (descriptor.Getter() == service)
+                    {
+                        descriptor.Setter(null);
+                        removed = true;
+                    }
+                }
+
+                return removed;
             }
         }
     }

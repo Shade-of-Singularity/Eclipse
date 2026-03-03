@@ -38,7 +38,5 @@ namespace ServiceCore.Localization
         /// Prefix for messages sent to the console from this class.
         /// </summary>
         public const string LogPrefix = Engine.LogPrefix + "[LocalizationService]";
-
-        public int Param { get; }
     }
 }

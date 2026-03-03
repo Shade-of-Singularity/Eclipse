@@ -81,10 +81,15 @@ namespace ServiceCore
         /// <summary>
         /// <see cref="ServiceDescriptor"/> for this service.
         /// </summary>
-        public static ServiceDescriptor Descriptor => m_Descriptor;
+        public static new ServiceDescriptor Descriptor => m_Descriptor;
 
         /// <summary>
-        /// Flag implementation to access static <see cref="Initialized"/> field.
+        /// Implementation to access static <see cref="Descriptor"/> field from <see cref="IService"/> instance.
+        /// </summary>
+        ServiceDescriptor IService.Descriptor => m_Descriptor;
+
+        /// <summary>
+        /// Flag implementation to access static <see cref="Initialized"/> field from <see cref="IService"/> instance.
         /// </summary>
         bool IService.Initialized
         {
@@ -214,19 +219,30 @@ namespace ServiceCore
         /// </remarks>
         /// <param name="args">Arguments to provide during initialization. Defaults to terminated <see cref="EngineState"/>.</param>
         /// <returns><see cref="UniTask"/> from <see cref="IService{T}.Initialize(IInitializationArgs)"/> to await.</returns>
-        public static async UniTask Instantiate<TService>(IInitializationArgs? args = default)
-            where TService : class, IService<T>, new()
+        public static UniTask Instantiate<TService>(IInitializationArgs? args = default) where TService : IService<T>, new()
         {
             if (m_Instance is not null)
             {
                 throw new Exception($"{Engine.LogPrefix} Service ({typeof(T).Name}) is already instantiated.");
             }
 
-            // TODO: Update reference in all associated descriptors.
-            Descriptor.Persistent = true;
+            var descriptors = ServiceRanges<T>.Range.Descriptors;
+            if (descriptors.Length == 0)
+            {
+                throw new Exception($"{Engine.LogPrefix} Service {typeof(T).Name} doesn't have any {nameof(ServiceIdentifierAttribute)}s defined in the inheritance tree.");
+            }
+
+            TService instance = new();
+            for (int i = 0; i < descriptors.Length; i++)
+            {
+                ServiceDescriptor descriptor = descriptors[i];
+                descriptor.Setter(instance); // Intentionally overwrites service reference.
+                descriptor.Persistent = true;
+            }
+
             // TODO: Schedule it properly.
             // TODO: Call initialization callbacks.
-            await (m_Instance = (T)(IService<T>)new TService()).InvokeInitialize(args ?? Engine.State);
+            return ((IService)instance).InvokeInitialize(args ?? Engine.State);
         }
 
         /// <summary>
@@ -251,11 +267,25 @@ namespace ServiceCore
                 throw new Exception($"{Engine.LogPrefix} Cannot manually destroy automatically initialized service ({typeof(T).Name}).");
             }
 
-            Descriptor.Persistent = false;
+            var descriptors = ServiceRanges<T>.Range.Descriptors;
+            if (descriptors.Length == 0)
+            {
+                throw new Exception($"{Engine.LogPrefix} Service {typeof(T).Name} doesn't have any {nameof(ServiceIdentifierAttribute)}s defined in the inheritance tree.");
+            }
+
             // TODO: Schedule it properly.
             // TODO: Call termination callbacks.
-            await m_Instance.InvokeTerminate(args ?? Engine.State);
-            m_Instance = null;
+            await (m_Instance).InvokeTerminate(args ?? Engine.State);
+
+            for (int i = 0; i < descriptors.Length; i++)
+            {
+                ServiceDescriptor descriptor = descriptors[i];
+                if (descriptor.Getter() == m_Instance)
+                {
+                    descriptor.Setter(null);
+                    descriptor.Persistent = false;
+                }
+            }
         }
     }
 
@@ -275,6 +305,11 @@ namespace ServiceCore
         /// Flags whether <see cref="InvokeInitialize"/> was called on a service or not.
         /// </summary>
         public bool Initialized { get; protected set; }
+
+        /// <summary>
+        /// <see cref="ServiceDescriptor"/> for this service.
+        /// </summary>
+        public ServiceDescriptor Descriptor { get; }
 
         /// <summary>
         /// Used to hide this method from <see cref="IService"/> users.

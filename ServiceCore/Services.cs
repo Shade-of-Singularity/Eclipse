@@ -69,46 +69,9 @@ namespace ServiceCore
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>        
         /// <summary>
-        /// <see cref="IReadOnlyDictionary{TKey, TValue}"/> containing all currently present <see cref="ActiveService"/>s.
+        /// Describes all services activated after <see cref="Engine.Initialize(InitializationContext?, IInitializationArgs?)"/> invocation.
         /// </summary>
-        public static IReadOnlyDictionary<Type, ActiveService> Map => m_Services;
-        
-        /// <summary>
-        /// Enumerator over all <see cref="ActiveService"/> of all registered services.
-        /// </summary>
-        public static IEnumerable<ActiveService> Entries
-        {
-            get
-            {
-                lock (m_Services)
-                {
-                    // TODO: Avoid duplicates, which appear due to map mapping services to multiple keys for optimization.
-                    foreach (var entry in m_Services.Values)
-                    {
-                        yield return entry;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Enumerator over all registered services.
-        /// </summary>
-        public static IEnumerable<IService> List
-        {
-            get
-            {
-                lock (m_Services)
-                {
-                    // TODO: Avoid duplicates, which appear due to map mapping services to multiple keys for optimization.
-                    foreach (var entry in m_Services.Values)
-                    {
-                        yield return entry.Service;
-                    }
-                }
-            }
-        }
-
+        public static IEnumerable<ServiceDescriptor> RuntimeServices => m_RuntimeServices;
 
 
 
@@ -118,7 +81,7 @@ namespace ServiceCore
         /// .                                               Static Fields
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private static readonly Dictionary<Type, ActiveService> m_Services = [];
+        private static readonly HashSet<ServiceDescriptor> m_RuntimeServices = [];
 
 
 
@@ -134,81 +97,57 @@ namespace ServiceCore
         /// <remarks>
         /// Less optimized than strongly-typed <see cref="IService{TService}.Exist"/>.
         /// </remarks>
-        public static bool Has<T>() where T : class, IService
-        {
-            // Note: Do we need a type check at all? Won't it break the logic in common use cases?
-            return m_Services.TryGetValue(typeof(T), out ActiveService entry) && entry.Service is T;
-        }
+        /// Note: At the moment, initializing <see cref="ServiceRange"/> on this call is the best approach.
+        /// TODO: Replace with checks specific for runtime services, or make <see cref="Services"/> outline persistent services as well.
+        public static bool Has<T>() where T : class, IService => !ServiceRange.Invalid.Equals(ServiceRanges.Retrieve(typeof(T)));
 
         /// <summary>
         /// Checks if there is a service with requested <paramref Identifier="type"/>.
         /// </summary>
         /// <remarks>
-        /// Less optimized than strongly-typed <see cref="IService{TService}.Exist"/>.
+        /// Less optimized than strongly-typed <see cref="IService{TService}.Exist"/> or <see cref="Has{T}()"/>.
         /// </remarks>
-        public static bool Has(Type type)
-        {
-            // Note: Do we need a type check at all? Won't it break the logic in common use cases?
-            return m_Services.TryGetValue(type, out ActiveService entry) && entry.Service.GetType() == type;
-        }
+        /// Note: At the moment, initializing <see cref="ServiceRange"/> on this call is the best approach.
+        /// TODO: Replace with checks specific for runtime services, or make <see cref="Services"/> outline persistent services as well.
+        public static bool Has(Type type) => !ServiceRange.Invalid.Equals(ServiceRanges.Retrieve(type));
 
 
 
 
         /// <summary>
         /// Retrieves service of a requested type.
-        /// More expensive than using <see cref="IService{TService}.Instance"/> directly.
+        /// More expensive than using <see cref="IService{T}.Instance"/> or <see cref="Service{T}.Instance"/> directly.
         /// </summary>
         /// <remarks>
         /// Never throws. Instead, returns <c>null</c> if service is not defined or its type was changed.
         /// </remarks>
-        public static T? Get<T>() where T : class, IService
-        {
-            if (m_Services.TryGetValue(typeof(T), out ActiveService entry))
-            {
-                return entry.Service as T;
-            }
-
-            return default;
-        }
+        /// TODO: Replace with checks specific for runtime services, or make <see cref="Services"/> outline persistent services as well.
+        public static T? Get<T>() where T : class, IService => (T?)(ServiceRanges.Retrieve(typeof(T)).First?.Getter());
 
         /// <summary>
         /// Retrieves service of a requested type.
-        /// More expensive than using <see cref="IService{TService}.Instance"/> directly.
+        /// More expensive than using <see cref="IService{T}.Instance"/> or <see cref="Service{T}.Instance"/> directly.
         /// </summary>
         /// <remarks>
         /// Never throws. Instead, returns <c>null</c> if service is not defined or its type was changed.
         /// </remarks>
-        public static IService? Get(Type type)
-        {
-            if (m_Services.TryGetValue(type, out ActiveService entry) && entry.GetType() == type)
-            {
-                return entry.Service;
-            }
-
-            return default;
-        }
+        /// TODO: Replace with checks specific for runtime services, or make <see cref="Services"/> outline persistent services as well.
+        public static IService? Get(Type type) => ServiceRanges.Retrieve(type).First?.Getter();
 
 
 
 
         /// <summary>
         /// Retrieves service of a requested type.
-        /// More expensive than using <see cref="IService{TService}.Instance"/> directly.
+        /// More expensive than using <see cref="IService{T}.TryGet"/> or <see cref="Service{T}.TryGet"/> directly.
         /// </summary>
         /// <remarks>
         /// Will return <c>false</c> even if service exist, but its type is wrong.
         /// </remarks>
+        /// TODO: Replace with checks specific for runtime services, or make <see cref="Services"/> outline persistent services as well.
         public static bool TryGet<T>([NotNullWhen(true)] out T? service) where T : class, IService
         {
-            if (m_Services.TryGetValue(typeof(T), out ActiveService entry) && entry.Service is T t)
-            {
-                service = t;
-                return true;
-            }
-
-            service = default;
-            return false;
+            return (service = (T?)(ServiceRanges<T>.Range.First?.Getter())) is not null;
         }
 
         /// <summary>
@@ -218,16 +157,10 @@ namespace ServiceCore
         /// <remarks>
         /// Will return <c>false</c> even if service exist, but its type is wrong.
         /// </remarks>
+        /// TODO: Replace with checks specific for runtime services, or make <see cref="Services"/> outline persistent services as well.
         public static bool TryGet(Type type, [NotNullWhen(true)] out IService? service)
         {
-            if (m_Services.TryGetValue(type, out ActiveService entry) && entry.Service.GetType() == type)
-            {
-                service = entry.Service;
-                return true;
-            }
-
-            service = default;
-            return false;
+            return (service = (ServiceRanges.Retrieve(type).First?.Getter())) is not null;
         }
     }
 }
