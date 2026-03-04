@@ -177,6 +177,8 @@ namespace ServiceCore
                 {
                     descriptors[i].Setter(service);
                 }
+
+                m_RuntimeServices.Add(service.Descriptor);
             }
 
             private static bool RemoveUnchecked(IService service)
@@ -190,18 +192,16 @@ namespace ServiceCore
                     if (descriptors[i].Persistent) return false;
                 }
 
-                bool removed = false;
                 for (int i = 0; i < descriptors.Length; i++)
                 {
                     var descriptor = descriptors[i];
                     if (descriptor.Getter() == service)
                     {
                         descriptor.Setter(null);
-                        removed = true;
                     }
                 }
 
-                return removed;
+                return m_RuntimeServices.Remove(service.Descriptor);
             }
         }
     }

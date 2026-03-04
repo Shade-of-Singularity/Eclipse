@@ -21,39 +21,6 @@ namespace ServiceCore
     /// <summary>
     /// Attribute to flag methods that should be executed after an service was initialized.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
-    public sealed class AfterServiceInitializedAttribute(Type service) : Attribute
-    {
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                              Public Properties
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <summary>
-        /// Order in which afterload methods should be invoked.
-        /// </summary>
-        /// <remarks>
-        /// <see cref="InvokeOrder"/> still applies even when <see cref="Service"/> runs on a background thread
-        /// - it will run within synchronization context of <see cref="Service"/>.
-        /// </remarks>
-        public int InvokeOrder { get; set; }
-
-        /// <summary>
-        /// Whether method can be executed in a background thread.
-        /// </summary>
-        /// <remarks>
-        /// Flag is ignored if target <see cref="IService"/> has <see cref="IService.ThreadExecutionMode.MainThread"/> flag set on it.
-        /// In which case method will be executed on a main thread instead.
-        /// <para>
-        /// Regardless of being executed in a background or on a main thread,
-        /// will still only run after <see cref="IService"/>'s <see cref="IService.Initialize"/> method.
-        /// </para>
-        /// </remarks>
-        public bool ThreadSafe { get; set; }
-
-        /// <summary>
-        /// Reference service to use. Method with this attribute will be executed after this service is initialized.
-        /// </summary>
-        public Type Service { get; } = service;
-    }
+    [AttributeUsage(Targets, Inherited = Inheritable, AllowMultiple = AllowsMultiple)]
+    public sealed class AfterServiceInitializedAttribute(Type service) : ServiceInitializationAttribute(service) { }
 }

@@ -36,8 +36,16 @@ namespace ServiceCore
         public DependencyMap Modifications { get; internal set; } = [];
 
         /// <inheritdoc/>
-        public void Setup(EngineState state)
+        public void Setup(EngineState? state)
         {
+            if (state is null)
+            {
+                Status = EngineStatus.Terminated;
+                IsDependenciesBroken = false;
+                Modifications = [];
+                return;
+            }
+
             Status = state.Status;
             IsDependenciesBroken = state.IsDependenciesBroken;
             Modifications = state.Modifications;

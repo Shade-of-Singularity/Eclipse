@@ -293,12 +293,11 @@ namespace ServiceCore
 
 
     /// <summary>
-    /// Basic interface for a service.
+    /// Base interface for all possible service types. To create custom service - implement <see cref="IService{T}"/> (supports modding, but hard to prototype on)
+    /// or inherit <see cref="Service{T}"/> (doesn't support modding, but easy to prototype on). Other libraries, such as <see cref="ServiceCore"/>.UnityEngine
+    /// might provide other base service types you might find useful.
     /// </summary>
-    /// <remarks>
-    /// For custom services, please use <see cref="IService{TService}"/> interface instead.
-    /// This interface is needed only for internal usage and listing in <see cref="Services.List"/>.
-    /// </remarks>
+    /// This interface is needed for reflections, optimizations and listing in <see cref="Services.RuntimeServices"/>.
     public partial interface IService
     {
         /// <summary>

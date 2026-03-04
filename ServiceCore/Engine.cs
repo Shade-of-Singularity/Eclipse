@@ -504,26 +504,74 @@ namespace ServiceCore
         /// .                                               Initialization
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        private readonly struct ServiceSummary(ServiceAttribute attribute, Type service)
+        private struct LoadingContext()
         {
-            public readonly ServiceAttribute attribute = attribute;
-            public readonly Type service = service;
-            public readonly List<MethodSummary<BeforeServiceInitializedAttribute>> preload = [];
-            public readonly List<MethodSummary<AfterServiceInitializedAttribute>> afterload = [];
+            public readonly List<MethodSummary<BeforeServiceInitializedAttribute>> Preload = [];
+            public readonly List<MethodSummary<AfterServiceInitializedAttribute>> Afterload = [];
+            /// <summary>
+            /// Stores <see cref="ServiceDescriptor"/>s that will be actively used during initialization.
+            /// </summary>
+            public readonly Dictionary<ServiceDescriptor, Type> ActiveServiceRange = [];
+            /// <summary>
+            /// Instantiated services.
+            /// </summary>
+            public ServiceSummary[] Services = [];
+        }
+
+        private readonly struct ServiceSummary : IEquatable<ServiceSummary>
+        {
+            // Fields below are supplied at partial initialization:
+            public readonly ServiceAttribute attribute;
+            public readonly Type service;
+
+            // Fields below are supplied at full initialization.
+            public readonly IService instance;
+            public readonly List<MethodSummary<BeforeServiceInitializedAttribute>> preload;
+            public readonly List<MethodSummary<AfterServiceInitializedAttribute>> afterload;
+
+            /// <summary>
+            /// .ctor for partial initialization.
+            /// </summary>
+            public ServiceSummary(ServiceAttribute attribute, Type service)
+            {
+                this.attribute = attribute;
+                this.service = service;
+                instance = null!;
+                preload = null!;
+                afterload = null!;
+            }
+
+            /// <summary>
+            /// .ctor for full initialization.
+            /// </summary>
+            public ServiceSummary(ServiceAttribute attribute, Type service, IService instance,
+                List<MethodSummary<BeforeServiceInitializedAttribute>> preload,
+                List<MethodSummary<AfterServiceInitializedAttribute>> afterload)
+            {
+                this.attribute = attribute;
+                this.service = service;
+                this.instance = instance;
+                this.preload = preload;
+                this.afterload = afterload;
+            }
+
+            /// <inheritdoc/>
+            public override string ToString() => $"{service.FullName} (preload: {preload?.Count}) (afterload: {afterload?.Count})";
+
+            /// <inheritdoc/>
+            public override bool Equals(object obj) => obj is ServiceSummary summary && base.Equals(summary);
+
+            /// <inheritdoc/>
+            public bool Equals(ServiceSummary other) => other.service == service;
+
+            /// <inheritdoc/>
+            public override int GetHashCode() => service.GetHashCode();
         }
 
         private readonly struct MethodSummary<T>(T attribute, MethodInfo method) where T : Attribute
         {
             public readonly T attribute = attribute;
             public readonly MethodInfo method = method;
-        }
-
-        private readonly struct LoadingContext()
-        {
-            public readonly List<ServiceSummary> Services = [];
-            public readonly List<MethodSummary<BeforeServiceInitializedAttribute>> Preload = [];
-            public readonly List<MethodSummary<AfterServiceInitializedAttribute>> Afterload = [];
-            public readonly Dictionary<Type, ServiceSummary> Mapping = [];
         }
 
         private static async UniTask UnloadInternal(IEnumerable<ILoadingSource> sources, ITerminationArgs args)
@@ -534,7 +582,7 @@ namespace ServiceCore
 
         private static async UniTask LoadInternal(IEnumerable<ILoadingSource> sources, IInitializationArgs args)
         {
-            // TODO: Avoid context allocation if all input assemblies are loaded.
+            // TODO: Avoid context allocation if all loaded input assemblies are the same.
             LoadingContext context = new();
 
             // Extracts all important information in all assemblies.
@@ -554,10 +602,10 @@ namespace ServiceCore
                     continue;
                 }
 
-                await Extract(reference.assembly, context);
+                Extract(reference.assembly, context);
             }
 
-            await ConstructServices(context);
+            context.Services = ConstructServices(context);
             await InitializeServices(context, args);
         }
 
@@ -565,7 +613,7 @@ namespace ServiceCore
         /// Extracts all important information from an <paramref Identifier="source"/> to the <paramref Identifier="context"/>.
         /// </summary>
         /// <exception cref="NotSupportedException">Throws when <paramref Identifier="source"/> is not amongst <see cref="NativeAssemblies"/>.</exception>
-        private static async UniTask Extract(Assembly assembly, LoadingContext context)
+        private static void Extract(Assembly assembly, in LoadingContext context)
         {
             if (!IsNative(assembly))
             {
@@ -573,7 +621,7 @@ namespace ServiceCore
             }
 
             // TODO: Support services defined inside other classes (?)
-            List<ServiceSummary> services = context.Services;
+            Dictionary<ServiceDescriptor, Type> active = context.ActiveServiceRange;
             List<MethodSummary<BeforeServiceInitializedAttribute>> preload = context.Preload;
             List<MethodSummary<AfterServiceInitializedAttribute>> afterload = context.Afterload;
             foreach (Type? type in assembly.GetTypes())
@@ -582,25 +630,25 @@ namespace ServiceCore
                 // TODO: Also benchmark which order of checks is more performant.
                 if (!type.IsAbstract && type.IsDefined(typeof(ServiceAttribute)))
                 {
-                    if (typeof(IService).IsAssignableFrom(type))
+                    ServiceRange range = ServiceRanges.Retrieve(type);
+                    if (ServiceRange.Invalid.Equals(range))
                     {
-                        ServiceAttribute attribute = type.GetCustomAttribute<ServiceAttribute>(inherit: false);
-                        // TODO: Add prioritizing, based on length of the inheritance tree, maybe?
-                        //  Or maybe throw if there are two service declarations for the same type within one source?
-                        //  So source loading order can be enforced.
-                        //  What about "Service selection", when you can select a service to use from a menu and such?
-                        //  So many things to think about...
-                        services.Add(new(attribute, service: type));
+                        ServiceCoreLogger.LogError($"{LogPrefix} Service ({type.Name}) declares {nameof(ServiceAttribute)}, but doesn't implement any valid {nameof(IService)} base definition.");
+                        continue;
                     }
-                    else
+
+                    var array = range.Descriptors;
+                    for (int i = 0; i < array.Length; i++)
                     {
-                        ServiceCoreLogger.LogError($"Class ({type.Name}) defines {nameof(ServiceAttribute)} but does not implement {nameof(IService)}<>!");
+                        // Note: ServiceAttribute will be retrieved later.
+                        // This way we can completely override a service first.
+                        active[array[i]] = type;
                     }
                 }
 
                 foreach (var method in type.GetMethods())
                 {
-                    if (!method.IsStatic) continue;
+                    if (!method.IsStatic || !method.IsDefined(typeof(ServiceInitializationAttribute), inherit: false)) continue;
                     foreach (var attribute in method.GetCustomAttributes<BeforeServiceInitializedAttribute>(inherit: false))
                     {
                         preload.Add(new MethodSummary<BeforeServiceInitializedAttribute>(attribute, method));
@@ -612,57 +660,81 @@ namespace ServiceCore
                     }
                 }
             }
-
-            await UniTask.CompletedTask;
         }
 
-        private static async UniTask ConstructServices(LoadingContext context)
+        private static ServiceSummary[] ConstructServices(in LoadingContext context)
         {
-            List<ServiceSummary> services = context.Services;
-
-            // How much more space to reserve in dictionary for associations with the same services.
-            const int ResizeSafetyMargin = 2;
-            context.Mapping.EnsureCapacity(services.Count * ResizeSafetyMargin);
-
-            foreach (ServiceSummary summary in services)
+            HashSet<Type> unique = new(context.ActiveServiceRange.Count);
+            foreach (var service in context.ActiveServiceRange.Values)
             {
-                // Note: would of been nice to make mapping of m_RuntimeServices and class activation execute it
-                // in parallel with passes below, in a background thread.
-                // Maybe by adding some kind of internal temporary reference table?
-                // 
-                // Right now activation is synced with a main thread, but it doesn't have to.
-                // This code will be moved to background thread later.
-                // You should use EngineService Initialize for executing code on a main thread instead.
+                unique.Add(service);
+            }
 
-                // TODO: Instead of using mappings:
-                // 1. Enlist all services.
-                // 1.1. Services which override other services have to be removed.
-                // 2. Enlist all their ServiceDescriptors.
-                // 3. With HashMap, make sure that only the newest services remains.
-                // 4. Make sure to remove services, descriptors of which were completely removed from the list.
-                // 5. Initialize services using their descriptors, based on initialization order associated with a class defining them.
+            ServiceSummary[] services = new ServiceSummary[unique.Count];
+            int i = 0;
+            foreach (var service in unique)
+            {
+                services[i++] = new(service.GetCustomAttribute<ServiceAttribute>(inherit: false), service);
+            }
+
+            // TODO: Sort based on ILoadingSources first, and then by internal ordering itself.
+            Array.Sort(services, (a, b) => a.attribute.ExecutionOrder.CompareTo(b.attribute.ExecutionOrder));
+            for (i = 0; i < services.Length; i++)
+            {
+                ServiceSummary summary = services[i];
                 IService service = (IService)Activator.CreateInstance(summary.service);
-                Services.Unsafe.Set(service); // TODO: Terminate service on overwriting.
+                Services.Unsafe.Set(service);
 
-                // Registers all associations with current service.
-                Type[] associations = service.Descriptor;
-                for (int j = 0; j < associations.Length; j++)
+                // Fully initializes a summary.
+                services[i] = new(summary.attribute, summary.service, service, [], []);
+
+                // Sets the instance value.
+                // TODO: Make sure that only overwritten descriptors will be set, probably by reversing ActiveServiceRange dictionary.
+                ServiceDescriptor[] range = ServiceRanges.Retrieve(summary.service).Descriptors;
+                for (int j = 0; j < range.Length; j++)
                 {
-                    context.Mapping[associations[j]] = summary;
+                    range[j].Setter(service);
                 }
             }
 
-            await UniTask.CompletedTask;
+            return services;
+
+            //foreach (ServiceSummary summary in services)
+            //{
+            //    // Note: would of been nice to make mapping of m_RuntimeServices and class activation execute it
+            //    // in parallel with passes below, in a background thread.
+            //    // Maybe by adding some kind of internal temporary reference table?
+            //    // 
+            //    // Right now activation is synced with a main thread, but it doesn't have to.
+            //    // This code will be moved to background thread later.
+            //    // You should use EngineService Initialize for executing code on a main thread instead.
+
+            //    // TODO: Instead of using mappings:
+            //    // 1. Enlist all services.
+            //    // 1.1. Services which override other services have to be removed.
+            //    // 2. Enlist all their ServiceDescriptors.
+            //    // 3. With HashMap, make sure that only the newest services remains.
+            //    // 4. Make sure to remove services, descriptors of which were completely removed from the list.
+            //    // 5. Initialize services using their descriptors, based on initialization order associated with a class defining them.
+            //    IService service = (IService)Activator.CreateInstance(summary.service);
+            //    Services.Unsafe.Set(service); // TODO: Terminate service on overwriting.
+
+            //    // Registers all associations with current service.
+            //    Type[] associations = service.Descriptor;
+            //    for (int j = 0; j < associations.Length; j++)
+            //    {
+            //        context.Mapping[associations[j]] = summary;
+            //    }
+            //}
         }
 
         private static async UniTask InitializeServices(LoadingContext context, IInitializationArgs args)
         {
             // TODO: Make it independent enough so we can use this method for custom service initialization.
             //  and make it schedulable.
-            List<ServiceSummary> services = context.Services;
+            ServiceSummary[] services = context.Services;
             var preload = context.Preload;
             var afterload = context.Afterload;
-            var mapping = context.Mapping;
             using (Services.Unsafe.Initialize())
             {
                 // No reason to parallelize this one - it will just create unnecessary overhead.

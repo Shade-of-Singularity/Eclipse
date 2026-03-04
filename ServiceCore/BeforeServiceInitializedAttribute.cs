@@ -21,34 +21,6 @@ namespace ServiceCore
     /// <summary>
     /// Attribute to flag methods that should be executed after an service was initialized.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
-    public sealed class BeforeServiceInitializedAttribute(Type service) : Attribute
-    {
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                              Public Properties
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        /// <summary>
-        /// Order in which preload methods should be invoked.
-        /// </summary>
-        /// <remarks>
-        /// <see cref="InvokeOrder"/> still applies even when <see cref="Service"/> runs on a background thread
-        /// - it will run within synchronization context of <see cref="Service"/>.
-        /// </remarks>
-        public int InvokeOrder { get; set; } = 0;
-
-        /// <summary>
-        /// Whether method can be executed in a background thread.
-        /// </summary>
-        /// <remarks>
-        /// It won't always run in background when set to <c>true</c>, but whenever possible - will run in parallel.
-        /// </remarks>
-        public bool ThreadSafe { get; set; } = false;
-
-        /// <summary>
-        /// Reference service to use. Method with this attribute will be executed after this service is initialized.
-        /// </summary>
-        public Type Service { get; } = service;
-    }
+    [AttributeUsage(Targets, Inherited = Inheritable, AllowMultiple = AllowsMultiple)]
+    public sealed class BeforeServiceInitializedAttribute(Type service) : ServiceInitializationAttribute(service) { }
 }
