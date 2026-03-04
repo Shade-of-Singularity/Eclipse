@@ -748,7 +748,9 @@ namespace ServiceCore
 
                 // Adds all methods to a referenced services.
                 // Also creates instances of the services (Note: because of that .ctor of services are not thread-safe)
-                await UniTask.WhenAll(
+                // TODO: It causes exceptions because runs static .ctor on classes which use main-thread-only Unity methods.
+                //  Can be re-introduced once we can tell the engine whether to initialize it on a main thread-only or not.
+                /*await UniTask.WhenAll(
                     UniTask.Run(() =>
                     {
                         foreach (MethodSummary<BeforeServiceInitializedAttribute> callback in preload)
@@ -776,7 +778,29 @@ namespace ServiceCore
                             }
                         }
                     })
-                );
+                );*/
+
+                foreach (MethodSummary<BeforeServiceInitializedAttribute> callback in preload)
+                {
+                    // TODO: Remove array look-up by caching a first element, if needed.
+                    var descriptor = ServiceRanges.Retrieve(callback.attribute.Service).First;
+                    if (descriptor is null) continue;
+                    if (mapping.TryGetValue(descriptor, out ServiceSummary summary))
+                    {
+                        summary.Preload.Add(callback);
+                    }
+                }
+
+                foreach (MethodSummary<AfterServiceInitializedAttribute> callback in afterload)
+                {
+                    // TODO: Remove array look-up by caching a first element, if needed.
+                    var descriptor = ServiceRanges.Retrieve(callback.attribute.Service).First;
+                    if (descriptor is null) continue;
+                    if (mapping.TryGetValue(descriptor, out ServiceSummary summary))
+                    {
+                        summary.Afterload.Add(callback);
+                    }
+                }
 
                 // Note: 'preload' and 'afterload' lists should NOT be used with m_RuntimeServices after this section without TryGetValue checks.
                 // Some of the MethodSummaries might reference a non-existing summary.
