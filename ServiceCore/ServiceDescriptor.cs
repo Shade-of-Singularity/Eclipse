@@ -113,7 +113,13 @@ namespace ServiceCore
                 throw new Exception($"{Engine.LogPrefix} Type {serviceIdentifier} does not define {nameof(ServiceIdentifierAttribute)}. {nameof(ServiceDescriptor)} cannot be built.");
             }
 
-            return new ServiceDescriptor(serviceIdentifier, getter, setter);
+            ServiceDescriptor descriptor = new(serviceIdentifier, getter, setter);
+            if (m_Descriptors.TryAdd(serviceIdentifier, descriptor))
+            {
+                return descriptor;
+            }
+
+            throw new Exception($"{Engine.LogPrefix} Type {serviceIdentifier} attempted to construct {nameof(ServiceDescriptor)} twice.");
         }
 
         /// <inheritdoc cref="Get(Type)"/>
