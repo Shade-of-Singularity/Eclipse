@@ -162,5 +162,21 @@ namespace ServiceCore
         {
             return (service = (ServiceRanges.Retrieve(type).First?.Getter())) is not null;
         }
+
+
+
+
+        /// <summary>
+        /// Returns all non-null services from <see cref="RuntimeServices"/> collection.
+        /// </summary>
+        /// <returns></returns>
+        public static IEnumerable<IService> GetActiveServices()
+        {
+            foreach (var descriptor in m_RuntimeServices)
+            {
+                IService? service = descriptor.Getter();
+                if (service is not null) yield return service;
+            }
+        }
     }
 }

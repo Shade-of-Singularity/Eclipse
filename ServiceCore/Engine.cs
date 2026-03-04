@@ -827,9 +827,8 @@ namespace ServiceCore
                         return;
                     }
 
-                    const int StackAllocationThreshold = 32;
-                    Span<int> targets = allocation < StackAllocationThreshold ? stackalloc int[allocation] : new int[allocation];
                     int head = 0;
+                    int[] targets = new int[allocation];
                     for (int i = 0; i < services.Length; i++)
                     {
                         if (services[i].Attribute.ExecutionMode == mode)

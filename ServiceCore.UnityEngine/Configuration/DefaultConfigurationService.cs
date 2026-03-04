@@ -20,6 +20,7 @@ using ServiceCore.Parameters;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace ServiceCore.Configuration
@@ -403,7 +404,7 @@ namespace ServiceCore.Configuration
             }
             else
             {
-                T result = new T();
+                T result = new();
                 m_GameStates[typeof(T)] = result;
                 return result;
             }
@@ -523,7 +524,7 @@ namespace ServiceCore.Configuration
             IConfigurationService.ExecutesServiceSerialization = true;
             uint exceptions = 0;
 
-            foreach (IService service in Services.List)
+            foreach (IService service in Services.GetActiveServices())
             {
                 try
                 {
@@ -550,7 +551,7 @@ namespace ServiceCore.Configuration
             IConfigurationService.ExecutesGameStateSaving = true;
             uint exceptions = 0;
 
-            foreach (IService service in Services.List)
+            foreach (IService service in Services.GetActiveServices())
             {
                 try
                 {
@@ -577,7 +578,7 @@ namespace ServiceCore.Configuration
             IConfigurationService.ExecutesParameterSaving = true;
             uint exceptions = 0;
 
-            foreach (IService service in Services.List)
+            foreach (IService service in Services.GetActiveServices())
             {
                 try
                 {
