@@ -5,4 +5,4 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "BenchmarkDotNet requires methods to be instance methods.", Scope = "member", Target = "~M:ServiceCore.Benchmarks.NullCheckBenchmark.InstanceGetter~System.Int32")]
+[assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "BenchmarkDotNet requires methods to be Instance methods.", Scope = "member", Target = "~M:ServiceCore.Benchmarks.NullCheckBenchmark.InstanceGetter~System.Int32")]

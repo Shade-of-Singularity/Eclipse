@@ -64,7 +64,7 @@ namespace ServiceCore
         {
             if (m_Instance)
             {
-                Debug.LogWarning($"{Engine.LogPrefix} Only one instance of {nameof(ServiceInitializer)} is permitted to exist at once. Newer instance will be destroyed.");
+                Debug.LogWarning($"{Engine.LogPrefix} Only one Instance of {nameof(ServiceInitializer)} is permitted to exist at once. Newer Instance will be destroyed.");
                 Destroy(gameObject);
                 return;
             }

@@ -125,7 +125,7 @@ namespace ServiceCore.Parameters
             }
             else
             {
-                throw new Exception($"{LogPrefix} Cannot retrieve parameter ({id}) of a type ({typeof(TParameter).Name}) - Parameter of a type ({result.GetType().Name}) already exist under the same ID.\nHave you forgot to provide a mod Identifier in your parameter ID?");
+                throw new Exception($"{LogPrefix} Cannot retrieve parameter ({id}) of a Type ({typeof(TParameter).Name}) - Parameter of a Type ({result.GetType().Name}) already exist under the same ID.\nHave you forgot to provide a mod Identifier in your parameter ID?");
             }
         }
 
