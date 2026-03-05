@@ -131,7 +131,7 @@ namespace ServiceCore
         /// <summary>
         /// Called right before <see cref="MonoBehaviour"/> is destroyed.
         /// </summary>
-        protected virtual void Destroy()
+        protected virtual void OnDestroy()
         {
             if (m_Instance == this)
             {
