@@ -111,7 +111,7 @@ namespace ServiceCore.Parameters
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <inheritdoc/>
         public override bool IsDirty => !EqualityComparer<TValue>.Default.Equals(m_LastValue, m_Value);
-        
+
         /// <inheritdoc/>
         public override bool IsDefault => EqualityComparer<TValue>.Default.Equals(m_Value, m_DefaultValue);
 

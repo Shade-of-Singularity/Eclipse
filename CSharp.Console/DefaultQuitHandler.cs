@@ -14,35 +14,45 @@
 /// 
 /// ]]>
 
-using ServiceCore.Parameters;
-using UnityEngine;
+using System;
 
-namespace ServiceCore.Configuration.Storages
+namespace ServiceCore
 {
     /// <summary>
-    /// Storage, which stores data in <see cref="PlayerPrefs"/>.
-    /// Suitable for storing simple data, but you might consider moving to other types of data serialization later
-    /// (like ones based on <see cref="JsonUtility"/>).
+    /// Default Engine <see cref="QuitHandler"/> implementation.
     /// </summary>
-    public sealed class PlayerPreferenceStorage : DataStorage<PlayerPreferenceStorage>
+    /// <remarks>
+    /// You can inherit <see cref="QuitHandler{T}"/> yourself and modify it
+    /// to make an animated exit screen or something like that ^-^
+    /// </remarks>
+    public sealed class DefaultQuitHandler : QuitHandler<DefaultQuitHandler>
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
-        /// .                                              Static Properties
+        /// .                                               Private Fields
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public static new readonly PlayerPreferenceStorage Instance = new();
+        private bool isUnloading;
 
 
 
 
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
-        /// .                                               Public Methods
+        /// .                                              Implementations
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public override void Load(AbstractParameter parameter) => parameter.Deserialize(PlayerPrefs.GetString(parameter.ID, string.Empty));
-        public override void Save(AbstractParameter parameter) => PlayerPrefs.SetString(parameter.ID, parameter.Serialize());
+        protected override void Interrupt(object sender, ConsoleCancelEventArgs args)
+        {
+            args.Cancel = true;
+
+            // If already unloads - no reason to start another unloading session.
+            if (Enabled && !isUnloading)
+            {
+                // Allows starting Engine unloading only 
+                AsyncQuit();
+            }
+        }
 
 
 
@@ -52,5 +62,25 @@ namespace ServiceCore.Configuration.Storages
         /// .                                               Private Methods
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Actually runs <see cref="Engine.Terminate"/>.
+        /// </summary>
+        /// <remarks>
+        /// See <see cref="Interrupt"/> to understand how it is used.
+        /// </remarks>
+        private async void AsyncQuit()
+        {
+            isUnloading = true;
+            try
+            {
+                await Engine.Terminate();
+            }
+            catch (Exception ex)
+            {
+                ServiceCoreLogger.LogException(ex);
+            }
+            isUnloading = false;
+            Environment.Exit(0);
+        }
     }
 }

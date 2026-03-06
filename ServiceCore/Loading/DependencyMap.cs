@@ -1,15 +1,31 @@
-﻿using ServiceCore.Loading;
+﻿/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
+/// 
+/// Licensed under the Apache License, Version 2.0 (the "License");
+/// you may not use this file except in compliance with the License.
+/// You may obtain a copy of the License at
+/// 
+///         http://www.apache.org/licenses/LICENSE-2.0
+/// 
+/// Unless required by applicable law or agreed to in writing, software
+/// distributed under the License is distributed on an "AS IS" BASIS,
+/// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+/// See the License for the specific language governing permissions and
+/// limitations under the License.
+/// 
+/// ]]>
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text;
 
-namespace ServiceCore.Modding
+namespace ServiceCore.Loading
 {
     /// <summary>
     /// Map of dependencies.
     /// </summary>
-    public sealed class DependencyMap : IEnumerable<ILoadingSource>, IDictionary<string, ILoadingSource>, IEnumerable
+    public sealed class DependencyMap : IEnumerable<ILoadingSource>, IDictionary<string, ILoadingSource>, IEnumerable, IDisposable
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -20,13 +36,7 @@ namespace ServiceCore.Modding
         /// <see cref="DependencyMap"/> describing only <see cref="Engine.NativeAssemblies"/>.
         /// Returned as a default value in related methods.
         /// </summary>
-        public static readonly DependencyMap Native;
-        static DependencyMap()
-        {
-            Native = [];
-            var source = new NativeSource((IEnumerable<ILoadable>)Engine.NativeAssemblies);
-            Native.Add(source.Identifier, source);
-        }
+        public static DependencyMap Native => Engine.NativeDependencyMap;
 
 
 
@@ -284,11 +294,38 @@ namespace ServiceCore.Modding
         /// .                                              Implementations
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        public override string ToString()
+        {
+            StringBuilder builder = new();
+            builder.AppendLine($"Dependency map (length: {m_Map.Count}). Is resolved? ({m_Sources is not null})");
+            if (m_Sources is not null)
+            {
+                var array = m_Sources;
+                for (int i = 0; i < array.Length; i++)
+                {
+                    builder.AppendLine($"[{i}] {array[i]}");
+                }
+            }
+            else
+            {
+                int i = 0;
+                foreach (var dependency in m_Map)
+                {
+                    builder.AppendLine($"[{i++}] {dependency}");
+                }
+            }
+
+            return builder.ToString();
+        }
+
         /// <inheritdoc cref="IEnumerable{T}.GetEnumerator()"/>
         public IEnumerator<ILoadingSource> GetEnumerator() => m_Map.Values.GetEnumerator();
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => m_Map.Values.GetEnumerator();
+
+        /// <inheritdoc cref="Add(string, ILoadingSource)"/>
+        public void Add(ILoadingSource value) => m_Map.Add(value.Identifier, value);
 
         /// <inheritdoc/>
         public void Add(string key, ILoadingSource value) => m_Map.Add(key, value);
@@ -326,5 +363,12 @@ namespace ServiceCore.Modding
 
         /// <inheritdoc/>
         IEnumerator<KeyValuePair<string, ILoadingSource>> IEnumerable<KeyValuePair<string, ILoadingSource>>.GetEnumerator() => m_Map.GetEnumerator();
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            m_Map.Clear();
+            m_Sources = null;
+        }
     }
 }

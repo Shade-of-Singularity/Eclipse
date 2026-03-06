@@ -189,7 +189,7 @@ namespace ServiceCore.Serialization
             {
                 return serializer;
             }
-            
+
             m_Serializers[typeof(TSerializer)] = def;
             return def;
         }

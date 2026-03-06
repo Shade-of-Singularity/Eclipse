@@ -14,14 +14,22 @@
 /// 
 /// ]]>
 
-using Cysharp.Threading.Tasks;
+using System;
 
-namespace ServiceCore.Benchmarks
+namespace ServiceCore
 {
-    public sealed class TestService : Service<TestService>
+    /// <summary>
+    /// When attached to <see cref="MonoService{T}"/> implementation - tells it how to treat new instances of a service.
+    /// </summary>
+    /// <remarks>
+    /// When not specified, implicitly implements <see cref="KeepInstance.Older"/>
+    /// </remarks>
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    public sealed class KeepServiceAttribute(KeepInstance mode) : Attribute
     {
-        public int Value = 42;
-        protected override UniTask Initialize(IInitializationArgs args) => UniTask.CompletedTask;
-        protected override UniTask Terminate(ITerminationArgs args) => UniTask.CompletedTask;
+        /// <summary>
+        /// Tells which instance to keep for an service, when a new one is introduced.
+        /// </summary>
+        public readonly KeepInstance Mode = mode;
     }
 }

@@ -1,8 +1,4 @@
-﻿
-using ServiceCore.Loading;
-using System.Collections.Generic;
-
-/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
+﻿/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
 /// 
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -17,6 +13,9 @@ using System.Collections.Generic;
 /// limitations under the License.
 /// 
 /// ]]>
+
+using ServiceCore.Loading;
+
 namespace ServiceCore.Modding
 {
     /// <summary>
@@ -32,7 +31,7 @@ namespace ServiceCore.Modding
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         string ILoadingSource.Identifier => Identifier;
         Version ILoadingSource.Version => Version;
-        IList<DependencyDeclaration> ILoadingSource.Dependencies => Dependencies;
+        DependencyDeclaration[] ILoadingSource.Dependencies => Dependencies;
 
 
 
@@ -73,12 +72,12 @@ namespace ServiceCore.Modding
         /// .                                              Implementations
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        public IEnumerable<ILoadable> GetLoadables()
+        public void GetLoadables(LoadableProvider provider)
         {
             var array = AssemblyPaths;
             for (int i = 0; i < array.Length; i++)
             {
-                yield return (LoadableAssembly)array[i];
+                provider((LoadableAssembly)array[i]);
             }
         }
     }

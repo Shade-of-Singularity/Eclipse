@@ -20,7 +20,10 @@ using UnityEditor;
 
 namespace ServiceCore.Editor
 {
-    public static class AssetDatabaseExtensions
+    /// <summary>
+    /// Helpers for working with <see cref="AssetDatabase"/>.
+    /// </summary>
+    public static class AssetDatabaseHelpers
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -51,7 +54,7 @@ namespace ServiceCore.Editor
             }
 
             string last = sequence[0];
-            StringBuilder builder = new StringBuilder(sequence[0]); // "Assets" always exist.
+            StringBuilder builder = new(sequence[0]); // "Assets" always exist.
             for (int i = 1; i < sequence.Length; i++)
             {
                 builder.Append('\\');

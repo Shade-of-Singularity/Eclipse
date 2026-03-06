@@ -275,7 +275,7 @@ namespace ServiceCore
 
             // TODO: Schedule it properly.
             // TODO: Call termination callbacks.
-            await (m_Instance).InvokeTerminate(args ?? Engine.State);
+            await m_Instance.InvokeTerminate(args ?? Engine.State);
 
             for (int i = 0; i < descriptors.Length; i++)
             {

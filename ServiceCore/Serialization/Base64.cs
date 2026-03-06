@@ -876,7 +876,7 @@ namespace ServiceCore.Serialization
             value10 >>= 54;
             value11 >>= 60;
 
-            return new string (stackalloc char[11]
+            return new string(stackalloc char[11]
             {
                 toBase[value11], toBase[value10], toBase[value9], toBase[value8], toBase[value7], toBase[value6],
                 toBase[value5], toBase[value4], toBase[value3], toBase[value2], toBase[value1],

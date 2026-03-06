@@ -14,14 +14,25 @@
 /// 
 /// ]]>
 
-using Cysharp.Threading.Tasks;
-
-namespace ServiceCore.Benchmarks
+namespace ServiceCore
 {
-    public sealed class TestService : Service<TestService>
+    /// <summary>
+    /// Tells which instance to keep for an service, when a new one is introduced.
+    /// Uses <see cref="Older"/> by default.
+    /// </summary>
+    public enum KeepInstance : byte
     {
-        public int Value = 42;
-        protected override UniTask Initialize(IInitializationArgs args) => UniTask.CompletedTask;
-        protected override UniTask Terminate(ITerminationArgs args) => UniTask.CompletedTask;
+        /// <summary>
+        /// (Default) Keeps older service reference.
+        /// </summary>
+        Older = 0,
+
+        /// <summary>
+        /// Keeps newer service reference.
+        /// </summary>
+        /// <remarks>
+        /// Consider using <see cref="MonoManager{T}"/> instead.
+        /// </remarks>
+        Newer = 1,
     }
 }

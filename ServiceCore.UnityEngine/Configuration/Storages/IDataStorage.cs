@@ -23,7 +23,7 @@ namespace ServiceCore.Configuration.Storages
         /// <summary>
         /// Static m_Instance of an <see cref="IDataStorage"/> implementation.
         /// </summary>
-        public static readonly T Instance = new T();
+        public static readonly T Instance = new();
 
         /// <inheritdoc cref="IDataStorage.Load(AbstractParameter)"/>
         public abstract void Load(AbstractParameter parameter);

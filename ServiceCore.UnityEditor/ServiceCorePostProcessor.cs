@@ -23,7 +23,10 @@ using UnityEngine;
 
 namespace ServiceCore.Editor
 {
-    public static class EclipseProcessor
+    /// <summary>
+    /// Post processor for UnityEditor from <see cref="ServiceCore"/>.
+    /// </summary>
+    public static class ServiceCorePostProcessor
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .
@@ -66,7 +69,7 @@ namespace ServiceCore.Editor
         public static void HandleAssetDatabaseReload() => EditorApplication.delayCall += UpdateResourceReferences;
         private static void UpdateResourceReferences()
         {
-            List<string> guids = [.. AssetDatabase.FindAssets($"t:{nameof(EclipseConfiguration)}")];
+            List<string> guids = [.. AssetDatabase.FindAssets($"t:{nameof(ServiceCoreConfiguration)}")];
             for (int i = 0; i < guids.Count; i++)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guids[i]);
@@ -76,32 +79,32 @@ namespace ServiceCore.Editor
                 }
             }
 
-            EclipseConfiguration configuration;
+            ServiceCoreConfiguration configuration;
             if (guids.Count == 0)
             {
                 const string DefaultFolder = @"Assets\Resources\Configurations\Imbedded";
-                AssetDatabaseExtensions.EnsurePathExists(DefaultFolder);
+                AssetDatabaseHelpers.EnsurePathExists(DefaultFolder);
 
-                configuration = ScriptableObject.CreateInstance<EclipseConfiguration>();
+                configuration = ScriptableObject.CreateInstance<ServiceCoreConfiguration>();
                 AssetDatabase.CreateAsset(configuration, Path.Join(DefaultFolder, "ServiceCore Configuration.asset"));
                 EditorUtility.SetDirty(configuration);
 
                 EditorApplication.delayCall += () =>
                 {
-                    Debug.LogWarning($"No {nameof(EclipseConfiguration)} file was found in the entire project. New file was created at: \"{DefaultFolder}\"");
+                    Debug.LogWarning($"No {nameof(ServiceCoreConfiguration)} file was found in the entire project. New file was created at: \"{DefaultFolder}\"");
                 };
 
                 return;
             }
 
-            configuration = AssetDatabase.LoadAssetAtPath<EclipseConfiguration>(AssetDatabase.GUIDToAssetPath(guids[0]));
+            configuration = AssetDatabase.LoadAssetAtPath<ServiceCoreConfiguration>(AssetDatabase.GUIDToAssetPath(guids[0]));
             if (guids.Count >= 2)
             {
                 EditorApplication.delayCall += () =>
                 {
                     StringBuilder builder = new(512);
-                    builder.Append($"A total of ({guids.Count}) different {nameof(EclipseConfiguration)} files we found.");
-                    builder.Append($" This is not allowed, and only the first one will be used. Keep only one configuration file at all times. Paths:\n");
+                    builder.Append($"A total of ({guids.Count}) different {nameof(ServiceCoreConfiguration)} files we found.");
+                    builder.Append($" This is not allowed, and only the first one will be used. KeepInstance only one configuration file at all times. Paths:\n");
                     foreach (var guid in guids)
                     {
                         builder.Append("- ");

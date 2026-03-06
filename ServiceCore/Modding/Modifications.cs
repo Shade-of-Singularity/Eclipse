@@ -85,7 +85,7 @@ namespace ServiceCore.Modding
         {
 
         }
-        
+
         public static T GetOrThrow<T>() where T : Modification
         {
             throw new NotImplementedException();

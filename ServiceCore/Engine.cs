@@ -42,19 +42,11 @@ namespace ServiceCore
         /// Prefix for console messages sent from this class.
         /// </summary>
         public const string LogPrefix = "[" + nameof(ServiceCore) + "]";
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                                 Delegates
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         /// <summary>
-        /// Sorting function for <see cref="NativeAssemblies"/>.
+        /// <see cref="ILoadingSource.Identifier"/> for <see cref="NativeAssemblies"/>.
+        /// Or in other words - name of the core modification.
         /// </summary>
-        public delegate IEnumerable<Assembly> AssemblySorter(Assembly[] assemblies);
+        public const string SourceName = "core";
 
 
 
@@ -215,10 +207,58 @@ namespace ServiceCore
         public static EngineState State => m_State;
 
         /// <summary>
-        /// Lists all Modifications referencing <see cref="Engine"/>.
-        /// Such Modifications are considered "Native" and will be automatically loaded first on <see cref="Initialize"/> call.
+        /// Lists all Assemblies referencing <see cref="Engine"/>.
+        /// Such Assemblies are considered "Native" and will be automatically loaded first on <see cref="Initialize"/> call.
         /// </summary>
-        public static IReadOnlyCollection<Assembly> NativeAssemblies => m_NativeAssemblies;
+        public static Assembly[] NativeAssemblies
+        {
+            get
+            {
+                lock (_nativeLock)
+                {
+                    if (m_NativeAssemblies is null)
+                    {
+                        RetrieveNativeAssemblies(out m_NativeAssemblies, out m_NativeLoadingSource);
+                    }
+
+                    return m_NativeAssemblies;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Lists all <see cref="NativeAssemblies"/> in a form of an <see cref="ILoadingSource"/> for <see cref="DependencyMap"/>.
+        /// </summary>
+        /// <seealso cref="NativeDependencyMap"/>.
+        public static ArrayLoadingSource NativeLoadingSource
+        {
+            get
+            {
+                lock (_nativeLock)
+                {
+                    if (m_NativeLoadingSource is null)
+                    {
+                        RetrieveNativeAssemblies(out m_NativeAssemblies, out m_NativeLoadingSource);
+                    }
+
+                    return m_NativeLoadingSource;
+                }
+            }
+        }
+
+        /// <summary>
+        /// <see cref="DependencyMap"/> covering all <see cref="NativeAssemblies"/>.
+        /// </summary>
+        public static DependencyMap NativeDependencyMap // TODO: Make readonly.
+        {
+            get
+            {
+                lock (_nativeLock)
+                {
+                    return m_NativeDependencyMap ??= [NativeLoadingSource];
+                }
+            }
+        }
 
 
 
@@ -229,8 +269,106 @@ namespace ServiceCore
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         private static readonly EngineState m_State = new(EngineStatus.Terminated); // Starts as terminated.
-        private static readonly HashSet<Assembly> m_NativeAssemblies = new(AssemblyOrdinalComparer.Default);
         private static readonly AssemblyStorage m_Assemblies = new(64);
+        private static readonly object _nativeLock = new();
+        private static Assembly[]? m_NativeAssemblies;              // < If any of those two are null - native assemblies were not retrieved.
+        private static ArrayLoadingSource? m_NativeLoadingSource;   // <
+        private static DependencyMap? m_NativeDependencyMap; // This one, however, is a separate talk (initialized separately).
+
+
+
+
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
+        /// .
+        /// .                                                Constructors
+        /// .
+        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
+        /// <summary>
+        /// Makes sure to cache the <see cref="NativeAssemblies"/> right now.
+        /// Repeated calls do not re-cache them.
+        /// Called automatically when you call <see cref="Initialize(InitializationContext, IInitializationArgs?)"/>.
+        /// </summary>
+        public static void PreInitialize()
+        {
+            // Forces engine to analyze native assemblies;
+            var _1 = NativeAssemblies;
+            var _2 = NativeLoadingSource;
+            var _3 = NativeDependencyMap;
+        }
+
+        // TODO: Hide food in the fridge.
+        private static void RetrieveNativeAssemblies(out Assembly[] assemblies, out ArrayLoadingSource sources)
+        {
+            Assembly engine = typeof(Engine).Assembly;
+            LoadableAssembly loadable = new(engine, []); // Core should not have any dependencies.
+            DependencyMap map = [];
+            map.Add(loadable);
+
+            string core = engine.FullName;
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                var references = assembly.GetReferencedAssemblies();
+                foreach (AssemblyName reference in references)
+                {
+                    // Filters assemblies who use Engine directly.
+                    // Should reduce memory usage by a lot, since GC won't collect assemblies defined here.
+                    if (string.Equals(reference.FullName, core, StringComparison.Ordinal))
+                    {
+                        // IIRC, This should not include core assembly itself, as it never references itself.
+                        map.Add(new LoadableAssembly(assembly, references));
+                        break;
+                    }
+                }
+            }
+
+            if (!map.TryResolve(out IReadOnlyList<ILoadingSource> resolved))
+            {
+                ServiceCoreLogger.LogError($"Cannot resolve *native* assemblies! Not sure why, but it might be a circular dependency(?). This is only possible by manually modifying the assemblies. Engine will *not* attempt to initialize *anything* besides itself on any attempts. Please contact us to understand what happened, or debug it with a debugger.\n{map}");
+                assemblies = [engine];
+                sources = new ArrayLoadingSource(SourceName, Loading.Version.Zero, [new LoadableAssemblyReference(engine)], []); // TODO: Use application version instead.
+                return;
+            }
+
+            assemblies = new Assembly[resolved.Count];
+            ILoadable[] listing = new ILoadable[assemblies.Length];
+            for (int i = 0; i < assemblies.Length; i++)
+            {
+                var container = ((LoadableAssembly)resolved[i]).container;
+                assemblies[i] = container.assembly;
+                listing[i] = container;
+            }
+
+            sources = new ArrayLoadingSource(SourceName, Loading.Version.Zero, listing, []);
+        }
+
+        private sealed class LoadableAssembly : ILoadingSource
+        {
+            public readonly LoadableAssemblyReference container;
+            public string Identifier { get; private set; }
+            public Loading.Version Version { get; private set; }
+            public DependencyDeclaration[] Dependencies { get; private set; }
+            public void GetLoadables(LoadableProvider provider) => provider(container);
+            public override string ToString() => ILoadingSource.ToString(this, singleLine: true);
+            public LoadableAssembly(Assembly assembly, AssemblyName[] references)
+            {
+                container = assembly;
+                Version = Loading.Version.Zero; // There is no point to sort native assemblies by the version.
+                Identifier = assembly.FullName;
+                if (references.Length == 0)
+                {
+                    Dependencies = [];
+                    return;
+                }
+
+                var dependencies = new DependencyDeclaration[references.Length];
+                for (int i = 0; i < references.Length; i++)
+                {
+                    dependencies[i] = new DependencyDeclaration(references[i].FullName, isAssembly: true, Loading.Version.Zero, VersionDependencyType.Any);
+                }
+
+                Dependencies = dependencies;
+            }
+        }
 
 
 
@@ -246,7 +384,7 @@ namespace ServiceCore
         /// </summary>
         /// <param name="context">Specifies how <see cref="NativeAssemblies"/> should be ordered. and provides<see cref="ILoadingSource"/>s to load. </param>
         /// <param name="args">Args to use for <see cref="IService"/> termination. Replaced with <see cref="DefaultInitializationArgs"/> if not provided.</param>
-        public static async UniTask Initialize(InitializationContext? context = default, IInitializationArgs? args = default)
+        public static async UniTask Initialize(InitializationContext context = default, IInitializationArgs? args = default)
         {
             if (Status != EngineStatus.Terminated)
             {
@@ -254,6 +392,7 @@ namespace ServiceCore
                 return;
             }
 
+            PreInitialize(); // TODO: Provide "core" BaseMod name by default, once overwriting of a "core" mod identifier is introduced.
             SetStatus(EngineStatus.Initializing);
             // TODO: Decide what to do with summary unloading when in the Editor.
             //  Maybe provide special UNITY_EDITOR-only methods?
@@ -270,25 +409,15 @@ namespace ServiceCore
                     throw new NotSupportedException();
                 }
 
-                context ??= InitializationContext.Default;
-                // Listing built-in assemblies with built-in services.
-                // TODO: Remove allocation if needed.
-                List<ILoadable> loadables = new(m_NativeAssemblies.Count);
-                // TODO: Since assemblies added as loading source at the beginning of the list - they should stay here unless reordering is absolutely needed.
-                // Note: Add tool to see order of initialization of all sources based on "layer orders" - value starting from 0,
-                //  and multiple sources can take the same order, showing you that they are not guaranteed to be executed in a specific order.
-                foreach (var assembly in context.NativeSorter is null ? m_NativeAssemblies : context.NativeSorter([.. m_NativeAssemblies]))
-                {
-                    loadables.Add((LoadableAssemblyReference)assembly);
-                }
-
-                NativeSource natives = new(loadables);
-
                 // Note: Looks like it's mandatory for us to have a "core" mod after all in the code.
                 //  It seems to be easier this way. Next time I will implement this, so modding can be supported properly.
+                // Note #2: You were right, past me! Having a core dependency with a set name "core" was mandatory after all.
+                //  Though, I'm yet to implement a name change for the Engine. For now I will leave it as "core" and we will roll with it.
+                //  In the future, we might introduce it as optional parameter in PreInitialize() method.
+                //  It's a perfect place for it.
                 DependencyMap dependencies = m_State.Modifications;
                 dependencies.Clear();
-                dependencies[natives.Identifier] = natives;
+                dependencies.Add(NativeLoadingSource);
 
                 // Reserves space for sources, if there is any.
                 // Note: m_Sources list will also be filled with sorted native assemblies.
@@ -309,18 +438,18 @@ namespace ServiceCore
 
                     await LoadInternal(sources, args);
                 }
-                else
+                else if (NativeDependencyMap.TryResolve(out sources))
                 {
                     // Loads only native libraries if dependencies cannot be resolved.
                     m_State.IsDependenciesBroken = true;
                     args ??= new DefaultInitializationArgs();
                     args.Setup(m_State);
 
-                    await LoadInternal(Provider(natives), args);
-                    static IEnumerable<ILoadingSource> Provider(ILoadingSource source)
-                    {
-                        yield return source;
-                    }
+                    await LoadInternal(sources, args);
+                }
+                else
+                {
+                    throw new Exception($"Engine could not resolve native dependencies. This is likely the Engine's fault. Please, contact us to resolve this issue or debug it with debugger attached.\n{NativeDependencyMap}");
                 }
             }
             catch (Exception ex)
@@ -384,36 +513,6 @@ namespace ServiceCore
 
             m_Assemblies.Clear();
             SetStatus(EngineStatus.Terminated);
-        }
-
-
-
-
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-        /// .
-        /// .                                                Constructors
-        /// .
-        /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-        static Engine()
-        {
-            var assemblies = m_NativeAssemblies;
-            Assembly engine = typeof(Engine).Assembly;
-
-            assemblies.Add(engine);
-            string current = engine.FullName;
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                foreach (AssemblyName reference in assembly.GetReferencedAssemblies())
-                {
-                    // Filters assemblies who use Engine directly.
-                    // Should reduce memory usage by a lot, since GC won't collect assemblies defined here.
-                    if (string.Equals(reference.FullName, current, StringComparison.Ordinal))
-                    {
-                        assemblies.Add(assembly);
-                        break;
-                    }
-                }
-            }
         }
 
 
@@ -565,32 +664,35 @@ namespace ServiceCore
             public readonly MethodInfo method = method;
         }
 
-        private static async UniTask UnloadInternal(IEnumerable<ILoadingSource> sources, ITerminationArgs args)
+        private static async UniTask UnloadInternal(IReadOnlyList<ILoadingSource> sources, ITerminationArgs args)
         {
             await UniTask.CompletedTask;
             throw new NotSupportedException("Partial termination is not supported yet.");
         }
 
-        private static async UniTask LoadInternal(IEnumerable<ILoadingSource> sources, IInitializationArgs args)
+        private static async UniTask LoadInternal(IReadOnlyList<ILoadingSource> sources, IInitializationArgs args)
         {
             // TODO: Avoid context allocation if all loaded input assemblies are the same.
             LoadingContext context = new();
 
             // Extracts all important information in all assemblies.
-            foreach (ILoadable? source in sources.SelectMany(s => s.GetLoadables()))
+            int length = sources.Count;
+            var processor = LoadableProcessor;
+            for (int i = 0; i < length; i++) sources[i].GetLoadables(LoadableProcessor);
+            void LoadableProcessor(ILoadable loadable)
             {
-                if (source is not LoadableAssemblyReference reference)
+                if (loadable is not LoadableAssemblyReference reference)
                 {
                     // Here we should load-in assemblies from the disk, for example, and stuff like that.
                     // We might improve on the pattern, because now we will need to change Engine.cs with this one, and devs should have power to change it as well.
-                    ServiceCoreLogger.LogWarning($"{LogPrefix} Loadable Type of ({source.GetType().Name}) is not supported.");
-                    continue;
+                    ServiceCoreLogger.LogWarning($"{LogPrefix} Loadable Type of ({loadable.GetType().Name}) is not supported.");
+                    return;
                 }
 
                 if (!m_Assemblies.Register(reference.assembly))
                 {
                     ServiceCoreLogger.LogWarning($"Skipping already initialized assemblies.");
-                    continue;
+                    return;
                 }
 
                 Extract(reference.assembly, context);

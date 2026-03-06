@@ -28,13 +28,13 @@ namespace ServiceCore
         /// .
         /// .                                       Unity Initialization Callbacks
         /// .                                TODO: Add Editor-time initialization methods.
-        /// .                                   TODO: Move to ServiceCore.UnityEngine.dll
+        /// .                                   TODO: Move to ServiceCore.dll
         /// .
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void OnSubsystemRegistration()
         {
-            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.SubsystemRegistration)
+            if (ServiceCoreConfiguration.Instance.InitializationType == AutomaticStartupType.SubsystemRegistration)
             {
                 Engine.Initialize().Forget();
             }
@@ -43,7 +43,7 @@ namespace ServiceCore
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         static void OnAfterAssembliesLoaded()
         {
-            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.AfterAssembliesLoaded)
+            if (ServiceCoreConfiguration.Instance.InitializationType == AutomaticStartupType.AfterAssembliesLoaded)
             {
                 Engine.Initialize().Forget();
             }
@@ -52,7 +52,7 @@ namespace ServiceCore
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
         static void OnBeforeSplashScreen()
         {
-            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.BeforeSplashScreen)
+            if (ServiceCoreConfiguration.Instance.InitializationType == AutomaticStartupType.BeforeSplashScreen)
             {
                 Engine.Initialize().Forget();
             }
@@ -61,7 +61,7 @@ namespace ServiceCore
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void OnBeforeSceneLoad()
         {
-            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.BeforeSceneLoad)
+            if (ServiceCoreConfiguration.Instance.InitializationType == AutomaticStartupType.BeforeSceneLoad)
             {
                 Engine.Initialize().Forget();
             }
@@ -70,7 +70,7 @@ namespace ServiceCore
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void OnAfterSceneLoad()
         {
-            if (EclipseConfiguration.Instance.InitializationType == AutomaticStartupType.AfterSceneLoad)
+            if (ServiceCoreConfiguration.Instance.InitializationType == AutomaticStartupType.AfterSceneLoad)
             {
                 Engine.Initialize().Forget();
             }

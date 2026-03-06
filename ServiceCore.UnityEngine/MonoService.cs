@@ -1,6 +1,23 @@
-﻿using Cysharp.Threading.Tasks;
+﻿/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
+/// 
+/// Licensed under the Apache License, Version 2.0 (the "License");
+/// you may not use this file except in compliance with the License.
+/// You may obtain a copy of the License at
+/// 
+///         http://www.apache.org/licenses/LICENSE-2.0
+/// 
+/// Unless required by applicable law or agreed to in writing, software
+/// distributed under the License is distributed on an "AS IS" BASIS,
+/// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+/// See the License for the specific language governing permissions and
+/// limitations under the License.
+/// 
+/// ]]>
+
+using Cysharp.Threading.Tasks;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -79,6 +96,10 @@ namespace ServiceCore
         /// <see cref="ServiceDescriptor"/> for this service.
         /// </summary>
         private static readonly ServiceDescriptor m_Descriptor = ServiceDescriptor.Construct<MonoService<T>>(ServiceGetter, ServiceSetter);
+        /// <summary>
+        /// Tells which instance to use if a new one is encountered.
+        /// </summary>
+        private static readonly KeepInstance m_KeepMode = typeof(T).IsDefined(typeof(KeepServiceAttribute)) ? typeof(T).GetCustomAttribute<KeepServiceAttribute>().Mode : default;
 
 
 
@@ -115,10 +136,17 @@ namespace ServiceCore
         {
             if (m_Instance)
             {
-                // TODO: Introduce "Keep(mode: KeepInstance.Newer / KeepInstance.Older)" attribute, and load it in a static .ctor.
-                ServiceCoreLogger.LogWarning($"{Engine.LogPrefix} New service of a type ({GetType().Name}) was instantiated, but resolution is not supported yet. New service will be destroyed by default.");
-                Destroy(this);
-                return;
+                switch (m_KeepMode)
+                {
+                    default:
+                    case KeepInstance.Older:
+                        Destroy(gameObject);
+                        return;
+
+                    case KeepInstance.Newer:
+                        Destroy(m_Instance.gameObject);
+                        break;
+                }
             }
 
             // TODO: Multi-thread properly.
@@ -263,7 +291,6 @@ namespace ServiceCore
             // TODO: Schedule it properly.
             // TODO: Call termination callbacks.
             await ((IService)m_Instance).InvokeTerminate(args ?? Engine.State);
-
             for (int i = 0; i < descriptors.Length; i++)
             {
                 ServiceDescriptor descriptor = descriptors[i];

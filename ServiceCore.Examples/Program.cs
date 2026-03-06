@@ -1,5 +1,4 @@
 ﻿using Cysharp.Threading.Tasks;
-using ServiceCore.CSharp;
 using ServiceCore.Localization;
 using ServiceCore.Serialization;
 
@@ -17,7 +16,6 @@ namespace ServiceCore.Examples
         {
             Testing.Start();
             await ManualInitialization();
-            await AutoInitialization_SemiManualOrdering();
             await AutomaticInitialization();
             CSharpExclusiveBlockingInitialization();
             return 0;
@@ -38,20 +36,6 @@ namespace ServiceCore.Examples
             await SealedService.Destroy();
 
             ServiceCoreLogger.Log($"Finished {nameof(ManualInitialization)}.");
-        }
-
-        static async UniTask AutoInitialization_SemiManualOrdering()
-        {
-            ServiceCoreLogger.Log($"Starting {nameof(AutoInitialization_SemiManualOrdering)}.");
-
-            InitializationContext context = new();
-            context.Schedule<ISerializationService>();
-            context.Schedule<ILocalizationService>();
-            context.ScheduleDefault();
-            await Engine.Initialize(context);
-            await Engine.Terminate();
-
-            ServiceCoreLogger.Log($"Finished {nameof(AutoInitialization_SemiManualOrdering)}.");
         }
 
         static async UniTask AutomaticInitialization()

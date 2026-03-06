@@ -14,7 +14,7 @@
 /// 
 /// ]]>
 
-using ServiceCore.Modding;
+using ServiceCore.Loading;
 
 namespace ServiceCore
 {

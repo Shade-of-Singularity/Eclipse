@@ -1,7 +1,23 @@
-﻿using System;
+﻿/// - - -    Copyright (c) 2025     - - -     SoG, DarkJune     - - - <![CDATA[
+/// 
+/// Licensed under the Apache License, Version 2.0 (the "License");
+/// you may not use this file except in compliance with the License.
+/// You may obtain a copy of the License at
+/// 
+///         http://www.apache.org/licenses/LICENSE-2.0
+/// 
+/// Unless required by applicable law or agreed to in writing, software
+/// distributed under the License is distributed on an "AS IS" BASIS,
+/// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+/// See the License for the specific language governing permissions and
+/// limitations under the License.
+/// 
+/// ]]>
+
+using System;
 using System.Runtime.InteropServices;
 
-namespace ServiceCore.Modding
+namespace ServiceCore.Loading
 {
     /// <summary>
     /// Describes any version.
@@ -67,7 +83,7 @@ namespace ServiceCore.Modding
             ushort minor;
 
             int splitA = raw.IndexOf('.');
-            if (splitA == -1 || (splitA + 1) == raw.Length)
+            if (splitA == -1 || splitA + 1 == raw.Length)
             {
                 ushort.TryParse(raw, out major);
                 version = new(major, 0, 0);
@@ -84,7 +100,7 @@ namespace ServiceCore.Modding
                 return true;
             }
 
-            if ((splitB + 1) == raw.Length)
+            if (splitB + 1 == raw.Length)
             {
                 ushort.TryParse(raw.AsSpan(0, splitA), out major);
                 ushort.TryParse(raw.AsSpan(splitA + 1, splitB - splitA - 1), out minor);
@@ -118,7 +134,7 @@ namespace ServiceCore.Modding
             ushort minor;
 
             int splitA = raw.IndexOf('.');
-            if (splitA == -1 || (splitA + 1) == raw.Length)
+            if (splitA == -1 || splitA + 1 == raw.Length)
             {
                 ushort.TryParse(raw, out major);
                 version = new(major, 0, 0);
@@ -136,7 +152,7 @@ namespace ServiceCore.Modding
                 return true;
             }
 
-            if ((splitB + 1) == raw.Length)
+            if (splitB + 1 == raw.Length)
             {
                 ushort.TryParse(raw[..splitA], out major);
                 ushort.TryParse(raw.Slice(splitA + 1, splitB - splitA - 1), out minor);

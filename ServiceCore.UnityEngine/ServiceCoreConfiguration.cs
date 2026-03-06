@@ -27,7 +27,7 @@ namespace ServiceCore
     /// <remarks>
     /// (TODO) Main Unity assembly is automatically added to the list.
     /// </remarks>
-    public sealed class EclipseConfiguration : ImbeddedConfiguration<EclipseConfiguration>
+    public sealed class ServiceCoreConfiguration : ImbeddedConfiguration<ServiceCoreConfiguration>
     {
         /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
         /// .

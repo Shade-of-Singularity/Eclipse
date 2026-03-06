@@ -52,9 +52,9 @@ namespace ServiceCore.Configuration.UI
         // Serialized Fields:
         [Header("Settings")]
         [Tooltip("Name of the parameter to process.")]
-        [SerializeField] private string m_ParameterID = string.Empty;
+        [SerializeField] private readonly string m_ParameterID = string.Empty;
         [Tooltip("Whether to set value of the UI as a default value of the parameter.")]
-        [SerializeField] private bool m_SetAsDefault = true;
+        [SerializeField] private readonly bool m_SetAsDefault = true;
 
         // Encapsulated Fields:
 

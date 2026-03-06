@@ -94,12 +94,12 @@ namespace ServiceCore.Modding
         /// At the moment, initialization callbacks will still run. This has to be changed (TODO).
         /// </remarks>
         public bool IsEnabled { get; set; } = true;
-        
+
         /// <summary>
         /// Whether mod is loaded or not.
         /// </summary>
         public bool IsLoaded { get; set; } = false;
-        
+
         /// <summary>
         /// Internal Identifier of the mod.
         /// </summary>

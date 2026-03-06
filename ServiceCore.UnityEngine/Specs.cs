@@ -612,7 +612,7 @@ namespace ServiceCore
                     if (string.IsNullOrWhiteSpace(root)) return GetDefault();
 
                     char result = char.ToUpper(root[0]);
-                    if (result >= 'A' && result <= 'Z') return result;
+                    if (result is >= 'A' and <= 'Z') return result;
                     else return GetDefault();
                 }
                 catch (Exception ex)
@@ -628,7 +628,7 @@ namespace ServiceCore
                 char GetDefault()
                 {
                     def = char.ToUpper(def);
-                    if (def < 'A' || def > 'Z') def = 'C';
+                    if (def is < 'A' or > 'Z') def = 'C';
                     return def;
                 }
             }
