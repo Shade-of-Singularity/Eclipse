@@ -14,8 +14,6 @@
 /// 
 /// ]]>
 
-using ServiceCore.Parameters;
-
 namespace ServiceCore
 {
     public static partial class Engine
@@ -26,29 +24,7 @@ namespace ServiceCore
         /// TODO: Specify which settings are meant to be saved in cloud or locally.
         public static class Settings
         {
-            /// <summary>
-            /// Streamer mode hides sensitive info on the screen.
-            /// </summary>
-            /// <remarks>
-            /// (TODO) Forcefully set to 'true' if <see cref="Flags"/> contains <see cref="Flags.StreamerModeFlag"/>.
-            /// </remarks>
-            public static readonly Parameter<bool> StreamerMode = Parameter<bool>.Get(nameof(StreamerMode), false);
 
-
-
-            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===<![CDATA[
-            /// .
-            /// .                                                Constructors
-            /// .
-            /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
-            //[AfterServiceInitialized(typeof(IConfigurationService))]
-            //internal static void Initialize()
-            //{
-            //    if (Flags.StreamerMode)
-            //    {
-            //        StreamerMode.DefaultValue = StreamerMode.Value = true;
-            //    }
-            //}
         }
     }
 }

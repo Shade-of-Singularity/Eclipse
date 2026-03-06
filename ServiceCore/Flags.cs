@@ -32,11 +32,6 @@ namespace ServiceCore
             /// .
             /// ===     ===     ===     ===    ===  == =  -                        -  = ==  ===    ===     ===     ===     ===]]>
             /// <summary>
-            /// Flag for <see cref="StreamerMode"/> parameter.
-            /// </summary>
-            public const string StreamerModeFlag = "-streamer";
-
-            /// <summary>
             /// Flag for <see cref="ResetMode"/> parameter.
             /// </summary>
             [Obsolete("Should not be used until we can reliably prevent repeated setting reset within one session.")]
@@ -64,15 +59,6 @@ namespace ServiceCore
             /// Name of the process specified in command line arguments.
             /// </summary>
             public static string ProcessName => m_ProcessName;
-
-            /// <summary>
-            /// Forcefully enabled streamer mode.
-            /// </summary>
-            /// <remarks>
-            /// Streamer mode should block any networking functionality, potentially leaking some info during streams, etc.
-            /// Modifications which violate this rule will be prohibited from usage on streams.
-            /// </remarks>
-            public static bool StreamerMode { get; private set; }
 
             /// <summary>
             /// Resets service states on engine initialization.
@@ -108,8 +94,6 @@ namespace ServiceCore
                 {
                     LogFlags(m_Args);
                 }
-
-                StreamerMode = m_Args.ContainsKey(StreamerModeFlag);
 
 #pragma warning disable CS0618 // Type or member is obsolete
                 ResetMode = m_Args.ContainsKey(ResetModeFlag);
