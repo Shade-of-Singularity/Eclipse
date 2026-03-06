@@ -23,7 +23,7 @@ using System.Text;
 namespace ServiceCore.Loading
 {
     /// <summary>
-    /// Map of dependencies.
+    /// Map of dependencies. Resolved using Kahn's Algorithm.
     /// </summary>
     public sealed class DependencyMap : IEnumerable<ILoadingSource>, IDictionary<string, ILoadingSource>, IEnumerable, IDisposable
     {
@@ -36,7 +36,11 @@ namespace ServiceCore.Loading
         /// <see cref="DependencyMap"/> describing only <see cref="Engine.NativeAssemblies"/>.
         /// Returned as a default value in related methods.
         /// </summary>
-        public static DependencyMap Native => Engine.NativeDependencyMap;
+        public static DependencyMap Native
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Engine.NativeDependencyMap;
+        }
 
 
 

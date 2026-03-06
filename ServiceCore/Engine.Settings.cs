@@ -24,7 +24,7 @@ namespace ServiceCore
         /// TODO: Specify which settings are meant to be saved in cloud or locally.
         public static class Settings
         {
-
+            
         }
     }
 }
