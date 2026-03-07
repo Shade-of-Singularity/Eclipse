@@ -23,171 +23,180 @@ Idle (Control)                  | 0.0003          | 0.0003           | O(1)
 ```
 Benchmark project: https://github.com/Shade-of-Singularity/EclipseBenchmark
 
-## Usage Notes
-You don't need to cache services with ServiceCore.
-As you can see from a benchmark above - accessing services directly via `IService<T>.Instance` is already as fast as it can get.
-It completely avoid null checks for re-initialization, allowing for the highest performance.
-
-Additionally, it allows us to better GC manage the services,
-and allows swaping a service reference at runtime at your will, so we actually discourage you from caching anything.
-(Engine itself doesn't ever swap the instances though - it's in case users do it themselves)
-
-E.g. **Don't ever** do the following:
-```C#
-private IMyService myService;
-
-public void Initialize()
-{
-    myService = IMyService.Instance;
-}
-
-public void Update()
-{
-    myService.MyMethod();
-{
-```
-**Do this instead**:
-```C#
-public void Update()
-{
-    IMyService.Instance.MyMethod();
-{
-```
-
-
 ## Supported Unity versions:
+- C# (.NET Standard 2.1)
 - Unity v6.0 (LTS)
 - Unity v2022.X (LTS)
+- (Should be compatible with Godot, but it is not directly supported)
 Everything else (down to Unity v2021 LTS) might be supported as well, but if not - will get supported later (hit me up if you need me to speed-up).
 
-# Usage Examples
-## Common
-Provided by `ServiceCore.dll`
-### (moddable) Service declaration:
+# Defining and using services
+You can define new service simply like this:
+-# From the experience - this is very useful on prototyping stage.
 ```C#
-using ServiceCore;
-
-public interface ILocalizationService : IService<ILocalizationService>
+// Attribute asks engine to initialize the service.
+// It will not be initialize *automatically* if you don't provide it.
+[Service]
+public sealed class ScriptService : Service<AssetService>
 {
-	/// <summary> Retrieves text for given key under current locale. </summary>
-	string Localize(string key);
-}
-
-[Service] // Won't initialize without attribute.
-public sealed class LocalizationService : ILocalizationService
-{
-	public UniTask Initialize() => UniTask.CompletedTask;
-	public UniTask Terminate() => UniTask.CompletedTask;
-	
-	public string Localize(string key) => $"Key ({key}) not found.";	
+    public async UniTask Initialize(IInitializationArgs args) {}
+    public async UniTask Terminate(ITerminationArgs args) {}
+    public Script LoadAt(string path) => ...
 }
 
 // Usage:
-// Once (at Startup):
-await Engine.Initialize();
-
-// Later:
-string value = ILocalizationService.Instance.Localize("test");
-Console.WriteLine($"Result: {value}");
+Script script = ScriptService.Instance.LoadAt("Scripts/HelloWorld.sc");
 ```
-*Note: If other mod/assembly defines their own service implementing `ILocalizationService` - it will replace previous service.*
-### (non-moddable) Service declaration:
+
+Completely moddable/overwritable services can use interfaces.
+-# Interfaces require more maintenance, so you might choose to make them later - near the app/game release.
 ```C#
-using ServiceCore;
-
-[Service] // Won't initialize without attribute.
-public sealed class LocalizationService : Service<LocalizationService>
+public interface IScriptService : IService<IScriptService>
 {
-	public override UniTask Initialize() => UniTask.CompletedTask;
-	public override UniTask Terminate() => UniTask.CompletedTask;
-	
-	public string Localize(string key) => $"Key ({key}) not found.";
-}
-
-// Usage:
-// Once (at Startup)
-await Engine.Initialize();
-
-// Later:
-string value = LocalizationService.Instance.Localize("test");
-Console.WriteLine($"Result: {value}");
-```
-### (moddable) Service declaration with custom base class:
-```C#
-using ServiceCore;
-
-public interface ILocalizationService : IService<ILocalizationService>
-{
-	/// <summary> Retrieves text for given key under current locale. </summary>
-	string Localize(string key);
+    Script LoadAt(string path);
 }
 
 [Service]
-public partial sealed class LocalizationService : CustomClass, ILocalizationService
+public sealed class ScriptService : IScriptService
 {
-	public UniTask Initialize() => UniTask.CompletedTask;
-	public UniTask Terminate() => UniTask.CompletedTask;
-	
-	public string Localize(string key) => $"Key ({key}) not found.";
+    public Script LoadAt(string path) => ...
 }
 
-// Usage:
-// Once (at Startup)
-await Engine.Initialize();
+// Usage
+// Notice that we use interface instead of a class.
+Script script = IScriptService.Instance.LoadAt(path) => ...
+``` 
 
-// Later:
-string value = ILocalizationService.Instance.Localize("test");
-Console.WriteLine($"Result: {value}");
-```
-### (non-moddable) Service declaration with custom base class:
+You can also define moddable service as abstract class (but using `IService<T>` is recommended instead)
 ```C#
-using ServiceCore;
-
 [Service]
-public partial sealed class LocalizationService : CustomClass, IService
+public class BasicWorldService : Service<BasicWorldService>
 {
-	// Instance field is created in partial class via CodeGen.
-	public UniTask Initialize() => UniTask.CompletedTask;
-	public UniTask Terminate() => UniTask.CompletedTask;
-	
-	public string Localize(string key) => $"Key ({key}) not found.";
+    public virtual void SpawnEnemy(EnemyType type, float x, float y) => ...
 }
 
-// Usage:
-// Once (at Startup)
-await Engine.Initialize();
-
-// Later:
-string value = LocalizationService.Instance.Localize("test");
-Console.WriteLine($"Result: {value}");
+// In modification:
+[Service] // Automatically overwrites the parent. Only this service will be instantiated.
+public sealed class CustomWorldService : BasicWorldService
+{
+    public override void SpawnEnemy(EnemyType type, float x, float y) => ...
+}
 ```
-## Unity Exclusive
-Provided by `ServerCore.UnityEngine.dll`
-### (non-moddable) Service declaration:
+
+For Unity, you can use special kind of service. It doesn't support multi-threading, but you can edit its fields from the editor.
+-# Interfaces require more maintenance, so you might choose to make them later - near the app/game release.
 ```C#
-using ServiceCore;
-
-// Uses CodeGen to avoid actually checking for the attribute.
-[MonoService] // Defaults to 'MonoServiceMode.KeepOlder'
-[MonoService(keep: MonoServiceMode.KeepNewer)]
-public partial sealed class LocalizationService : MonoService<LocalizationService>
+[Service]
+// (Optional) Specifies what to do with extra service instances.
+// If not specified - uses 'KeepInstance.Older' by default.
+[KeepService(KeepInstance.Newer | KeepInstance.Older)]
+// inherits MonoBehaviour.
+public sealed class ScriptService : MonoService<ScriptService>
 {
-	// Instance is initialized at Awake().
-	[SerializeField] string Format = "Key ({key}) not found.";
-	
-	public override UniTask Initialize() => UniTask.CompletedTask;
-	public override UniTask Terminate() => UniTask.CompletedTask;
-	
-	public string Localize(string key) => Format.Replace("{key}", key);
+    public Script LoadAt(string path) => ...
 }
 
-// Usage:
-// Attach service to a GameObject.
+// Usage
+// Notice that we use interface instead of a class.
+Script script = ScriptService.Instance.LoadAt(path) => ...
+``` 
 
-// Later:
-string value = LocalizationService.Instance.Localize("test");
-Console.WriteLine($"Result: {value}");
+If you already have a base class you need to inherit - you can define your service like this:
+```C#
+[Service]
+public sealed class LocalizationService : CoreAPI.LicalizationService, IService<LocalizationService>
+{
+    ...
+}
+
+// But usage becomes a bit inconvenient:
+string result = IService<LocalizationService>.Instance.Localize("...");
 ```
+
+To deal with inconvenience, you can choose to define a custom parameter, but there is no optimal solution at the moment.
+```C#
+[Service]
+public sealed class LocalizationService : CoreAPI.LicalizationService, IService<LocalizationService>
+{
+    public static LocalizationService Instance => IService<LocalizationService>.Instance;
+}
+
+// More convenient, but requires more maintenance:
+string result = LocalizationService.Instance.Localize("...");
+```
+
+# Initialization
+Engine supports 3 different initialization methods:
+```C#
+public interface IActorService : IService<IActorService> { }
+[Service] public sealed ActorService : IActorService { }
+[Service] public sealed ScriptService : Service<ScriptService> { }
+
+// Manual initialization:
+// Instantiates and initializes services at once.
+await IActorService.Instantiate<ActorService>();
+await ScriptService.Instantiate();
+// Manual termination:
+await IActorService.Destroy();
+await ScriptService.Destroy();
+
+
+// Automatic initialization/termination:
+await Engine.Initialize();
+await Engine.Terminate();
+
+
+// (C# Exclusive) Blocking initialization/termination:
+EngineHelpers.InitializeBlocking();
+EngineHelpers.TerminateBlocking();
+```
+
+# Important!
+Reference under`CustomService.Instance` and `ICustomService.Instance` property can change.
+To allow community modding, you should **never-ever** cache service instances.
+Do **NOT** do the following:
+```C#
+private readonly ScriptService m_ScriptService;
+public MyClass()
+{
+    m_ScriptService = ScriptService.Instance;
+}
+
+public void MyMethod()
+{
+    m_ScriptService.LoadAt(...);
+}
+```
+(But feel free to use injection pattern)
+Recommended approaches are shown above.
+**Cost of not caching**: Difference between using cached `m_Service` field and `Service.Instance` is measured to be just `0.0001μs - 0.001μs`.
+To achieve even 0.1 second of lag, you will need to reference it ~100,000,000 times a second. You will never reference it this many times outside of benchmarks.
+You will save a lot more mental power to not bother about it at all.
+
+# Additional information
+In some cases - especially during service initialization, you might want to check if some of them exist.
+You can do it like so:
+```C#
+if (ICustomService.Exist())
+{
+    ICustomService.Instance.MyMethod(...);
+}
+
+// Or simply:
+ICustomService.Instance?.MyMethod(...);
+```
+In Unity, ServiceCore can initialize automatically.
+ServiceCore will create a configuration file in `Assets/Resources/Configuration/Imbedded`, where you can control when this happens.
+
+`IService<T>.Instance` and all similar properties are marked as non-nullable, despite being nullable before automatic or manual initialization.
+If you prefer to check to null-safely though, feel free to use `TryGet`. It will also store service reference on stack as well:
+```C#
+if (ICustomService.TryGet(out var instance))
+{
+    instance.MyMethod(...);
+}
+```
+
 # Comparison
 ## Naninovel
 In `Naninovel`, you would define and use services like that:
@@ -232,6 +241,7 @@ public CustomClass()
 string value = m_LocalizationService.Localize("test");
 Console.WriteLine($"Result: {value}");
 ```
+
 In `ServiceCore`, you define and use services like this:
 ```C#
 using ServiceCore;
