@@ -32,7 +32,7 @@ Everything else (down to Unity v2021 LTS) might be supported as well, but if not
 
 # Defining and using services
 You can define new service simply like this:
--# From the experience - this is very useful on prototyping stage.
+(From the experience - this is very useful on prototyping stage)
 ```C#
 // Attribute asks engine to initialize the service.
 // It will not be initialize *automatically* if you don't provide it.
@@ -49,7 +49,7 @@ Script script = ScriptService.Instance.LoadAt("Scripts/HelloWorld.sc");
 ```
 
 Completely moddable/overwritable services can use interfaces.
--# Interfaces require more maintenance, so you might choose to make them later - near the app/game release.
+(Interfaces require more maintenance, so you might choose to make them later - near the app/game release)
 ```C#
 public interface IScriptService : IService<IScriptService>
 {
@@ -84,7 +84,7 @@ public sealed class CustomWorldService : BasicWorldService
 ```
 
 For Unity, you can use special kind of service. It doesn't support multi-threading, but you can edit its fields from the editor.
--# Interfaces require more maintenance, so you might choose to make them later - near the app/game release.
+(Interfaces require more maintenance, so you might choose to make them later - near the app/game release)
 ```C#
 [Service]
 // (Optional) Specifies what to do with extra service instances.
