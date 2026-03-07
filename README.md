@@ -1,4 +1,6 @@
 # About ServiceCore
+*Note: It's mandatory to attribute Shade of Singularity (or simply SoG) if you use ServiceCore.*
+
 **ServiceCore** - is a high-performance library for managing (initializing, terminating) services at runtime, based on [CRTP](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern) pattern, with complete (optional) community modding support.
 
 It can be used either as an utility library, or as a core for your application or game
