@@ -15,11 +15,11 @@ Here is a benchmark for aquiring a service:
 ```C#
 Benchmark                       | Best (Avr.)(μs) | Worst (Avr.)(μs) | Complexity
 ------------------------------- | --------------- | ---------------- | ----------
+Idle (Control)                  | 0.0003          | 0.0003           | O(1)      
+Native GetField                 | 0.0101          | 0.0104           | O(1)      
 ServiceCore IService.Instance   | 0.0103          | 0.0117           | O(1)      
 Naninovel Engine.GetService<>() | 0.0345          | 0.0345           | O(1)      
 RimWorld Game.GetComponent<>()  | 0.0167          | 0.4001           | O(n) n:7  
-Native GetField                 | 0.0101          | 0.0104           | O(1)      
-Idle (Control)                  | 0.0003          | 0.0003           | O(1)      
 ```
 Benchmark project: https://github.com/Shade-of-Singularity/EclipseBenchmark
 
