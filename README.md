@@ -29,7 +29,7 @@ Benchmark project: https://github.com/Shade-of-Singularity/EclipseBenchmark
 - Unity v2022.X (LTS)
 - (Should be compatible with Godot, but it is not directly supported)
 
-Everything else (down to Unity v2021 LTS) might be supported as well, but if not - will get supported later (hit me up if you need me to speed-up).
+Everything else (down to Unity v2021 LTS) might be supported as well, but if not - will get supported later (let us know if you need it).
 
 # Defining and using services
 You can define new service simply like this:
