@@ -16,7 +16,6 @@
 
 using Cysharp.Threading.Tasks;
 using ServiceCore.Loading;
-using ServiceCore.Modding;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -14,7 +14,6 @@
 /// 
 /// ]]>
 
-using ServiceCore.Modding;
 using System;
 using System.Runtime.CompilerServices;
 
