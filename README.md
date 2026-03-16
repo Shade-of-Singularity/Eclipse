@@ -172,7 +172,7 @@ public void MyMethod()
 Recommended approaches are shown above.
 **Cost of not caching**: Difference between using cached `m_Service` field and `Service.Instance` is measured to be just `0.0001μs - 0.001μs`.
 To achieve even 0.1 second of lag, you will need to reference it ~100,000,000 times a second. You will never reference it this many times outside of benchmarks.
-You will save a lot more mental power to not bother about it at all.
+You will save a lot more mental power by not bothering about it at all.
 
 # Additional information
 In some cases - especially during service initialization, you might want to check if some of them exist.
