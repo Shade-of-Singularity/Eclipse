@@ -10,6 +10,10 @@ And it utilizes [UniTask](https://github.com/Cysharp/UniTask) for async initiali
 
 Services can be initialized in a multi-threaded context as well, even when used in Unity.
 
+## Integration
+If integrating will be of any difficulty - ypu can contact us and we will help.
+Large queries might demand a small fee. It will directly support the organization.
+
 ## Benchmarks
 Here is a benchmark for aquiring a service:
 ```C#
